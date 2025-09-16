@@ -1,0 +1,16 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "Draw.it.Server\\Draw.it.Server.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "draw.it.client\\draw.it.client.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
