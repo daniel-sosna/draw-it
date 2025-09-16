@@ -1,6 +1,6 @@
 @Draw.it.Server_HostAddress = http://localhost:5094
 
-GET {{Draw.it.Server_HostAddress}}/weatherforecast/
+GET {{Draw.it.Server_HostAddress}}/drawitem
 Accept: application/json
 
 ###
