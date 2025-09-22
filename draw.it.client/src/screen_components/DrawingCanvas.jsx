@@ -39,8 +39,8 @@ export default function DrawingCanvas() {
     return (
         <canvas
             ref={canvasRef}
-            width={600}
-            height={400}
+            width={800}
+            height={500}
             style={{
                 border: "2px solid black",
                 background: "white",
