@@ -28,13 +28,14 @@ function App() {
             </tbody>
         </table>;
 
-    return (
+    return <GameplayScreen/>; 
+    /*(
             <div>
                 <h1 id="tableLabel">Draw.it</h1>
                 <p>Showing a random thing from each category.</p>
                 {contents}
             </div>
-        );
+        );*/
  
     async function populateDrawItemsData() {
         const response = await fetch('drawitem');
