@@ -1,8 +1,15 @@
 import './App.css';
 import Index from "@/pages/index/Index.jsx";
+import {BrowserRouter, Route, Routes} from "react-router";
 
 function App() {
-    return <Index/>
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Index />}/>
+            </Routes>
+        </BrowserRouter>
+    )
 }
 
 export default App;
