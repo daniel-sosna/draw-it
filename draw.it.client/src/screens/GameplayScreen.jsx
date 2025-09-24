@@ -1,5 +1,6 @@
 ﻿import React, { useState } from "react";
-import DrawingCanvas from "../screen_components/DrawingCanvas"; // import your canvas component
+import DrawingCanvas from "../screen_components/DrawingCanvas";
+import colors from "@/constants/colors.js"; // import your canvas component
 
 export default function GameplayScreen() {
     const [messages, setMessages] = useState([
@@ -12,9 +13,11 @@ export default function GameplayScreen() {
         if (!input.trim()) return;
         setMessages([...messages, { user: "You", text: input }]);
         setInput("");
-        // TODO: send message to backend via SignalR
+        // TODO: send message to backend 
     };
 
+    // TODO: move the chat to a different file
+    
     return (
         <div style={styles.container}>
             {/* Canvas on the left */}
@@ -49,40 +52,53 @@ export default function GameplayScreen() {
     );
 }
 
+colors.secondary
+
 // === Styles ===
 const styles = {
     container: {
         display: "flex",
-        height: "65vh",
-        background: "#f0f0f0",
-        padding: "10px",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: colors.secondary,
+        margin: 0,
+        padding: 0,
         boxSizing: "border-box",
     },
     canvasContainer: {
+        gap: "20px",
         flex: 3,
-        marginRight: "10px",
+        marginRight: "20px",
+        height: "100%", // fill space
     },
     chatContainer: {
         flex: 1,
         display: "flex",
         flexDirection: "column",
         border: "1px solid #ccc",
+        overflowY: "auto",  // scrollable
         borderRadius: "5px",
         background: "#fff",
+        marginTop: "20px",
         padding: "5px",
-        height: "100%",
+        height: "85%", // fill space
     },
     messages: {
         flex: 1,
         overflowY: "auto",
-        marginBottom: "5px",
+        marginBottom: "3px",
+        color: "black",
+        
     },
     inputRow: {
         display: "flex",
-        padding: "5px"
     },
     input: {
         flex: 1,
+        flexShrink: 0,
         padding: "5px",
     },
     button: {

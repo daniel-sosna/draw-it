@@ -5,19 +5,17 @@ export default function DrawingCanvas() {
     const [isDrawing, setIsDrawing] = useState(false);
     const [color, setColor] = useState("black"); // current color
 
-    // Initialize canvas context
+    // Set up canvas 
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
-        // Set drawing styles
         ctx.lineWidth = 3;
         ctx.lineCap = "round";
-        ctx.strokeStyle = color; // default color
-
+        ctx.strokeStyle = color;
     }, []);
-    
-    // When the color changes
+
+    // Update brush color
     useEffect(() => {
         const ctx = canvasRef.current.getContext("2d");
         ctx.strokeStyle = color;
@@ -58,9 +56,11 @@ export default function DrawingCanvas() {
             {/* Canvas */}
             <canvas
                 ref={canvasRef}
-                width={800}
-                height={500}
+                width={1150}    // internal resolution
+                height={700}   // internal resolution
                 style={{
+                    width: "1150px",   // fill horizontal space
+                    height: "700px",  // fill vertical space
                     border: "2px solid black",
                     background: "white",
                     cursor: "crosshair",
