@@ -43,7 +43,7 @@ We are developing **Draw\.it** in three main stages:
        dotnet format --verify-no-changes --severity info
        dotnet format --severity info
        ```
-      or just: (is enough for CI lint)
+      or just: (is enough for CI linting)
        ```bash
        dotnet format --verify-no-changes
        dotnet format
