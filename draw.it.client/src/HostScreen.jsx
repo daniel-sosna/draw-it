@@ -1,0 +1,186 @@
+import React, { useState } from 'react';
+import Button from './components/button/button';
+import Input from './components/input/Input';
+import './HostScreen.css';
+
+function HostScreen() {
+    const [roomId, setRoomId] = useState('...');
+    const [roomName, setRoomName] = useState('');
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [customWords, setCustomWords] = useState('');
+    const [drawingTime, setDrawingTime] = useState(60);
+    const [numberOfRounds, setNumberOfRounds] = useState(2);
+    const [loading, setLoading] = useState(false);
+
+    const [joinedPlayers] = useState([
+        { id: 1, name: 'Player 1', isReady: true },
+        { id: 2, name: 'Player 2', isReady: false },
+        { id: 3, name: 'Player 3', isReady: true },
+    ]);
+
+    const handleCategoryChange = (event) => {
+        const { value, checked } = event.target;
+        if (value === 'Custom') {
+            setSelectedCategories(checked ? ['Custom'] : []);
+        } else {
+            setSelectedCategories(prev => {
+                const updated = prev.filter(cat => cat !== 'Custom');
+                return checked ? [...updated, value] : updated.filter(cat => cat !== value);
+            });
+        }
+    };
+
+    const handleNumberInput = (event, setter, min) => {
+        const value = parseInt(event.target.value, 10);
+        if (value < min || isNaN(value)) {
+            setter(min);
+        } else {
+            setter(value);
+        }
+    };
+
+    const handleStartGame = async () => {
+        setLoading(true);
+        setRoomId('...');
+
+        try {
+            const response = await fetch('https://localhost:7200/drawitem/Rooms', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    roomName,
+                    categories: selectedCategories,
+                    customWords: selectedCategories.includes('Custom')
+                        ? customWords.split(',').map(word => word.trim())
+                        : [],
+                    drawingTime,
+                    numberOfRounds,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setRoomId(data.roomId);
+                console.log('Room created successfully:', data);
+            } else {
+                console.error('Failed to create room.');
+                setRoomId('Error');
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            setRoomId('Error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="host-screen-container">
+            <div className="top-info-bar">
+                <div className="room-name-input">
+                    <label htmlFor="roomName">Room Name:</label>
+                    <Input
+                        id="roomName"
+                        type="text"
+                        value={roomName}
+                        onChange={(e) => setRoomName(e.target.value)}
+                        placeholder="e.g., Fun Room"
+                    />
+                </div>
+                <div className="room-id">Room ID: <span>{roomId}</span></div>
+            </div>
+
+            <div className="main-content">
+                <div className="players-container">
+                    <h2>Players</h2>
+                    <table className="players-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {joinedPlayers.map((player, index) => (
+                                <tr key={player.id}>
+                                    <td className={player.isReady ? 'ready' : ''}>{index + 1}</td>
+                                    <td className={player.isReady ? 'ready' : ''}>{player.name}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="settings-container">
+                    <h2>Game Settings</h2>
+                    <div className="settings-content">
+                        <div className="categories-section">
+                            <h3>Choose Categories</h3>
+                            <div className="checkbox-group">
+                                {['Animals', 'Vehicle type', 'Games', 'Custom'].map(cat => (
+                                    <label key={cat}>
+                                        <Input
+                                            type="checkbox"
+                                            value={cat}
+                                            checked={selectedCategories.includes(cat)}
+                                            onChange={handleCategoryChange}
+                                        />
+                                        {cat}
+                                    </label>
+                                ))}
+                            </div>
+                            {selectedCategories.includes('Custom') && (
+                                <div className="custom-input">
+                                    <Input
+                                        type="text"
+                                        value={customWords}
+                                        onChange={(e) => setCustomWords(e.target.value)}
+                                        placeholder="Enter words separated by commas"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="game-options-section">
+                            <div className="setting-item">
+                                <label htmlFor="drawingTime">Drawing Time (seconds):</label>
+                                <Input
+                                    id="drawingTime"
+                                    type="number"
+                                    value={drawingTime}
+                                    onChange={(e) => handleNumberInput(e, setDrawingTime, 20)}
+                                    min="20"
+                                    max="180"
+                                    step="1"
+                                />
+                            </div>
+                            <div className="setting-item">
+                                <label htmlFor="numberOfRounds">Number of Rounds:</label>
+                                <Input
+                                    id="numberOfRounds"
+                                    type="number"
+                                    value={numberOfRounds}
+                                    onChange={(e) => handleNumberInput(e, setNumberOfRounds, 1)}
+                                    min="1"
+                                    max="10"
+                                    step="1"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="button-container">
+                <Button onClick={handleStartGame} disabled={loading}>
+                    {loading ? 'Creating room...' : 'Start Game'}
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+export default HostScreen;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+/*import { useEffect, useState } from 'react';
 import './App.css';
 
 function App() {
@@ -42,6 +42,16 @@ function App() {
             setDrawItems(data);
         }
     }
+}
+
+export default App;*/
+
+import React from 'react';
+import HostScreen from './HostScreen'; // Note: I assume you'll place it in the same directory as App.jsx
+import './App.css';
+
+function App() {
+    return <HostScreen />;
 }
 
 export default App;
