@@ -51,9 +51,8 @@ const App = () => {
     // Get coordinates relative to the canvas
     const getCoordinates = (e) => {
         const rect = canvasRef.current.getBoundingClientRect();
-        const dpi = window.devicePixelRatio;
-        const x = (e.clientX - rect.left) / dpi;
-        const y = (e.clientY - rect.top) / dpi;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
         return { x, y };
     };
 
