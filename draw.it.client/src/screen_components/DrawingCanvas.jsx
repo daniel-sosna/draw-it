@@ -1,4 +1,5 @@
 ﻿import React, { useRef, useState, useEffect } from "react";
+import {FaEraser} from "react-icons/fa";
 
 // The main App component
 const App = () => {
@@ -76,13 +77,7 @@ const App = () => {
     const stopDrawing = () => {
         setIsDrawing(false);
     };
-
-    // Inline SVG for the eraser icon
-    const EraserIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" className="w-5 h-5 fill-current">
-            <path d="M402.6 83.2l90.2 90.2c12.9 12.9 12.9 33.8 0 46.7l-24.9 24.9c-7.6 7.6-17.7 11.7-28.3 11.7H390.9L161.8 455.8c-10.4 10.4-21.7 16.5-34.1 19.3-11.7 2.7-23.9 1.4-35.2-3.6S78.8 459.7 70 451l-36-36c-8.8-8.8-12.7-20.1-10-31.4s8.9-23.7 19.5-34.2c2.8-2.8 5.6-5.6 8.3-8.3L34.6 221.7c-7.6-7.6-11.7-17.7-11.7-28.3V128.5c0-10.6 4.1-20.7 11.7-28.3l24.9-24.9c12.9-12.9 33.8-12.9 46.7 0l90.2 90.2c-1.8 1.8-3.5 3.6-5.1 5.4-1.5 1.5-3 3-4.4 4.5-1.4 1.4-2.8 2.8-4.1 4.1-1.3 1.3-2.6 2.6-3.8 3.8-1.2 1.2-2.3 2.3-3.4 3.4-1.1 1.1-2.1 2.2-3.1 3.2-1 1-2 2-2.9 3-1 1-1.9 2-2.8 3s-1.7 1.8-2.5 2.7-1.6 1.7-2.3 2.5-1.5 1.6-2.2 2.3-1.4 1.5-2 2.1c-.6 .6-1.1 1.1-1.6 1.6s-.9 .9-1.2 1.2c-.3 .3-.5 .5-.6 .6s-.2 .2-.2 .2z"/>
-        </svg>
-    );
+    
 
     return (
         <div className="flex flex-col items-center justify-center p-4 min-h-screen bg-gray-100 font-sans">
@@ -118,11 +113,11 @@ const App = () => {
                     {/* Eraser Button */}
                     <button
                         onClick={() => setIsEraser(!isEraser)}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center ml-4 transition-colors duration-200 ${
-                            isEraser ? "bg-black text-white" : "bg-white text-black border border-gray-300"
+                        className={`ml-4 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium hover:bg-gray-300 transition-colors duration-200 ${
+                            isEraser ? "bg-black text-white" : "bg-white text-gray border border-gray-300"
                         }`}
                     >
-                        <EraserIcon />
+                        <FaEraser size={20} color={isEraser ? "white" : "gray"} />
                     </button>
 
                     {/* Clear Button */}
