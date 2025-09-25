@@ -1,4 +1,4 @@
-name: Lint
+name: CI
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: draw.it.client
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: Draw.it.Server
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,5 +44,25 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Run dotnet format check
+      - name: Check formatting
         run: dotnet format --verify-no-changes --severity info
+
+  build-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Draw.it.Server
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
