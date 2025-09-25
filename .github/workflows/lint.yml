@@ -8,6 +8,7 @@ on:
 
 jobs:
   lint-frontend:
+    name: 🧹 Lint Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,13 +22,22 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm # Local npm cache files are stored in `~/.npm`
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci # Use instead of `npm install` (faster, reproducible, fails if package-lock.json is out of sync)
 
       - name: Run ESLint
         run: npm run lint
 
-  lint-backend:
+  lint-build-backend:
+    name: 🧹 👷‍ Lint and Build Backend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,29 +50,20 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages # Local NuGet cache files are stored in `~/.nuget/packages`
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Check formatting
         run: dotnet format --verify-no-changes --severity info
-
-  build-backend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Draw.it.Server
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Restore dependencies
-        run: dotnet restore
 
       - name: Build project
         run: dotnet build --configuration Release --no-restore
