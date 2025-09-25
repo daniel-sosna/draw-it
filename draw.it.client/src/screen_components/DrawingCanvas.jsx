@@ -82,7 +82,7 @@ const App = () => {
 
     return (
         <div className="flex flex-col items-center justify-center p-4 min-h-screen bg-gray-100 font-sans">
-            <div className="w-1200px h-800px bg-white p-6 rounded-xl shadow-lg">
+            <div className="w-[1200px] h-[800px] bg-white p-6 rounded-xl shadow-lg">
                 {/* Color Palette and Tools */}
                 <div className="flex flex-wrap items-center justify-center space-x-2 mb-4">
                     <button
