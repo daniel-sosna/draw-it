@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import GameplayScreen from "./screens/GameplayScreen.jsx"; // remove later
-
 function App() {
     const [drawItems, setDrawItems] = useState();
 
@@ -28,15 +26,13 @@ function App() {
             </tbody>
         </table>;
 
-    return <GameplayScreen/>; 
-    /*(
+    return (
             <div>
                 <h1 id="tableLabel">Draw.it</h1>
                 <p>Showing a random thing from each category.</p>
                 {contents}
             </div>
-        );*/
- 
+        ); 
     async function populateDrawItemsData() {
         const response = await fetch('drawitem');
         if (response.ok) {
