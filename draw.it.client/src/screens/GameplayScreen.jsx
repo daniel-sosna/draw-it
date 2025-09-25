@@ -1,6 +1,7 @@
 ﻿import React, { useState } from "react";
 import DrawingCanvas from "../screen_components/DrawingCanvas";
 import colors from "@/constants/colors.js"; // import your canvas component
+import Button from "@/components/button/button.jsx";
 
 export default function GameplayScreen() {
     const [messages, setMessages] = useState([
@@ -43,9 +44,9 @@ export default function GameplayScreen() {
                         placeholder="Type your guess..."
                         style={styles.input}
                     />
-                    <button onClick={sendMessage} style={styles.button}>
+                    <Button onClick={sendMessage}>
                         Send
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -65,13 +66,12 @@ const styles = {
         bottom: 0,
         background: colors.secondary,
         margin: 0,
-        padding: 0,
+        padding: 10,
         boxSizing: "border-box",
     },
     canvasContainer: {
-        gap: "20px",
         flex: 3,
-        marginRight: "20px",
+        marginRight: "10px",
         height: "100%", // fill space
     },
     chatContainer: {
@@ -100,9 +100,5 @@ const styles = {
         flex: 1,
         flexShrink: 0,
         padding: "5px",
-    },
-    button: {
-        marginLeft: "5px",
-        padding: "5px 10px",
     },
 };
