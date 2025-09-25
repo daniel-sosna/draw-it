@@ -11,6 +11,7 @@ const App = () => {
     const [brushSize, setBrushSize] = useState(5);
     const canvasWidth = 1000;  
     const canvasHeight = 600;  
+    
     const clearCanvas = () => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
@@ -146,14 +147,13 @@ const App = () => {
                 {/* Canvas */}
                 <canvas
                     ref={canvasRef}
-                    // className="w-full h-1/2  border-2 border-gray-400 rounded-lg cursor-crosshair bg-white shadow-inner"
                     style={{
                         width: `${canvasWidth}px`,
                         height: `${canvasHeight}px`,
                         border: "2px solid gray",
                         cursor: "crosshair",
                         borderRadius: "8px",
-                        backgroundColor: "white",
+                        backgroundColor: "black",
                     }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
