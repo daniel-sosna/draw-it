@@ -11,7 +11,7 @@ public class UserService : IUserService
         _logger = logger;
         _activeIds = [];
     }
-    
+
     public long GenerateUserId()
     {
         _logger.LogInformation("Generating user id: {}", _idSequence);

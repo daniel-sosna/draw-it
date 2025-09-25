@@ -22,7 +22,7 @@ public class UserController : ControllerBase
         var response = new GenerateUserIdResponseDto(id);
         return Ok(response);
     }
-    
+
     [HttpGet("")]
     public IActionResult GetUsers()
     {
