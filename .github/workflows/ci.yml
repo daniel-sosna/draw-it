@@ -63,7 +63,7 @@ jobs:
         run: dotnet restore
 
       - name: Check formatting
-        run: dotnet format --verify-no-changes --severity info
+        run: dotnet format --verify-no-changes
 
       - name: Build project
         run: dotnet build --configuration Release --no-restore

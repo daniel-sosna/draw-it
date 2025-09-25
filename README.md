@@ -33,16 +33,21 @@ We are developing **Draw\.it** in three main stages:
 1. Create a new branch
 1. Make some changes
 1. Check your code with linters:  
-    For frontend:
-    ```bash
-    npm run lint
-    npm run lint:fix -
-    ```  
-    For backend (from `Draw.it.Server` directory):
-    ```bash
-    dotnet format --verify-no-changes
-    dotnet format --fix
-    ```
+    1. For frontend:
+        ```bash
+        npm run lint
+        npm run lint:fix
+        ```  
+   1. For backend (from `Draw.it.Server` directory):
+       ```bash
+       dotnet format --verify-no-changes --severity info
+       dotnet format --severity info
+       ```
+      or just: (is enough for CI lint)
+       ```bash
+       dotnet format --verify-no-changes
+       dotnet format
+       ```
 1. Commit changes and push to the remote
 1. Open a Pull Request
 1. Wait until all CI tests are passed and your PR get approved. Only after that you will be able to merge into `main`.
