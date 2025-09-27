@@ -33,17 +33,17 @@ We are developing **Draw\.it** in three main stages:
 1. Create a new branch
 1. Make some changes
 1. Check your code with linters:  
-    1. For frontend:
+    1. For frontend (from `draw.it.client` directory):
         ```bash
         npm run lint
         npm run lint:fix
         ```  
-   1. For backend (from `Draw.it.Server` directory):
+    1. For backend (from `Draw.it.Server` directory):
        ```bash
-       dotnet format --verify-no-changes --severity info
+       dotnet format --severity info --verify-no-changes
        dotnet format --severity info
        ```
-      or just: (is enough for CI linting)
+       or just: *(is enough for CI linting)*
        ```bash
        dotnet format --verify-no-changes
        dotnet format

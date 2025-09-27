@@ -37,7 +37,7 @@ jobs:
         run: npm run lint
 
   lint-build-backend:
-    name: 🧹 👷‍ Lint and Build Backend
+    name: 🧹 👷‍Lint and Build Backend
     runs-on: ubuntu-latest
     defaults:
       run:

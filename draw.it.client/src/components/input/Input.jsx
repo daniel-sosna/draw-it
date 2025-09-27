@@ -10,7 +10,7 @@ export default function Input({ type = "text", value, onChange, placeholder }) {
             value={value}
             onChange={onChange}
             placeholder={placeholder}
-            style={{ borderColor: colors.gray}}
+            style={{ borderColor: colors.secondaryDark }}
         />
     );
 }
