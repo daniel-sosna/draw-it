@@ -1,8 +1,8 @@
 ﻿.input {
-    padding: 10px 12px;
-    border: 1px solid;
-    border-radius: 10px;
-    font-size: 16px;
+    padding: 0.625em 0.75em;
+    border: 0.1875em solid;
+    border-radius: 0.625em;
+    font-size: 1em;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }

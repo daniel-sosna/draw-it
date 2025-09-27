@@ -28,6 +28,30 @@ We are developing **Draw\.it** in three main stages:
 - [ ] **Voting system** – players can vote for the best drawing  
 - [ ] **Extra features** – improved UI/UX, animations, sound effects, more categories  
 
+## 🛠️ Development Workflow
+
+1. Create a new branch
+1. Make some changes
+1. Check your code with linters:  
+    1. For frontend (from `draw.it.client` directory):
+        ```bash
+        npm run lint
+        npm run lint:fix
+        ```  
+    1. For backend (from `Draw.it.Server` directory):
+       ```bash
+       dotnet format --severity info --verify-no-changes
+       dotnet format --severity info
+       ```
+       or just: *(is enough for CI linting)*
+       ```bash
+       dotnet format --verify-no-changes
+       dotnet format
+       ```
+1. Commit changes and push to the remote
+1. Open a Pull Request
+1. Wait until all CI tests are passed and your PR get approved. Only after that you will be able to merge into `main`.
+
 ## 👥 Team
 
 Team **null** – Vilnius University, Software Engineering course project.
