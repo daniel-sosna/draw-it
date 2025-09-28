@@ -1,5 +1,5 @@
 ﻿import React, { useState } from "react";
-import DrawingCanvas from "../screen_components/DrawingCanvas";
+import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import colors from "@/constants/colors.js"; // import your canvas component
 import Button from "@/components/button/button.jsx";
 

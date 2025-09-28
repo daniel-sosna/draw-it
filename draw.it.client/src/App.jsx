@@ -9,7 +9,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Index />}/>
-                <Route path="/" element={<GameplayScreen />}/>
+                <Route path="/gameplay" element={<GameplayScreen />}/>
             </Routes>
         </BrowserRouter>
     )
