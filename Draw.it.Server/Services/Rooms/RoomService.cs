@@ -22,7 +22,7 @@ namespace Draw.it.Server.Services.Rooms
         public string GenerateUniqueRoomId()
         {
             string roomId;
-            lock (ActiveRoomsLock) 
+            lock (ActiveRoomsLock)
             {
                 do
                 {
