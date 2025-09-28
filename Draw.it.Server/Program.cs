@@ -1,21 +1,27 @@
+using Draw.it.Server.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddApplication();
 
-// Add a CORS policy that allows any origin, method, and header
+// Allow frontend to send requests
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(
-        policy =>
-        {
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("https://localhost:61528")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
 });
+
 
 var app = builder.Build();
 
@@ -31,12 +37,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Enable the default CORS policy
-app.UseCors();
+app.UseCors("Frontend");
 
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.MapFallbackToFile("/index.html");
 
 app.Run();
