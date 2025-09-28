@@ -1,7 +1,5 @@
 ﻿import React, { useState } from "react";
-// Assuming Button component path is correct
-import Button from "@/components/button/button.jsx";
-
+import styles from "@/components/gameplay/ChatComponent.module.css";
 export default function ChatComponent({ messages, onSendMessage }) {
     const [input, setInput] = useState("");
 
@@ -31,16 +29,15 @@ export default function ChatComponent({ messages, onSendMessage }) {
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="Type your guess..."
                     // Input element takes up space (flex-1) and has padding
-                    className="flex-1 flex-shrink-0 p-1.5 border border-gray-400 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={styles.inputField}
                 />
 
-                <Button
+                <button
                     onClick={sendMessage}
-                    // Added a default style to the button to visually match the input row
-                    className="px-3 py-1.5 bg-blue-500 text-white font-medium rounded-r hover:bg-blue-600 transition-colors"
+                    className={styles.sendButton}
                 >
                     Send
-                </Button>
+                </button>
             </div>
         </div>
     );
