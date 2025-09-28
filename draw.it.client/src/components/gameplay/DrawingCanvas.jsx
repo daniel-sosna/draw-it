@@ -1,5 +1,6 @@
 ﻿import React, { useRef, useState, useEffect } from "react";
 import {FaEraser} from "react-icons/fa";
+import styles from "@/components/gameplay/DrawingCanvas.module.css";
 import "../../index.css";
 
 // The main App component
@@ -94,36 +95,38 @@ const App = () => {
                 <div className="flex flex-wrap items-center justify-center space-x-2 mb-4">
                     <button
                         onClick={() => { setColor("black"); setIsEraser(false); }}
-                        className="w-8 h-8 rounded-full border-2 border-transparent hover:border-black transition-all duration-200 focus:outline-none"
+                        className={styles.colorButton}
                         style={{ backgroundColor: "black" }}
                     ></button>
                     <button
                         onClick={() => { setColor("red"); setIsEraser(false); }}
-                        className="w-8 h-8 rounded-full border-2 border-transparent hover:border-black transition-all duration-200 focus:outline-none"
+                        className={styles.colorButton}
                         style={{ backgroundColor: "red" }}
                     ></button>
                     <button
                         onClick={() => { setColor("blue"); setIsEraser(false); }}
-                        className="w-8 h-8 rounded-full border-2 border-transparent hover:border-black transition-all duration-200 focus:outline-none"
+                        className={styles.colorButton}
                         style={{ backgroundColor: "blue" }}
                     ></button>
                     <button
                         onClick={() => { setColor("green"); setIsEraser(false); }}
-                        className="w-8 h-8 rounded-full border-2 border-transparent hover:border-black transition-all duration-200 focus:outline-none"
+                        className={styles.colorButton}
                         style={{ backgroundColor: "green" }}
                     ></button>
                     <button
                         onClick={() => { setColor("yellow"); setIsEraser(false); }}
-                        className="w-8 h-8 rounded-full border-2 border-transparent hover:border-black transition-all duration-200 focus:outline-none"
+                        className={styles.colorButton}
                         style={{ backgroundColor: "yellow" }}
                     ></button>
 
                     {/* Eraser Button */}
                     <button
                         onClick={() => setIsEraser(!isEraser)}
-                        className={`ml-4 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium hover:bg-gray-300 transition-colors duration-200 ${
-                            isEraser ? "bg-black text-white" : "bg-white text-gray border border-gray-300"
-                        }`}
+                        className={
+                            isEraser
+                                ? styles.toolButtonActive // Applies the 'active' styles
+                                : styles.toolButtonInactive // Applies the 'inactive' styles
+                        }
                     >
                         <FaEraser size={20} color={isEraser ? "white" : "gray"} />
                     </button>
@@ -131,24 +134,26 @@ const App = () => {
                     {/* Clear Button */}
                     <button
                         onClick={clearCanvas}
-                        className="ml-4 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium hover:bg-gray-300 transition-colors duration-200"
-                    >
+                        className={styles.clearButton}>
                         Clear
                     </button>
                 </div>
 
                 {/* Brush Size Slider */}
                 <div className="flex items-center justify-center mb-4 space-x-2">
-                    <span className="text-gray-600">Brush Size:</span>
+
+                    <span className={styles.brushLabel}>Brush Size:</span>
+
                     <input
                         type="range"
                         min="1"
                         max="50"
                         value={brushSize}
                         onChange={(e) => setBrushSize(e.target.value)}
-                        className="w-32 accent-gray-500"
+                        className={styles.brushSlider}
                     />
-                    <span className="text-gray-600 w-6 text-right">{brushSize}</span>
+
+                    <span className={styles.brushValueDisplay}>{brushSize}</span>
                 </div>
 
                 {/* Canvas */}
