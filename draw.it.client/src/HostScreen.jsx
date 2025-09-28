@@ -42,7 +42,7 @@ function HostScreen() {
     const handleStartGame = async () => {
         setLoading(true);
         setRoomId('...');
-
+        /*
         try {
             const response = await fetch('https://localhost:7200/drawitem/Rooms', {
                 method: 'POST',
@@ -75,6 +75,15 @@ function HostScreen() {
         } finally {
             setLoading(false);
         }
+        */
+        const response = await api.post("api/v1/User/generate-id");
+
+        if (response.status === 200) {
+            localStorage.setItem("userId", response.data.id);
+            alert(`Your id is ${response.data.id}`)
+        }
+
+
     };
 
     return (

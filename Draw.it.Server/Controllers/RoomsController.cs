@@ -5,7 +5,7 @@ using System.Linq;
 namespace Draw.it.Server.Controllers
 {
     [ApiController]
-    [Route("drawitem/[controller]")]
+    [Route("api/v1/[controller]")]
     public class RoomsController : ControllerBase
     {
         private static readonly Dictionary<string, Room> ActiveRooms = new Dictionary<string, Room>();
@@ -19,7 +19,7 @@ namespace Draw.it.Server.Controllers
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        [HttpPost(Name = "PostRoom")]
+        [HttpPost("")]
         public IActionResult CreateRoom([FromBody] RoomSettings settings)
         {
             string roomId;
