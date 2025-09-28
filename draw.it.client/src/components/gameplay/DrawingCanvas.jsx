@@ -1,5 +1,6 @@
 ﻿import React, { useRef, useState, useEffect } from "react";
 import {FaEraser} from "react-icons/fa";
+import "../../index.css";
 
 // The main App component
 const App = () => {
@@ -9,15 +10,15 @@ const App = () => {
     const [isEraser, setIsEraser] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [brushSize, setBrushSize] = useState(5);
-    const canvasWidth = 1000;  
-    const canvasHeight = 600;  
     
     const clearCanvas = () => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
+        const displayWidth = canvas.clientWidth;
+        const displayHeight = canvas.clientHeight;
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
     };
 
     // Set up canvas when the component mounts
@@ -26,17 +27,23 @@ const App = () => {
         if (canvas && !isInitialized) {
             const ctx = canvas.getContext("2d");
 
+            const displayWidth = canvas.clientWidth;
+            const displayHeight = canvas.clientHeight;
+
             // Adjust canvas dimensions for high-DPI screens
             const dpi = window.devicePixelRatio || 1;
 
-            canvas.width = canvasWidth * dpi;   // internal pixels
-            canvas.height = canvasHeight * dpi; // internal pixels
+            // FIX: Set internal pixel size based on display size
+            canvas.width = displayWidth * dpi;   // internal pixels
+            canvas.height = displayHeight * dpi; // internal pixels
+
             ctx.scale(dpi, dpi);                // scale context
 
             ctx.lineCap = "round";
             ctx.strokeStyle = color;
 
-            clearCanvas(); // Fill the canvas with a white background on load
+            // Clear canvas needs to use the display dimensions now
+            clearCanvas();
             setIsInitialized(true);
         }
     }, [isInitialized, color]);
@@ -81,8 +88,8 @@ const App = () => {
     
 
     return (
-        <div className="flex flex-col items-center justify-center p-4 min-h-screen bg-gray-100 font-sans">
-            <div className="w-[1200px] h-[800px] bg-white p-6 rounded-xl shadow-lg">
+        <div className="flex h-full min-w-screen p-4 bg-gray-100 font-sans">
+            <div className="w-screen h-[80vh] p-4 bg-gray-100 font-sans flex flex-col mr-4">
                 {/* Color Palette and Tools */}
                 <div className="flex flex-wrap items-center justify-center space-x-2 mb-4">
                     <button
@@ -147,14 +154,7 @@ const App = () => {
                 {/* Canvas */}
                 <canvas
                     ref={canvasRef}
-                    style={{
-                        width: `${canvasWidth}px`,
-                        height: `${canvasHeight}px`,
-                        border: "2px solid gray",
-                        cursor: "crosshair",
-                        borderRadius: "8px",
-                        backgroundColor: "black",
-                    }}
+                    className="w-full h-4/5 border-2 border-gray-500 cursor-crosshair rounded-lg bg-black"
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
