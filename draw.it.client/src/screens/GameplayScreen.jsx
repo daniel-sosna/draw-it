@@ -53,7 +53,6 @@ export default function GameplayScreen() {
     );
 }
 
-colors.secondary
 
 // === Styles ===
 const styles = {
