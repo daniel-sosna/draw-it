@@ -1,8 +1,6 @@
 ﻿import React, { useState } from "react";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
-import colors from "@/constants/colors.js"; // import your canvas component
-import Button from "@/components/button/button.jsx";
 
 export default function GameplayScreen() {
     const [messages, setMessages] = useState([
