@@ -1,0 +1,217 @@
+/* Game Room Lobby Styling */
+.game-room {
+  min-height: 100vh;
+  background: #1a1a1a; /* Dark background */
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+.game-room-container {
+  max-width: 1000px;
+  width: 100%;
+  background: #1a1a1a;
+}
+
+.game-room-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0;
+  color: white;
+  letter-spacing: 2px;
+}
+
+.room-id {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+.game-room-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* Left Column - Players Section */
+.players-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+  text-align: left;
+}
+
+.player-count {
+  background: #ff6b35; /* Orange background */
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  width: fit-content;
+}
+
+.players-list {
+    list-style: none;
+    padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  }
+  
+.player-item {
+  color: white;
+  font-size: 1.1rem;
+  padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+  gap: 0.5rem;
+}
+
+.start-button {
+  background: #ff6b35; /* Orange background */
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+  align-self: flex-start;
+}
+
+.start-button:hover:not(:disabled) {
+  background: #e55a2b;
+  transform: translateY(-2px);
+}
+
+.start-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Divider */
+.divider {
+  width: 2px;
+  background: #333333; /* Dark gray divider */
+  min-height: 400px;
+  flex-shrink: 0;
+}
+
+/* Right Column - Game Details */
+.game-details-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.game-setting {
+    display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setting-label {
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.setting-value {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.category-value {
+  color: #4ade80; /* Bright green for category */
+  font-weight: bold;
+}
+
+.back-link {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.8rem 1.5rem;
+  background: #ff6b35; /* Orange background */
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  align-self: center;
+  text-align: center;
+  width: fit-content;
+}
+
+.back-link:hover {
+  background: #e55a2b; /* Darker orange on hover */
+  text-decoration: none;
+  transform: translateY(-2px);
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .game-room-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .divider {
+    width: 100%;
+    height: 2px;
+    min-height: 2px;
+  }
+  
+  .game-room-title {
+    font-size: 2rem;
+  }
+  
+  .players-section,
+  .game-details-section {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-room {
+    padding: 10px;
+  }
+  
+  .game-room-title {
+    font-size: 1.8rem;
+  }
+  
+  .player-count {
+    font-size: 1.2rem;
+    padding: 0.8rem 1.2rem;
+  }
+  
+  .start-button,
+  .back-link {
+    width: 100%;
+    text-align: center;
+  }
+}
