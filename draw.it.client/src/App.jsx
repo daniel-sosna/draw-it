@@ -1,34 +1,17 @@
 import './App.css';
 import Index from "@/pages/index/Index.jsx";
-<<<<<<< HEAD
 import RoomPage from "@/pages/room_page/RoomPage.jsx";
-import HostScreen from "@/pages/Host/HostScreen.jsx";
-import { BrowserRouter, Route, Routes } from "react-router";
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/room/:roomId" element={<RoomPage />} />
-        <Route path="/host/:roomId" element={<HostScreen />} />
-      </Routes>
-    </BrowserRouter>
-  );
-=======
-import HostScreen from "@/pages/Host/HostScreen.jsx";
 import {BrowserRouter, Route, Routes} from "react-router";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/host/:roomId" element={<HostScreen />} />
+                <Route path="/" element={<Index />}/>
+                <Route path="/room/:roomId" element={<RoomPage />} />
             </Routes>
         </BrowserRouter>
     )
->>>>>>> main
 }
 
 export default App;
