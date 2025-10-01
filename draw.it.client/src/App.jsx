@@ -10,7 +10,6 @@ function App() {
             <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/host/:roomId" element={<HostScreen />} />
-                <Route path="/" element={<Index />}/>
                 <Route path="/gameplay" element={<GameplayScreen />}/>
             </Routes>
         </BrowserRouter>
