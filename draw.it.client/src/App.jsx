@@ -1,8 +1,9 @@
-import './App.css';
+import "./App.css";
 import Index from "@/pages/index/Index.jsx";
 import RoomPage from "@/pages/room_page/RoomPage.jsx";
+import GameplayScreen from "@/pages/gameplay/GameplayScreen.jsx";
 import HostScreen from "@/pages/Host/HostScreen.jsx";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/room/:roomId" element={<RoomPage />} />
         <Route path="/host/:roomId" element={<HostScreen />} />
+        <Route path="/gameplay" element={<GameplayScreen />} />
       </Routes>
     </BrowserRouter>
   );
