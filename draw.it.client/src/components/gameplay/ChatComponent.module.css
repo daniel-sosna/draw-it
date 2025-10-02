@@ -1,0 +1,14 @@
+﻿/* Send Button */
+.sendButton {
+    @apply px-3 py-1.5 bg-orange-500 text-white
+    font-medium rounded-r hover:bg-orange-700 transition-colors
+}
+
+/* Input Field */
+.inputField {
+    @apply flex-1 flex-shrink-0 p-1.5 border border-gray-400 rounded-l;
+}
+
+.inputField:focus {
+    @apply outline-none ring-2 ring-orange-400;
+}

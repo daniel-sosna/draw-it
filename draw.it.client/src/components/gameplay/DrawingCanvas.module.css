@@ -1,0 +1,45 @@
+﻿/* Eraser Button */
+.toolButton {
+    @apply
+    ml-4 px-4 py-2 rounded-lg font-medium transition-colors
+    duration-200 flex items-center shadow-md;
+}
+
+.toolButtonActive {
+    /* Inherit base styles, then override */
+    composes: toolButton;
+    @apply bg-red-500 text-white hover:bg-red-600;
+}
+
+.toolButtonInactive {
+    composes: toolButton;
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+}
+
+/* Clear Button */
+
+.clearButton {
+    @apply px-4 py-2 rounded-lg bg-gray-200 text-gray-800
+    font-medium hover:bg-gray-300 transition-colors
+    duration-200;
+}
+
+/* Color Button */
+
+.colorButton {
+    @apply w-8 h-8 rounded-full border-2 border-transparent 
+    hover:border-black transition-all duration-200 focus:outline-none
+}
+
+/* Brush Slider */
+.brushLabel {
+    @apply text-gray-600;
+}
+
+.brushValueDisplay {
+    @apply text-gray-600 w-6 text-right;
+}
+
+.brushSlider {
+    @apply w-32 accent-gray-500;
+}
