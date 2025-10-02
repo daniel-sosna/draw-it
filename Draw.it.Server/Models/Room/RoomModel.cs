@@ -1,9 +1,9 @@
-﻿namespace Draw.it.Server.Models
+﻿namespace Draw.it.Server.Models.Room
 {
-    public class Room
+    public class RoomModel
     {
         public string Id { get; set; } = string.Empty;
-        public RoomSettings Settings { get; set; } = new RoomSettings();
+        public RoomSettingsModel Settings { get; set; } = new RoomSettingsModel();
         public List<string> Players { get; set; } = new List<string>();
     }
 }

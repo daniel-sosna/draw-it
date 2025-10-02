@@ -1,4 +1,4 @@
-﻿using Draw.it.Server.Services.Rooms;
+﻿using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Services;

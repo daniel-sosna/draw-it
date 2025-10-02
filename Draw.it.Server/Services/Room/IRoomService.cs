@@ -1,11 +1,11 @@
-﻿using Draw.it.Server.Models;
+﻿using Draw.it.Server.Models.Room;
 
-namespace Draw.it.Server.Services.Rooms
+namespace Draw.it.Server.Services.Room
 {
     public interface IRoomService
     {
         string GenerateUniqueRoomId();
 
-        void CreateAndAddRoom(string roomId, RoomSettings settings);
+        void CreateAndAddRoom(string roomId, RoomSettingsModel settings);
     }
 }

@@ -1,13 +1,13 @@
-﻿using Draw.it.Server.Controllers.Rooms;
-using Draw.it.Server.Models;
+﻿using Draw.it.Server.Controllers.Room;
+using Draw.it.Server.Models.Room;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Draw.it.Server.Services.Rooms
+namespace Draw.it.Server.Services.Room
 {
     public class RoomService : IRoomService
     {
-        private static readonly Dictionary<string, Room> ActiveRooms = new Dictionary<string, Room>();
+        private static readonly Dictionary<string, RoomModel> ActiveRooms = new Dictionary<string, RoomModel>();
         private static readonly object ActiveRoomsLock = new object();
 
         private static readonly Random random = new Random();
@@ -32,9 +32,9 @@ namespace Draw.it.Server.Services.Rooms
             return roomId;
         }
 
-        public void CreateAndAddRoom(string roomId, RoomSettings settings)
+        public void CreateAndAddRoom(string roomId, RoomSettingsModel settings)
         {
-            var newRoom = new Room
+            var newRoom = new RoomModel
             {
                 Id = roomId,
                 Settings = settings,
