@@ -1,7 +1,4 @@
-﻿using Draw.it.Server.Controllers.Rooms;
-using Draw.it.Server.Models;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Draw.it.Server.Models;
 
 namespace Draw.it.Server.Services.Rooms
 {
@@ -38,7 +35,7 @@ namespace Draw.it.Server.Services.Rooms
             {
                 Id = roomId,
                 Settings = settings,
-                Players = new List<string>()
+                Players = new List<UserRec>()
             };
 
             lock (ActiveRoomsLock)

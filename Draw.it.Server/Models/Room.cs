@@ -4,6 +4,6 @@
     {
         public string Id { get; set; } = string.Empty;
         public RoomSettings Settings { get; set; } = new RoomSettings();
-        public List<string> Players { get; set; } = new List<string>();
+        public List<UserRec> Players { get; set; } = new List<UserRec>();
     }
 }
