@@ -1,26 +1,28 @@
-﻿namespace Draw.it.Server.Services.User;
+﻿using Draw.it.Server.Models;
+using Draw.it.Server.Repositories.User;
+
+namespace Draw.it.Server.Services.User;
 
 public class UserService : IUserService
 {
     private readonly ILogger<UserService> _logger;
-    private long _idSequence;
-    private readonly List<long> _activeIds;
+    private readonly IUserRepository _userRepository;
 
-    public UserService(ILogger<UserService> logger)
+    public UserService(ILogger<UserService> logger, IUserRepository userRepository)
     {
         _logger = logger;
-        _activeIds = [];
+        _userRepository = userRepository;
     }
 
-    public long GenerateUserId()
+    public UserRec CreateUser(string name)
     {
-        _logger.LogInformation("Generating user id: {}", _idSequence);
-        _activeIds.Add(_idSequence);
-        return _idSequence++;
+        var userRec = new UserRec{Name = name};
+        _logger.LogInformation("User with name={} created", name);
+        return _userRepository.Save(userRec);
     }
 
-    public List<long> GetActiveUserIds()
+    public UserRec? FindUserById(long id)
     {
-        return _activeIds;
+        return _userRepository.FindById(id);
     }
 }
