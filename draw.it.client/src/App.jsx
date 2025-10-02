@@ -3,7 +3,7 @@ import Index from "@/pages/index/Index.jsx";
 import RoomPage from "@/pages/room_page/RoomPage.jsx";
 import GameplayScreen from "@/pages/gameplay/GameplayScreen.jsx";
 import HostScreen from "@/pages/Host/HostScreen.jsx";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router";
 
 function App() {
   return (

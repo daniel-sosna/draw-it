@@ -4,6 +4,7 @@ import Input from "@/components/input/Input.jsx"
 import './HostScreen.css';
 import api from "@/utils/api.js";
 import { useParams } from 'react-router'; 
+import { useNavigate } from 'react-router';
 
 function HostScreen() {
     const { roomId } = useParams();
@@ -13,6 +14,7 @@ function HostScreen() {
     const [drawingTime, setDrawingTime] = useState(60);
     const [numberOfRounds, setNumberOfRounds] = useState(2);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const [joinedPlayers] = useState([
         { id: 1, name: 'Player 1', isReady: true },
@@ -65,6 +67,7 @@ function HostScreen() {
 
             if (response.status === 200) {
                 alert(`Kambarys ${roomId} sukurtas..`);
+                navigate(`/gameplay/${roomId}`);
             } else {
                 alert('Klaida kuriant kambari.');
                 console.error('Failed to create room with status:', response.status);
