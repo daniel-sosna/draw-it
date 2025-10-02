@@ -67,7 +67,7 @@ function HostScreen() {
 
             if (response.status === 200) {
                 alert(`Kambarys ${roomId} sukurtas..`);
-                navigate(`/host/${roomId}/gameplay`);
+                navigate(`/gameplay/${roomId}`);
             } else {
                 alert('Klaida kuriant kambari.');
                 console.error('Failed to create room with status:', response.status);
