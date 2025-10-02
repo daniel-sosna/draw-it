@@ -1,3 +1,4 @@
+using Draw.it.Server.Exceptions;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 
@@ -45,5 +46,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
+
+app.UseMiddleware<ExceptionHandler>();
 
 app.Run();

@@ -6,5 +6,5 @@ public interface IUserService
 {
     UserRec CreateUser(string name);
 
-    UserRec? FindUserById(long id);
+    UserRec FindUserById(long id);
 }
