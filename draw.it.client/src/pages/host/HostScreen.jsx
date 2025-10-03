@@ -65,7 +65,7 @@ function HostScreen() {
         try {
             const response = await api.post(`api/v1/Room/${roomId}`, settingsPayload);
 
-            if (response.status === 200) {
+            if (response.status === 201) {
                 alert(`Kambarys ${roomId} sukurtas..`);
                 navigate(`/gameplay/${roomId}`);
             } else {
