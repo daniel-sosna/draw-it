@@ -1,8 +1,24 @@
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add cookie authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/auth/unauthorized"; // optional, can point to an endpoint
+        options.AccessDeniedPath = "/auth/forbidden";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromHours(6);
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 
@@ -41,6 +57,8 @@ app.UseHttpsRedirection();
 
 app.UseCors("Frontend");
 
+// Use authentication/authorization middlewares
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
