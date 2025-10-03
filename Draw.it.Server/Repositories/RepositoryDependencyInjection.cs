@@ -1,4 +1,5 @@
 ﻿using Draw.it.Server.Enums;
+using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Repositories.User;
 
 namespace Draw.it.Server.Repositories;
@@ -13,6 +14,7 @@ public static class RepositoryDependencyInjection
         if (repoType == nameof(RepoType.InMem))
         {
             services.AddSingleton<IUserRepository, InMemUserRepository>();
+            services.AddSingleton<IRoomRepository, InMemRoomRepository>();
         }
         else
         {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Controllers.Room.DTO;
@@ -29,11 +28,11 @@ public class RoomController : ControllerBase
 
 
 
-    [HttpPost("create/{roomId}")]
+    [HttpPost("{roomId}")]
     public IActionResult CreateRoom([FromRoute] string roomId, [FromBody] RoomSettingsModel settings)
     {
         _roomService.CreateAndAddRoom(roomId, settings);
 
-        return Ok();
+        return StatusCode(StatusCodes.Status201Created);
     }
 }

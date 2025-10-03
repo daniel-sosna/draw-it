@@ -30,8 +30,8 @@ function Index() {
         return false;
     }
 
-    const createRoomAndNavigate = async () => {
-        const userReady = await ensureUserId();
+    const createRoomAndNavigate = async (name) => {
+        const userReady = await createUser(name);
         if (!userReady) {
             alert("Nepavyko gauti vartotojo ID. Bandykite dar kartą.");
             return;
@@ -63,7 +63,7 @@ function Index() {
 
                 <div className="action-button-container">
                     <Button onClick={() => nameInputText ? setModalOpen(!modalOpen) : alert("Įveskite vardą")}>Join Room</Button>
-                    <Button onClick={() => nameInputText ? createRoomAndNavigate() : alert("Įveskite vardą")}>Create Room</Button>
+                    <Button onClick={() => nameInputText ? createRoomAndNavigate(nameInputText) : alert("Įveskite vardą")}>Create Room</Button>
                 </div>
 
                 <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>

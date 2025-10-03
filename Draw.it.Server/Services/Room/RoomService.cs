@@ -1,18 +1,26 @@
+using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
+using Draw.it.Server.Repositories.Room;
 
 namespace Draw.it.Server.Services.Room
 {
     public class RoomService : IRoomService
     {
-        private static readonly Dictionary<string, RoomModel> ActiveRooms = new Dictionary<string, RoomModel>();
         private static readonly object ActiveRoomsLock = new object();
 
-        private static readonly Random random = new Random();
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        private readonly IRoomRepository _roomRepository;
+        
+        public RoomService(IRoomRepository roomRepository)
+        {
+            _roomRepository = roomRepository;
+        }
 
         private string GenerateRandomRoomId()
         {
+            var random = new Random();
+            
             return new string(Enumerable.Repeat(Chars, 6)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
@@ -20,13 +28,12 @@ namespace Draw.it.Server.Services.Room
         public string GenerateUniqueRoomId()
         {
             string roomId;
-            lock (ActiveRoomsLock)
+
+            do
             {
-                do
-                {
-                    roomId = GenerateRandomRoomId();
-                } while (ActiveRooms.ContainsKey(roomId));
-            }
+                roomId = GenerateRandomRoomId();
+            } while (_roomRepository.ExistsById(roomId));
+            
             return roomId;
         }
 
@@ -39,13 +46,12 @@ namespace Draw.it.Server.Services.Room
                 Players = new List<UserModel>()
             };
 
-            lock (ActiveRoomsLock)
+            if (_roomRepository.ExistsById(roomId))
             {
-                if (!ActiveRooms.ContainsKey(roomId))
-                {
-                    ActiveRooms.Add(roomId, newRoom);
-                }
+                throw new DuplicateEntityException("Room with such ID already exists");
             }
+            
+            _roomRepository.Save(newRoom);
         }
     }
 }
