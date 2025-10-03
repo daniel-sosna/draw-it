@@ -48,6 +48,6 @@ app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
 
-app.MapHub<GameHub>("/chatHub");
+app.MapHub<GameHub>("/gameHub");
 
 app.Run();

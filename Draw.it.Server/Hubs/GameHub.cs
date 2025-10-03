@@ -8,7 +8,7 @@ namespace Draw.it.Server.Hubs
     {
         public async Task SendMessage(string message, string room, string user) // room might not be a string later, need a separator to update the chats
         {
-            await Clients.Group(room).SendAsync("ReceiveMessage", user, message);
+            await Clients.Group(room).SendAsync("ReceiveMessage", user, room, message);
         }
         
         public async Task JoinRoom(string room, string user)
