@@ -17,7 +17,7 @@ public class UserService : IUserService
 
     public UserModel CreateUser(string name)
     {
-        var userRec = new UserModel{Name = name};
+        var userRec = new UserModel { Name = name };
         _logger.LogInformation("User with name={} created", name);
         return _userRepository.Save(userRec);
     }

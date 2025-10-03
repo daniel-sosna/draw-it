@@ -19,7 +19,7 @@ public class UserController : ControllerBase
     public IActionResult CreateUser([FromBody] CreateUserRequestDto request)
     {
         var user = _userService.CreateUser(request.Name);
-        return new ObjectResult(user) {StatusCode = StatusCodes.Status201Created};
+        return new ObjectResult(user) { StatusCode = StatusCodes.Status201Created };
     }
 
     [HttpGet("{userId}")]

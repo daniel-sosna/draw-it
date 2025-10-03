@@ -4,5 +4,5 @@ namespace Draw.it.Server.Exceptions;
 
 public class DuplicateEntityException : AppException
 {
-    public DuplicateEntityException(string message) : base(message, HttpStatusCode.Conflict) {}
+    public DuplicateEntityException(string message) : base(message, HttpStatusCode.Conflict) { }
 }

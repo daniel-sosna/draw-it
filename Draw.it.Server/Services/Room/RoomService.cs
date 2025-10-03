@@ -8,10 +8,10 @@ namespace Draw.it.Server.Services.Room
     public class RoomService : IRoomService
     {
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        
+
         private readonly ILogger<RoomService> _logger;
         private readonly IRoomRepository _roomRepository;
-        
+
         public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository)
         {
             _logger = logger;
@@ -21,7 +21,7 @@ namespace Draw.it.Server.Services.Room
         private string GenerateRandomRoomId()
         {
             var random = new Random();
-            
+
             return new string(Enumerable.Repeat(Chars, 6)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
@@ -34,7 +34,7 @@ namespace Draw.it.Server.Services.Room
             {
                 roomId = GenerateRandomRoomId();
             } while (_roomRepository.ExistsById(roomId));
-            
+
             return roomId;
         }
 
@@ -51,7 +51,7 @@ namespace Draw.it.Server.Services.Room
             {
                 throw new DuplicateEntityException("Room with such ID already exists");
             }
-            
+
             _roomRepository.Save(newRoom);
             _logger.LogInformation("Room with id={} created", roomId);
         }

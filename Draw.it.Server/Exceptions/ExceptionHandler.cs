@@ -20,7 +20,7 @@ public class ExceptionHandler
         }
         catch (AppException ex)
         {
-            context.Response.StatusCode = (int) ex.Status;
+            context.Response.StatusCode = (int)ex.Status;
             await context.Response.WriteAsJsonAsync(new { error = ex.Message });
         }
         catch (Exception ex)

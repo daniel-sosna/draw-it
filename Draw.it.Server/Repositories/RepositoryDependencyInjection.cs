@@ -20,7 +20,7 @@ public static class RepositoryDependencyInjection
         {
             // add dependencies with db implementation here
         }
-        
+
         return services;
     }
 }
