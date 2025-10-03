@@ -14,13 +14,17 @@ function Index() {
 
     const navigate = useNavigate();
 
-    const ensureUserId = async () => {
+    const createUser = async (name) => {
         if (localStorage.getItem("userId")) return true;
 
-        const response = await api.post("api/v1/User/generate-id");
+        const response = await api.post("api/v1/User", { 
+            name: name
+        });
 
         if (response.status === 200) {
+            console.log(response)
             localStorage.setItem("userId", response.data.id);
+            localStorage.setItem("userName", response.data.name);
             return true;
         }
         return false;
@@ -46,7 +50,7 @@ function Index() {
     }
     
     return (
-        <>
+        <div className="index-container">
             <h1 id="app-title">
                 Draw <span className="highlight" style={{ backgroundColor: colors.primary, color: colors.secondaryDark }}>.it</span>
             </h1>
@@ -58,19 +62,19 @@ function Index() {
                 />
 
                 <div className="action-button-container">
-                    <Button onClick={() => setModalOpen(!modalOpen)}>Join Room</Button>
-                    <Button onClick={() => createRoomAndNavigate()}>Create Room</Button>
+                    <Button onClick={() => nameInputText ? setModalOpen(!modalOpen) : alert("Įveskite vardą")}>Join Room</Button>
+                    <Button onClick={() => nameInputText ? createRoomAndNavigate() : alert("Įveskite vardą")}>Create Room</Button>
                 </div>
 
                 <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
                     <div className="modal-container">
                         <h1>Enter room code</h1>
                         <Input value={roomCodeInputText} placeholder="12..." onChange={(e) => setRoomCodeInputText(e.target.value)}/>
-                        <Button onClick={() => ensureUserId()}>Join</Button>
+                        <Button onClick={() => createUser(nameInputText)}>Join</Button>
                     </div>
                 </Modal>
             </div>
-        </>
+        </div>
     )
 }
 
