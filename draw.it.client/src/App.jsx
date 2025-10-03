@@ -1,8 +1,8 @@
 import "./App.css";
 import Index from "@/pages/index/Index.jsx";
-import RoomPage from "@/pages/room_page/RoomPage.jsx";
+import RoomPage from "@/pages/room/RoomPage.jsx";
 import GameplayScreen from "@/pages/gameplay/GameplayScreen.jsx";
-import HostScreen from "@/pages/Host/HostScreen.jsx";
+import HostScreen from "@/pages/host/HostScreen.jsx";
 import {BrowserRouter, Route, Routes} from "react-router";
 
 function App() {
