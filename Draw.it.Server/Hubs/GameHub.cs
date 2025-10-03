@@ -13,6 +13,11 @@ namespace Draw.it.Server.Hubs
         
         public async Task JoinRoom(string room, string user)
         {
+            // Add some auth
+            /*
+            if (!UserIsInRoom(Context.UserIdentifier, room))
+                throw new HubException("Unauthorized");
+            */
             await Groups.AddToGroupAsync(Context.ConnectionId, room);
             await Clients.Group(room).SendAsync("UserJoined", room, Context.ConnectionId, user);
         }

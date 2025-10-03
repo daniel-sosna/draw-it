@@ -1,6 +1,7 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useState } from "react";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
+import * as signalR from "@microsoft/signalr";
 
 export default function GameplayScreen() {
     const [messages, setMessages] = useState([
