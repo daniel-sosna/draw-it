@@ -1,5 +1,5 @@
 ﻿using Draw.it.Server.Exceptions;
-using Draw.it.Server.Models;
+using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.User;
 
 namespace Draw.it.Server.Services.User;
@@ -15,14 +15,14 @@ public class UserService : IUserService
         _userRepository = userRepository;
     }
 
-    public UserRec CreateUser(string name)
+    public UserModel CreateUser(string name)
     {
-        var userRec = new UserRec{Name = name};
+        var userRec = new UserModel{Name = name};
         _logger.LogInformation("User with name={} created", name);
         return _userRepository.Save(userRec);
     }
 
-    public UserRec FindUserById(long id)
+    public UserModel FindUserById(long id)
     {
         return _userRepository.FindById(id) ?? throw new EntityNotFoundException($"User with id={id} not found");
     }

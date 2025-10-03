@@ -1,10 +1,10 @@
-﻿using Draw.it.Server.Models;
+﻿using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Repositories.User;
 
 public interface IUserRepository
 {
-    UserRec Save(UserRec user);
+    UserModel Save(UserModel user);
 
-    UserRec? FindById(long id);
+    UserModel? FindById(long id);
 }

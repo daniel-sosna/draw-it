@@ -1,12 +1,12 @@
 ﻿using Draw.it.Server.Exceptions;
-using Draw.it.Server.Models;
+using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Repositories.User;
 
 public class InMemUserRepository : IUserRepository
 {
     private long _idSequence;
-    private readonly List<UserRec> _users;
+    private readonly List<UserModel> _users;
     private readonly object _lock = new object();
 
     public InMemUserRepository()
@@ -14,7 +14,7 @@ public class InMemUserRepository : IUserRepository
         _users = [];
     }
     
-    public UserRec Save(UserRec user)
+    public UserModel Save(UserModel user)
     {
         lock (_lock)
         {
@@ -33,7 +33,7 @@ public class InMemUserRepository : IUserRepository
        
     }
 
-    public UserRec? FindById(long id)
+    public UserModel? FindById(long id)
     {
         lock (_lock)
         {
@@ -41,7 +41,7 @@ public class InMemUserRepository : IUserRepository
         }
     }
 
-    private UserRec Update(UserRec user)
+    private UserModel Update(UserModel user)
     {
         lock (_lock)
         {
