@@ -7,13 +7,14 @@ namespace Draw.it.Server.Services.Room
 {
     public class RoomService : IRoomService
     {
-        private static readonly object ActiveRoomsLock = new object();
-
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        
+        private readonly ILogger<RoomService> _logger;
         private readonly IRoomRepository _roomRepository;
         
-        public RoomService(IRoomRepository roomRepository)
+        public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository)
         {
+            _logger = logger;
             _roomRepository = roomRepository;
         }
 
@@ -52,6 +53,7 @@ namespace Draw.it.Server.Services.Room
             }
             
             _roomRepository.Save(newRoom);
+            _logger.LogInformation("Room with id={} created", roomId);
         }
     }
 }

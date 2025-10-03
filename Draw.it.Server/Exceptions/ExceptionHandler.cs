@@ -11,6 +11,7 @@ public class ExceptionHandler
         _logger = logger;
     }
 
+    // Catches exceptions thrown in code and provides useful information in the response
     public async Task Invoke(HttpContext context)
     {
         try

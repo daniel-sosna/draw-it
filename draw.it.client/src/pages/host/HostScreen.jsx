@@ -63,7 +63,7 @@ function HostScreen() {
         };
 
         try {
-            const response = await api.post(`api/v1/Room/create/${roomId}`, settingsPayload);
+            const response = await api.post(`api/v1/Room/${roomId}`, settingsPayload);
 
             if (response.status === 200) {
                 alert(`Kambarys ${roomId} sukurtas..`);
