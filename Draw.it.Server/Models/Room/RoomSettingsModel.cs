@@ -1,6 +1,6 @@
-﻿namespace Draw.it.Server.Models
+﻿namespace Draw.it.Server.Models.Room
 {
-    public class RoomSettings
+    public class RoomSettingsModel
     {
         public string RoomName { get; set; } = string.Empty;
         public string[] Categories { get; set; } = Array.Empty<string>();
