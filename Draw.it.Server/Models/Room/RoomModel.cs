@@ -5,6 +5,7 @@ namespace Draw.it.Server.Models.Room
     public class RoomModel
     {
         public string Id { get; set; } = string.Empty;
+        public string Status { get; set; } = "LOBBY"; 
         public RoomSettingsModel Settings { get; set; } = new RoomSettingsModel();
         public List<UserModel> Players { get; set; } = new List<UserModel>();
     }
