@@ -85,6 +85,11 @@
   gap: 0.5rem;
 }
 
+.player-item.player-ready {
+    color: #4ade80; 
+    font-weight: bold;
+}
+
 .start-button {
   background: #ff6b35; /* Orange background */
   color: white;
@@ -108,6 +113,16 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.start-button.button-ready {
+    background: #10b981; 
+    transform: none;
+}
+
+.start-button.button-ready:hover:not(:disabled) {
+    background: #059669;
+    transform: translateY(-2px);
 }
 
 /* Divider */
