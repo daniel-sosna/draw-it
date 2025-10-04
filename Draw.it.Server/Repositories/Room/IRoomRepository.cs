@@ -7,6 +7,6 @@ public interface IRoomRepository
     RoomModel Save(RoomModel room);
 
     bool ExistsById(string id);
-    
-    RoomModel? FindById(string id); 
+
+    RoomModel? FindById(string id);
 }

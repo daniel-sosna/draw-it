@@ -18,20 +18,20 @@ namespace Draw.it.Server.Hubs
         public async Task JoinRoomGroup(string roomId, long userId, bool isHost)
         {
             var user = _userService.FindUserById(userId);
-            
-            var room = _roomService.AddPlayerToRoom(roomId, user, isHost); 
+
+            var room = _roomService.AddPlayerToRoom(roomId, user, isHost);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
             await Clients.Group(roomId).SendAsync("ReceiveRoomUpdate", room);
         }
-        
+
         public async Task SetPlayerReady(string roomId, long userId, bool isReady)
         {
             try
             {
-                var room = _roomService.SetPlayerReady(roomId, userId, isReady); 
-                
+                var room = _roomService.SetPlayerReady(roomId, userId, isReady);
+
                 await Clients.Group(roomId).SendAsync("ReceiveRoomUpdate", room);
             }
             catch (Exception ex)
@@ -39,15 +39,15 @@ namespace Draw.it.Server.Hubs
                 await Clients.Caller.SendAsync("ReceiveError", ex.Message);
             }
         }
-        
+
         public async Task StartGame(string roomId, long hostUserId)
         {
             try
             {
-                _roomService.StartGame(roomId); 
-                
-                await Clients.Group(roomId).SendAsync("GameStarted", roomId); 
-                
+                _roomService.StartGame(roomId);
+
+                await Clients.Group(roomId).SendAsync("GameStarted", roomId);
+
             }
             catch (Exception ex)
             {

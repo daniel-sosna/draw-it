@@ -40,20 +40,20 @@ namespace Draw.it.Server.Services.Room
 
             return roomId;
         }
-        
+
         public RoomModel GetRoom(string roomId)
         {
             return _roomRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Room {roomId} not found");
         }
-        
-        
+
+
         public void UpdateRoomSettings(string roomId, RoomSettingsModel settings)
         {
             var room = GetRoom(roomId);
             room.Settings = settings;
-            _roomRepository.Save(room); 
+            _roomRepository.Save(room);
         }
-        
+
         public RoomModel AddPlayerToRoom(string roomId, UserModel user, bool isHost) // PATAISYTAS PARAŠAS
         {
             var room = _roomRepository.FindById(roomId);
@@ -64,21 +64,21 @@ namespace Draw.it.Server.Services.Room
                 {
                     throw new EntityNotFoundException($"Room {roomId} not found");
                 }
-                
-                user.IsHost = true; 
+
+                user.IsHost = true;
                 user.IsReady = false;
-                
+
                 room = new RoomModel
                 {
                     Id = roomId,
-                    Settings = new RoomSettingsModel(), 
+                    Settings = new RoomSettingsModel(),
                     Players = new List<UserModel> { user }
                 };
             }
             else
             {
                 var existingPlayer = room.Players.FirstOrDefault(p => p.Id == user.Id);
-                
+
                 if (existingPlayer != null)
                 {
                     existingPlayer.IsHost = isHost;
@@ -87,14 +87,14 @@ namespace Draw.it.Server.Services.Room
                 else
                 {
                     user.IsHost = isHost;
-                    user.IsReady = false; 
+                    user.IsReady = false;
                     room.Players.Add(user);
                 }
             }
-    
-            return _roomRepository.Save(room); 
+
+            return _roomRepository.Save(room);
         }
-        
+
         public RoomModel SetPlayerReady(string roomId, long userId, bool isReady)
         {
             var room = GetRoom(roomId);
@@ -105,8 +105,8 @@ namespace Draw.it.Server.Services.Room
             {
                 throw new EntityNotFoundException($"Player with id={userId} not found in room {roomId}.");
             }
-            
-            if (player.IsHost) 
+
+            if (player.IsHost)
             {
                 throw new InvalidOperationException("Host cannot set ready status.");
             }
@@ -135,9 +135,9 @@ namespace Draw.it.Server.Services.Room
         public RoomModel StartGame(string roomId)
         {
             var room = GetRoom(roomId);
-            
-            room.Status = "IN_GAME"; 
-            
+
+            room.Status = "IN_GAME";
+
             if (!CanStartGame(roomId))
             {
                 throw new InvalidOperationException(
@@ -146,10 +146,10 @@ namespace Draw.it.Server.Services.Room
 
             return _roomRepository.Save(room);
         }
-        
+
         public void JoinRoom(string roomId, UserModel user)
         {
-            var room = _roomRepository.FindById(roomId) 
+            var room = _roomRepository.FindById(roomId)
                        ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
 
             if (room.Players.Any(p => p.Id == user.Id))
@@ -158,7 +158,7 @@ namespace Draw.it.Server.Services.Room
             }
 
             room.Players.Add(user);
-            _roomRepository.Save(room); 
+            _roomRepository.Save(room);
             _logger.LogInformation("User {} joined room {}", user.Id, roomId);
         }
     }

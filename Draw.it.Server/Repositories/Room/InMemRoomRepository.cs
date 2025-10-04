@@ -11,7 +11,7 @@ public class InMemRoomRepository : IRoomRepository
     {
         lock (_lock)
         {
-            ActiveRooms[room.Id] = room; 
+            ActiveRooms[room.Id] = room;
             return room;
         }
     }
@@ -23,7 +23,7 @@ public class InMemRoomRepository : IRoomRepository
             return ActiveRooms.ContainsKey(id);
         }
     }
-    
+
     public RoomModel? FindById(string id)
     {
         lock (_lock)
