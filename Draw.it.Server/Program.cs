@@ -1,4 +1,5 @@
 using Draw.it.Server.Exceptions;
+using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 
@@ -11,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
-
+builder.Services.AddSignalR();
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
 {
@@ -36,6 +37,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.MapHub<LobbyHub>("/lobbyhub");
 
 app.UseHttpsRedirection();
 
