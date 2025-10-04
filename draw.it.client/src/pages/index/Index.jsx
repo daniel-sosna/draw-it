@@ -14,39 +14,96 @@ function Index() {
 
     const navigate = useNavigate();
 
-    const ensureUserId = async () => {
-        if (localStorage.getItem("userId")) return true;
+    const createUser = async (name) => {
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userName");
 
-        const response = await api.post("api/v1/User/generate-id");
+        const response = await api.post("api/v1/User", {
+            name: name
+        });
 
-        if (response.status === 200) {
+        if (response.status === 201) {
+            console.log(response)
             localStorage.setItem("userId", response.data.id);
+            localStorage.setItem("userName", response.data.name);
             return true;
         }
+        alert(`Klaida sukuriant vartotoją. Statusas: ${response.status}`);
         return false;
     }
 
-    const createRoomAndNavigate = async () => {
-        const userReady = await ensureUserId();
+    const joinRoom = async (roomId, userId, isHost) => {
+        return api.post(`api/v1/Room/${roomId}/join`, {
+            UserId: parseInt(userId, 10), 
+            IsHost: isHost, 
+        });
+    }
+
+    const createRoomAndNavigate = async (name) => {
+        const userReady = await createUser(name);
         if (!userReady) {
             alert("Nepavyko gauti vartotojo ID. Bandykite dar kartą.");
             return;
         }
-
+        
+        const userId = localStorage.getItem("userId");
+        
         const roomResponse = await api.post("api/v1/Room/generate-id");
 
         if (roomResponse.status === 200) {
             const roomId = roomResponse.data.roomId;
 
-            navigate(`/host/${roomId}`);
+            try {
+                const joinResponse = await joinRoom(roomId, userId, true);
+
+                if (joinResponse.status === 200) {
+                    navigate(`/host/${roomId}`); 
+                } else {
+                    alert(`Klaida prisijungiant prie kambario: ${joinResponse.data?.error || 'Nežinoma klaida'}`);
+                }
+            } catch (error) {
+                console.error("Klaida kuriant/prisijungiant:", error.response?.data?.error || error);
+                alert(`Klaida kuriant/prisijungiant prie kambario: ${error.response?.data?.error || 'Nežinoma klaida'}`);
+            }
 
         } else {
             alert("Klaida generuojant kambario ID!");
         }
     }
+    const joinRoomAndNavigate = async (name, roomCode) => {
+        if (!roomCode) {
+            alert("Įveskite kambario kodą!");
+            return;
+        }
+
+        const userReady = await createUser(name);
+
+        if (!userReady) {
+            alert("Nepavyko gauti vartotojo ID. Bandykite dar kartą.");
+            return;
+        }
+
+        const userId = localStorage.getItem("userId");
+
+        try {
+            // Šaukiamas prisijungimo API endpoint'as
+            const response = await api.post(`api/v1/Room/join/${roomCode}/${userId}`);
+
+            if (response.status === 200) {
+                // Sėkmės atveju naviguojame į kambario puslapį
+                navigate(`/room/${roomCode}`);
+            } else {
+                alert(`Klaida prisijungiant prie kambario: ${response.data?.error || "Nenumatyta klaida"}`);
+            }
+        } catch (error) {
+            console.error("Prisijungimo prie kambario klaida:", error);
+            // Iškviečiame klaidos pranešimą, gautą iš backend'o.
+            alert(`Klaida prisijungiant prie kambario: ${error.response?.data?.error || error.message}`);
+        }
+    }
     
     return (
-        <>
+        <div className="index-container">
             <h1 id="app-title">
                 Draw <span className="highlight" style={{ backgroundColor: colors.primary, color: colors.secondaryDark }}>.it</span>
             </h1>
@@ -58,19 +115,19 @@ function Index() {
                 />
 
                 <div className="action-button-container">
-                    <Button onClick={() => setModalOpen(!modalOpen)}>Join Room</Button>
-                    <Button onClick={() => createRoomAndNavigate()}>Create Room</Button>
+                    <Button onClick={() => nameInputText ? setModalOpen(!modalOpen) : alert("Įveskite vardą")}>Join Room</Button>
+                    <Button onClick={() => nameInputText ? createRoomAndNavigate(nameInputText) : alert("Įveskite vardą")}>Create Room</Button>
                 </div>
 
                 <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
                     <div className="modal-container">
                         <h1>Enter room code</h1>
                         <Input value={roomCodeInputText} placeholder="12..." onChange={(e) => setRoomCodeInputText(e.target.value)}/>
-                        <Button onClick={() => ensureUserId()}>Join</Button>
+                        <Button onClick={() => joinRoomAndNavigate(nameInputText, roomCodeInputText)}>Join</Button>
                     </div>
                 </Modal>
             </div>
-        </>
+        </div>
     )
 }
 

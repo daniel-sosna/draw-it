@@ -15,19 +15,17 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    [HttpPost("generate-id")]
-    public IActionResult GenerateId()
+    [HttpPost("")]
+    public IActionResult CreateUser([FromBody] CreateUserRequestDto request)
     {
-        var id = _userService.GenerateUserId();
-        var response = new GenerateUserIdResponseDto(id);
-        return Ok(response);
+        var user = _userService.CreateUser(request.Name);
+        return new ObjectResult(user) { StatusCode = StatusCodes.Status201Created };
     }
 
-    [HttpGet("")]
-    public IActionResult GetUsers()
+    [HttpGet("{userId}")]
+    public IActionResult GetUser([FromRoute] long userId)
     {
-        var ids = _userService.GetActiveUserIds();
-        var response = new GetUsersResponseDto(ids);
-        return Ok(response);
+        var user = _userService.FindUserById(userId);
+        return Ok(user);
     }
 }
