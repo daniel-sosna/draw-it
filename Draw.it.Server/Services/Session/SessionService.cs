@@ -15,15 +15,11 @@ public class SessionService : ISessionService
         _sessionRepository = sessionRepository;
     }
 
-    public SessionModel CreateSession(long userId, string? roomId = null)
+    public SessionModel CreateSession(long userId)
     {
-        var session = new SessionModel
-        {
-            UserId = userId,
-            RoomId = roomId
-        };
+        var session = new SessionModel { UserId = userId };
         _sessionRepository.Save(session);
-        _logger.LogInformation("Created session {SessionId} for user with id={UserId} in room {RoomId}", session.Id, userId, roomId);
+        _logger.LogInformation("Created session {SessionId} for user with id={UserId}", session.Id, userId);
         return session;
     }
 
@@ -38,5 +34,12 @@ public class SessionService : ISessionService
     public SessionModel GetSession(string sessionId)
     {
         return _sessionRepository.GetById(sessionId) ?? throw new EntityNotFoundException($"Session with id={sessionId} not found");
+    }
+
+    public void SetRoom(string sessionId, string roomId)
+    {
+        var session = GetSession(sessionId);
+        session.RoomId = roomId;
+        _sessionRepository.Save(session);
     }
 }
