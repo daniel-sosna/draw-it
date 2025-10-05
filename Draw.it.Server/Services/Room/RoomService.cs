@@ -38,7 +38,7 @@ namespace Draw.it.Server.Services.Room
             return roomId;
         }
 
-        public void CreateAndAddRoom(string roomId, RoomSettingsModel settings)
+        public void CreateRoom(string roomId, RoomSettingsModel settings)
         {
             var newRoom = new RoomModel
             {
@@ -53,7 +53,20 @@ namespace Draw.it.Server.Services.Room
             }
 
             _roomRepository.Save(newRoom);
-            _logger.LogInformation("Room with id={} created", roomId);
+            _logger.LogInformation("Room with id={roomId} created", roomId);
+        }
+
+        public void DeleteRoom(string roomId)
+        {
+            if (!_roomRepository.DeleteById(roomId))
+            {
+                throw new EntityNotFoundException($"Room with id={roomId} not found");
+            }
+        }
+
+        public RoomModel GetRoom(string roomId)
+        {
+            return _roomRepository.GetById(roomId) ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
         }
     }
 }

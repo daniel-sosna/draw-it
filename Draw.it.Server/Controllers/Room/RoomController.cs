@@ -31,7 +31,7 @@ public class RoomController : ControllerBase
     [HttpPost("{roomId}")]
     public IActionResult CreateRoom([FromRoute] string roomId, [FromBody] RoomSettingsModel settings)
     {
-        _roomService.CreateAndAddRoom(roomId, settings);
+        _roomService.CreateRoom(roomId, settings);
 
         return StatusCode(StatusCodes.Status201Created);
     }

@@ -23,8 +23,16 @@ public class UserService : IUserService
         return userRec;
     }
 
-    public UserModel GetUserById(long id)
+    public void DeleteUser(long userId)
     {
-        return _userRepository.GetById(id) ?? throw new EntityNotFoundException($"User with id={id} not found");
+        if (!_userRepository.DeleteById(userId))
+        {
+            throw new EntityNotFoundException($"User with id={userId} not found");
+        }
+    }
+
+    public UserModel GetUser(long userId)
+    {
+        return _userRepository.GetById(userId) ?? throw new EntityNotFoundException($"User with id={userId} not found");
     }
 }

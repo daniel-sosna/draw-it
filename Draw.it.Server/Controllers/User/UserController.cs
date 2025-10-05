@@ -25,7 +25,7 @@ public class UserController : ControllerBase
     [HttpGet("{userId}")]
     public IActionResult GetUser([FromRoute] long userId)
     {
-        var user = _userService.GetUserById(userId);
+        var user = _userService.GetUser(userId);
         return Ok(user);
     }
 }
