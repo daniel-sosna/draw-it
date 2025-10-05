@@ -61,12 +61,12 @@ public class RoomController : ControllerBase
         return Ok(room);
     }
 
-    [HttpPut("{roomId}/settings")]
-    public IActionResult UpdateRoomSettings([FromRoute] string roomId, [FromBody] RoomSettingsModel settings)
+    [HttpPatch("{roomId}/settings")]
+    public IActionResult UpdateRoomSettings([FromRoute] string roomId, [FromBody] PatchRoomSettingsDto settingsPatch)
     {
-        _roomService.UpdateRoomSettings(roomId, settings);
+        _roomService.UpdateRoomSettings(roomId, settingsPatch);
 
-        return Ok(settings);
+        return Ok();
     }
 
     [HttpPost("join/{roomId}/{userId}")]

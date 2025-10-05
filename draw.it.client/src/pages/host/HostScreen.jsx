@@ -75,7 +75,7 @@ function HostScreen() {
                 CustomWords: customWords.split(',').map(w => w.trim()).filter(w => w.length > 0)
             };
 
-            await api.put(`api/v1/Room/${roomId}/settings`, payload);
+            await api.patch(`api/v1/Room/${roomId}/settings`, payload);
         } catch (error) {
             console.error("Klaida išsaugant nustatymus:", error.response?.data?.error || error);
         }

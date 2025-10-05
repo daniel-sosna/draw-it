@@ -1,3 +1,4 @@
+using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
@@ -47,14 +48,40 @@ namespace Draw.it.Server.Services.Room
         }
 
 
-        public void UpdateRoomSettings(string roomId, RoomSettingsModel settings)
+        public void UpdateRoomSettings(string roomId, PatchRoomSettingsDto settingsPatch)
         {
             var room = GetRoom(roomId);
-            room.Settings = settings;
+            var settings = room.Settings; 
+
+            if (settingsPatch.DrawingTime.HasValue)
+            {
+                settings.DrawingTime = settingsPatch.DrawingTime.Value;
+            }
+    
+            if (settingsPatch.NumberOfRounds.HasValue)
+            {
+                settings.NumberOfRounds = settingsPatch.NumberOfRounds.Value;
+            }
+
+            if (settingsPatch.RoomName != null)
+            {
+                settings.RoomName = settingsPatch.RoomName;
+            }
+
+            if (settingsPatch.Categories != null)
+            {
+                settings.Categories = settingsPatch.Categories.ToArray(); 
+            }
+    
+            if (settingsPatch.CustomWords != null)
+            {
+                settings.CustomWords = settingsPatch.CustomWords.ToArray(); 
+            }
+
             _roomRepository.Save(room);
         }
 
-        public RoomModel AddPlayerToRoom(string roomId, UserModel user, bool isHost) // PATAISYTAS PARAŠAS
+        public RoomModel AddPlayerToRoom(string roomId, UserModel user, bool isHost) 
         {
             var room = _roomRepository.FindById(roomId);
 
