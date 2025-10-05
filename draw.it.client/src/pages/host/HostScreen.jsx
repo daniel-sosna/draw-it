@@ -22,7 +22,6 @@ function HostScreen() {
     const [customWords, setCustomWords] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Naudojamas Polling'o intervalui saugoti
     const intervalRef = useRef(null);
 
     const joinedPlayers = room.players;
@@ -37,7 +36,6 @@ function HostScreen() {
                 const roomData = response.data;
                 setRoom(roomData);
 
-                // Atnaujiname VISUS vietinius nustatymus
                 setLocalSettings(roomData.settings);
                 setCustomWords((roomData.settings.customWords || []).join(', '));
             }
@@ -56,10 +54,8 @@ function HostScreen() {
     const startPolling = useCallback(async () => {
         if (intervalRef.current) return;
 
-        // Pirmiausia atnaujiname būseną, kad UI būtų sinchronizuotas
         await fetchRoomStatus();
 
-        // Tada nustatome Polling ciklą
         intervalRef.current = setInterval(fetchRoomStatus, 3000);
     }, [fetchRoomStatus]);
 
@@ -183,7 +179,6 @@ function HostScreen() {
                         onFocus={stopPolling}
                         onBlur={async () => {
                             await updateSettingsOnServer(localSettings);
-                            // Atnaujinimas UI: dabar mes sinchronizuojame su serveriu per startPolling
                             startPolling();
                         }}
                         placeholder="e.g., Fun Room"

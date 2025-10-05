@@ -173,8 +173,10 @@ namespace Draw.it.Server.Services.Room
             return _roomRepository.Save(room);
         }
 
-        public void JoinRoom(string roomId, UserModel user)
+        public void JoinRoom(string roomId, long userId)
         {
+            var user = _userService.FindUserById(userId); 
+            
             var room = _roomRepository.FindById(roomId)
                        ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
 

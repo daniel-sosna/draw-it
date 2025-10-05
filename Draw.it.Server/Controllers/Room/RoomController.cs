@@ -72,9 +72,7 @@ public class RoomController : ControllerBase
     [HttpPost("join/{roomId}/{userId}")]
     public IActionResult JoinRoom([FromRoute] string roomId, [FromRoute] long userId)
     {
-        var user = _userService.FindUserById(userId);
-
-        _roomService.JoinRoom(roomId, user);
+        _roomService.JoinRoom(roomId, userId);
 
         return Ok();
     }

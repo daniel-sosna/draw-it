@@ -86,18 +86,15 @@ function Index() {
         const userId = localStorage.getItem("userId");
 
         try {
-            // Šaukiamas prisijungimo API endpoint'as
             const response = await api.post(`api/v1/Room/join/${roomCode}/${userId}`);
 
             if (response.status === 200) {
-                // Sėkmės atveju naviguojame į kambario puslapį
                 navigate(`/room/${roomCode}`);
             } else {
                 alert(`Klaida prisijungiant prie kambario: ${response.data?.error || "Nenumatyta klaida"}`);
             }
         } catch (error) {
             console.error("Prisijungimo prie kambario klaida:", error);
-            // Iškviečiame klaidos pranešimą, gautą iš backend'o.
             alert(`Klaida prisijungiant prie kambario: ${error.response?.data?.error || error.message}`);
         }
     }
