@@ -19,11 +19,12 @@ public class UserService : IUserService
     {
         var userRec = new UserModel { Name = name };
         _logger.LogInformation("User with name={} created", name);
-        return _userRepository.Save(userRec);
+        _userRepository.Save(userRec);
+        return userRec;
     }
 
-    public UserModel FindUserById(long id)
+    public UserModel GetUserById(long id)
     {
-        return _userRepository.FindById(id) ?? throw new EntityNotFoundException($"User with id={id} not found");
+        return _userRepository.GetById(id) ?? throw new EntityNotFoundException($"User with id={id} not found");
     }
 }

@@ -6,5 +6,5 @@ public interface IUserService
 {
     UserModel CreateUser(string name);
 
-    UserModel FindUserById(long id);
+    UserModel GetUserById(long id);
 }
