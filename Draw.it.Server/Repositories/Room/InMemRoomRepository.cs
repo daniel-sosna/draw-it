@@ -33,10 +33,10 @@ public class InMemRoomRepository : IRoomRepository
             return room;
         }
     }
-    
+
     public void AddUserToRoom(string roomId, UserModel user)
     {
-        lock (_lock) 
+        lock (_lock)
         {
             if (ActiveRooms.TryGetValue(roomId, out var room))
             {

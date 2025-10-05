@@ -30,13 +30,21 @@ public class RoomController : ControllerBase
         return Ok(response);
     }
 
+    [HttpPost("create")]
+    public IActionResult CreateRoom([FromBody] CreateRoomRequestDto request)
+    {
+        var user = _userService.FindUserById(request.UserId);
+        var room = _roomService.CreateRoomAsHost(request.RoomId, user);
+
+        return Ok(room);
+    }
+
     [HttpPost("{roomId}/join")]
     public IActionResult JoinRoom([FromRoute] string roomId, [FromBody] JoinRoomRequestDto request)
     {
-        var user = _userService.FindUserById(request.UserId);
-        var room = _roomService.AddPlayerToRoom(roomId, user, request.IsHost);
+        _roomService.JoinRoom(roomId, request.UserId);
 
-        return Ok(room);
+        return Ok();
     }
 
     [HttpGet("{roomId}/status")]
@@ -57,7 +65,7 @@ public class RoomController : ControllerBase
     public IActionResult StartGame([FromRoute] string roomId, [FromQuery] long hostUserId)
     {
         var room = _roomService.StartGame(roomId);
-        
+
         return Ok(room);
     }
 
@@ -69,11 +77,4 @@ public class RoomController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("join/{roomId}/{userId}")]
-    public IActionResult JoinRoom([FromRoute] string roomId, [FromRoute] long userId)
-    {
-        _roomService.JoinRoom(roomId, userId);
-
-        return Ok();
-    }
 }

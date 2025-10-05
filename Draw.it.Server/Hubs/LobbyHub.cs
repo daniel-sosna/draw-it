@@ -19,7 +19,7 @@ namespace Draw.it.Server.Hubs
         {
             var user = _userService.FindUserById(userId);
 
-            var room = _roomService.AddPlayerToRoom(roomId, user, isHost);
+            var room = _roomService.AddPlayerToRoom(roomId, user);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 

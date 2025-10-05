@@ -51,13 +51,13 @@ namespace Draw.it.Server.Services.Room
         public void UpdateRoomSettings(string roomId, PatchRoomSettingsDto settingsPatch)
         {
             var room = GetRoom(roomId);
-            var settings = room.Settings; 
+            var settings = room.Settings;
 
             if (settingsPatch.DrawingTime.HasValue)
             {
                 settings.DrawingTime = settingsPatch.DrawingTime.Value;
             }
-    
+
             if (settingsPatch.NumberOfRounds.HasValue)
             {
                 settings.NumberOfRounds = settingsPatch.NumberOfRounds.Value;
@@ -70,53 +70,35 @@ namespace Draw.it.Server.Services.Room
 
             if (settingsPatch.Categories != null)
             {
-                settings.Categories = settingsPatch.Categories.ToArray(); 
+                settings.Categories = settingsPatch.Categories.ToArray();
             }
-    
+
             if (settingsPatch.CustomWords != null)
             {
-                settings.CustomWords = settingsPatch.CustomWords.ToArray(); 
+                settings.CustomWords = settingsPatch.CustomWords.ToArray();
             }
 
             _roomRepository.Save(room);
         }
 
-        public RoomModel AddPlayerToRoom(string roomId, UserModel user, bool isHost) 
+        public RoomModel AddPlayerToRoom(string roomId, UserModel user)
         {
-            var room = _roomRepository.FindById(roomId);
+            var room = _roomRepository.FindById(roomId)
+                       ?? throw new EntityNotFoundException($"Room {roomId} not found");
 
-            if (room == null)
+            user.IsHost = false;
+            user.IsReady = false;
+
+            var existingPlayer = room.Players.FirstOrDefault(p => p.Id == user.Id);
+
+            if (existingPlayer != null)
             {
-                if (!isHost)
-                {
-                    throw new EntityNotFoundException($"Room {roomId} not found");
-                }
-
-                user.IsHost = true;
-                user.IsReady = false;
-
-                room = new RoomModel
-                {
-                    Id = roomId,
-                    Settings = new RoomSettingsModel(),
-                    Players = new List<UserModel> { user }
-                };
+                existingPlayer.Name = user.Name;
             }
             else
             {
-                var existingPlayer = room.Players.FirstOrDefault(p => p.Id == user.Id);
-
-                if (existingPlayer != null)
-                {
-                    existingPlayer.IsHost = isHost;
-                    existingPlayer.Name = user.Name;
-                }
-                else
-                {
-                    user.IsHost = isHost;
-                    user.IsReady = false;
-                    _roomRepository.AddUserToRoom(roomId, user); 
-                }
+                _roomRepository.AddUserToRoom(roomId, user);
+                _logger.LogInformation("User {} joined room {}", user.Id, roomId);
             }
 
             return _roomRepository.Save(room);
@@ -167,16 +149,16 @@ namespace Draw.it.Server.Services.Room
             {
                 throw new InvalidGameStateException("Žaidimas negali būti pradėtas: ne visi žaidėjai pasiruošę (Ready) arba per mažai žaidėjų.");
             }
-            
-            room.Status = RoomStatus.InGame; 
+
+            room.Status = RoomStatus.InGame;
 
             return _roomRepository.Save(room);
         }
 
         public void JoinRoom(string roomId, long userId)
         {
-            var user = _userService.FindUserById(userId); 
-            
+            var user = _userService.FindUserById(userId);
+
             var room = _roomRepository.FindById(roomId)
                        ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
 
@@ -187,6 +169,29 @@ namespace Draw.it.Server.Services.Room
 
             _roomRepository.AddUserToRoom(roomId, user);
             _logger.LogInformation("User {} joined room {}", user.Id, roomId);
+        }
+
+        public RoomModel CreateRoomAsHost(string roomId, UserModel host)
+        {
+            if (_roomRepository.ExistsById(roomId))
+            {
+                throw new InvalidOperationException($"Room with id={roomId} already exists.");
+            }
+
+            host.IsHost = true;
+            host.IsReady = false;
+
+            var room = new RoomModel
+            {
+                Id = roomId,
+                Settings = new RoomSettingsModel(),
+                Players = new List<UserModel> { host },
+                Status = RoomStatus.Lobby
+            };
+
+            _logger.LogInformation("Host {} created room {}", host.Id, roomId);
+
+            return _roomRepository.Save(room);
         }
     }
 }

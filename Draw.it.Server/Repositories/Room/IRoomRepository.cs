@@ -10,7 +10,7 @@ public interface IRoomRepository
     bool ExistsById(string id);
 
     RoomModel? FindById(string id);
-    
-    void AddUserToRoom(string roomId, UserModel user); 
+
+    void AddUserToRoom(string roomId, UserModel user);
 
 }

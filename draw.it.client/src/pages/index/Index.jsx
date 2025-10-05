@@ -54,12 +54,15 @@ function Index() {
             const roomId = roomResponse.data.roomId;
 
             try {
-                const joinResponse = await joinRoom(roomId, userId, true);
-
-                if (joinResponse.status === 200) {
+                const createResponse = await api.post("api/v1/Room/create", {
+                    UserId: parseInt(userId, 10),
+                    RoomId: roomId 
+                });
+                
+                if (createResponse.status === 200) {
                     navigate(`/host/${roomId}`); 
                 } else {
-                    alert(`Klaida prisijungiant prie kambario: ${joinResponse.data?.error || 'Nežinoma klaida'}`);
+                    alert(`Klaida prisijungiant prie kambario: ${createResponse.data?.error || 'Nežinoma klaida'}`);
                 }
             } catch (error) {
                 console.error("Klaida kuriant/prisijungiant:", error.response?.data?.error || error);
@@ -86,8 +89,9 @@ function Index() {
         const userId = localStorage.getItem("userId");
 
         try {
-            const response = await api.post(`api/v1/Room/join/${roomCode}/${userId}`);
-
+            const response = await api.post(`api/v1/Room/${roomCode}/join`, {
+                UserId: parseInt(userId, 10),
+            });
             if (response.status === 200) {
                 navigate(`/room/${roomCode}`);
             } else {
