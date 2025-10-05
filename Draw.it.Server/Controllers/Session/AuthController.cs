@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Draw.it.Server.Models.Session;
+using Draw.it.Server.Controllers.Session.DTO;
 using Draw.it.Server.Services.Session;
 
 namespace Draw.it.Server.Controllers.Session;
@@ -22,20 +22,14 @@ public class AuthController : ControllerBase
     [HttpPost("join")]
     public async Task<IActionResult> Join([FromBody] JoinRequest request)
     {
-        var session = new SessionModel
-        {
-            UserName = request.Name,
-            RoomId = request.RoomId
-        };
-
-        _sessionService.Add(session);
+        var session = _sessionService.CreateSession(request.UserId, request.RoomId);
 
         // Create identity with sessionId as claim
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, session.UserName),
-            new Claim("SessionId", session.SessionId),
-            new Claim("RoomId", session.RoomId)
+            new Claim("SessionId", session.Id),
+            new Claim("UserId", session.UserId.ToString()),
+            new Claim("RoomId", session.RoomId ?? string.Empty)
         };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -44,7 +38,7 @@ public class AuthController : ControllerBase
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(claimsIdentity));
 
-        return Ok(new { message = "Joined successfully", sessionId = session.SessionId });
+        return Ok(new { message = "Joined successfully", sessionId = session.Id });
     }
 
     [Authorize]
@@ -55,16 +49,10 @@ public class AuthController : ControllerBase
 
         if (sessionId == null) return Unauthorized();
 
-        var session = _sessionService.Get(sessionId);
+        var session = _sessionService.GetSession(sessionId);
 
         return session is not null
             ? Ok(session)
             : Unauthorized();
-    }
-
-    public class JoinRequest
-    {
-        public string Name { get; set; } = string.Empty;
-        public string RoomId { get; set; } = string.Empty;
     }
 }

@@ -4,7 +4,7 @@ namespace Draw.it.Server.Services.Session;
 
 public interface ISessionService
 {
-    SessionModel? Get(string sessionId);
-    void Add(SessionModel session);
-    bool Remove(string sessionId);
+    SessionModel CreateSession(long userId, string? roomId = null);
+    void DeleteSession(string sessionId);
+    SessionModel GetSession(string sessionId);
 }
