@@ -116,7 +116,7 @@ namespace Draw.it.Server.Services.Room
             return _roomRepository.Save(room);
         }
 
-        public bool CanStartGame(string roomId)
+        private bool CanStartGame(string roomId)
         {
             var room = GetRoom(roomId);
 
@@ -136,13 +136,12 @@ namespace Draw.it.Server.Services.Room
         {
             var room = GetRoom(roomId);
 
-            room.Status = "IN_GAME";
-
             if (!CanStartGame(roomId))
             {
-                throw new InvalidOperationException(
-                    "Žaidimas negali būti pradėtas: ne visi žaidėjai pasiruošę (Ready) arba per mažai žaidėjų.");
+                throw new InvalidGameStateException("Žaidimas negali būti pradėtas: ne visi žaidėjai pasiruošę (Ready) arba per mažai žaidėjų.");
             }
+            
+            room.Status = "IN_GAME";
 
             return _roomRepository.Save(room);
         }

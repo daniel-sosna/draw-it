@@ -10,7 +10,6 @@ namespace Draw.it.Server.Services.Room
         RoomModel AddPlayerToRoom(string roomId, UserModel user, bool isHost);
         RoomModel SetPlayerReady(string roomId, long userId, bool isReady);
         void UpdateRoomSettings(string roomId, RoomSettingsModel settings);
-        bool CanStartGame(string roomId);
         RoomModel StartGame(string roomId);
         void JoinRoom(string roomId, UserModel user);
     }

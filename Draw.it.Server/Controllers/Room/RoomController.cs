@@ -56,12 +56,8 @@ public class RoomController : ControllerBase
     [HttpPut("{roomId}/start")]
     public IActionResult StartGame([FromRoute] string roomId, [FromQuery] long hostUserId)
     {
-        if (!_roomService.CanStartGame(roomId))
-        {
-            return BadRequest(new { error = "Game cannot be started. Not enough players or not ready." });
-        }
-
         var room = _roomService.StartGame(roomId);
+        
         return Ok(room);
     }
 
