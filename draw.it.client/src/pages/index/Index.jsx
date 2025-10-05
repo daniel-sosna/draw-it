@@ -48,30 +48,22 @@ function Index() {
         
         const userId = localStorage.getItem("userId");
         
-        const roomResponse = await api.post("api/v1/Room/generate-id");
-
-        if (roomResponse.status === 200) {
-            const roomId = roomResponse.data.roomId;
-
-            try {
-                const createResponse = await api.post("api/v1/Room/create", {
-                    UserId: parseInt(userId, 10),
-                    RoomId: roomId 
-                });
+        try {
+            const createResponse = await api.post("api/v1/Room/create", {
+                UserId: parseInt(userId, 10),
+               });
                 
-                if (createResponse.status === 200) {
-                    navigate(`/host/${roomId}`); 
-                } else {
-                    alert(`Klaida prisijungiant prie kambario: ${createResponse.data?.error || 'Nežinoma klaida'}`);
-                }
-            } catch (error) {
-                console.error("Klaida kuriant/prisijungiant:", error.response?.data?.error || error);
-                alert(`Klaida kuriant/prisijungiant prie kambario: ${error.response?.data?.error || 'Nežinoma klaida'}`);
+            if (createResponse.status === 200) {
+                const roomId = createResponse.data.id;
+                navigate(`/host/${roomId}`); 
+            } else {
+                alert(`Klaida prisijungiant prie kambario: ${createResponse.data?.error || 'Nežinoma klaida'}`);
             }
-
-        } else {
-            alert("Klaida generuojant kambario ID!");
+        } catch (error) {
+            console.error("Klaida kuriant/prisijungiant:", error.response?.data?.error || error);
+            alert(`Klaida kuriant/prisijungiant prie kambario: ${error.response?.data?.error || 'Nežinoma klaida'}`);
         }
+
     }
     const joinRoomAndNavigate = async (name, roomCode) => {
         if (!roomCode) {

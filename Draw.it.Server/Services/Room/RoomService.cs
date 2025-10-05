@@ -171,12 +171,10 @@ namespace Draw.it.Server.Services.Room
             _logger.LogInformation("User {} joined room {}", user.Id, roomId);
         }
 
-        public RoomModel CreateRoomAsHost(string roomId, UserModel host)
+        public RoomModel CreateRoomAsHost(UserModel host)
         {
-            if (_roomRepository.ExistsById(roomId))
-            {
-                throw new InvalidOperationException($"Room with id={roomId} already exists.");
-            }
+
+            string roomId = GenerateUniqueRoomId();
 
             host.IsHost = true;
             host.IsReady = false;

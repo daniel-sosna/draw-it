@@ -21,20 +21,11 @@ public class RoomController : ControllerBase
         _userService = userService;
     }
 
-    [HttpPost("generate-id")]
-    public IActionResult GenerateId()
-    {
-        string roomId = _roomService.GenerateUniqueRoomId();
-
-        var response = new GenerateRoomIdResponseDto(roomId);
-        return Ok(response);
-    }
-
     [HttpPost("create")]
     public IActionResult CreateRoom([FromBody] CreateRoomRequestDto request)
     {
         var user = _userService.FindUserById(request.UserId);
-        var room = _roomService.CreateRoomAsHost(request.RoomId, user);
+        var room = _roomService.CreateRoomAsHost(user);
 
         return Ok(room);
     }

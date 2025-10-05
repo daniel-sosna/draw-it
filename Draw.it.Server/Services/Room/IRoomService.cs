@@ -13,7 +13,7 @@ namespace Draw.it.Server.Services.Room
         void UpdateRoomSettings(string roomId, PatchRoomSettingsDto settingsPatch);
         RoomModel StartGame(string roomId);
         void JoinRoom(string roomId, long userId);
-        RoomModel CreateRoomAsHost(string roomId, UserModel host);
+        RoomModel CreateRoomAsHost(UserModel host);
 
     }
 }
