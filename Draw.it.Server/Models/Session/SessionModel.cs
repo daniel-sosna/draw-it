@@ -2,8 +2,8 @@ namespace Draw.it.Server.Models.Session;
 
 public class SessionModel
 {
-    public string SessionId { get; set; } = Guid.NewGuid().ToString();
-    public string UserName { get; set; } = string.Empty;
-    public string RoomId { get; set; } = string.Empty;
+    public string Id { get; set; } = Guid.NewGuid().ToString();  // Short-lived identifier
+    public long UserId { get; set; }    // Link to User
+    public string? RoomId { get; set; } // Link to Room
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
