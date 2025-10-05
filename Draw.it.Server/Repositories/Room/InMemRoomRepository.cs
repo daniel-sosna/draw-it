@@ -1,26 +1,39 @@
-﻿using Draw.it.Server.Models.Room;
+﻿using System.Collections.Concurrent;
+using Draw.it.Server.Exceptions;
+using Draw.it.Server.Models.Room;
 
 namespace Draw.it.Server.Repositories.Room;
 
 public class InMemRoomRepository : IRoomRepository
 {
-    private static readonly Dictionary<string, RoomModel> ActiveRooms = new Dictionary<string, RoomModel>();
-    private readonly object _lock = new object();
+    private readonly ConcurrentDictionary<string, RoomModel> _rooms = new();
 
-    public RoomModel Save(RoomModel room)
+    public void Save(RoomModel room)
     {
-        lock (_lock)
+        _rooms[room.Id] = room;
+    }
+
+    public void Delete(RoomModel room)
+    {
+        _rooms.TryRemove(room.Id, out _);
+    }
+
+    public RoomModel GetById(string id)
+    {
+        if (!_rooms.TryGetValue(id, out var room))
         {
-            ActiveRooms.Add(room.Id, room);
-            return room;
+            throw new EntityNotFoundException($"Room with id '{id}' not found.");
         }
+        return room;
+    }
+
+    public IEnumerable<RoomModel> GetAll()
+    {
+        return _rooms.Values;
     }
 
     public bool ExistsById(string id)
     {
-        lock (_lock)
-        {
-            return ActiveRooms.ContainsKey(id);
-        }
+        return _rooms.ContainsKey(id);
     }
 }

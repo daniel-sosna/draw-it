@@ -2,9 +2,6 @@
 
 namespace Draw.it.Server.Repositories.User;
 
-public interface IUserRepository
+public interface IUserRepository : IRepository<UserModel, long>
 {
-    UserModel Save(UserModel user);
-
-    UserModel? FindById(long id);
 }

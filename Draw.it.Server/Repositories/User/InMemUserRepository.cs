@@ -1,54 +1,34 @@
-﻿using Draw.it.Server.Exceptions;
+﻿using System.Collections.Concurrent;
+using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Repositories.User;
 
 public class InMemUserRepository : IUserRepository
 {
-    private long _idSequence;
-    private readonly List<UserModel> _users;
-    private readonly object _lock = new object();
+    private readonly ConcurrentDictionary<long, UserModel> _users = new();
 
-    public InMemUserRepository()
+    public void Save(UserModel user)
     {
-        _users = [];
+        _users[user.Id] = user;
     }
 
-    public UserModel Save(UserModel user)
+    public void Delete(UserModel user)
     {
-        lock (_lock)
-        {
-            // User id exists => update user
-            if (user.Id != 0)
-            {
-                Update(user);
-            }
-
-            // If no user id create user
-            var newId = ++_idSequence;
-            user.Id = newId;
-            _users.Add(user);
-            return user;
-        }
-
+        _users.TryRemove(user.Id, out _);
     }
 
-    public UserModel? FindById(long id)
+    public UserModel? GetById(long id)
     {
-        lock (_lock)
+        if (!_users.TryGetValue(id, out var user))
         {
-            return _users.FirstOrDefault(u => u.Id == id);
+            throw new EntityNotFoundException($"User with id {id} not found.");
         }
+        return user;
     }
 
-    private UserModel Update(UserModel user)
+    public IEnumerable<UserModel> GetAll()
     {
-        lock (_lock)
-        {
-            var idx = _users.FindIndex(u => u.Id == user.Id);
-            if (idx == -1) throw new EntityNotFoundException($"User {user.Id} not found");
-            _users[idx] = user;
-            return user;
-        }
+        return _users.Values;
     }
 }

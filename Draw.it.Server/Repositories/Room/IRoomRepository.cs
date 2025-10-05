@@ -2,9 +2,7 @@
 
 namespace Draw.it.Server.Repositories.Room;
 
-public interface IRoomRepository
+public interface IRoomRepository : IRepository<RoomModel, string>
 {
-    RoomModel Save(RoomModel room);
-
     bool ExistsById(string id);
 }
