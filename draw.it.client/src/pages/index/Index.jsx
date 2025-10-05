@@ -21,7 +21,7 @@ function Index() {
             name: name
         });
 
-        if (response.status === 200) {
+        if (response.status === 201) {
             console.log(response)
             localStorage.setItem("userId", response.data.id);
             localStorage.setItem("userName", response.data.name);
