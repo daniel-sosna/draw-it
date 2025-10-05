@@ -115,7 +115,7 @@ namespace Draw.it.Server.Services.Room
                 {
                     user.IsHost = isHost;
                     user.IsReady = false;
-                    room.Players.Add(user);
+                    _roomRepository.AddUserToRoom(roomId, user); 
                 }
             }
 
@@ -183,8 +183,7 @@ namespace Draw.it.Server.Services.Room
                 throw new DuplicateEntityException($"User with id={user.Id} already in room {roomId}");
             }
 
-            room.Players.Add(user);
-            _roomRepository.Save(room);
+            _roomRepository.AddUserToRoom(roomId, user);
             _logger.LogInformation("User {} joined room {}", user.Id, roomId);
         }
     }

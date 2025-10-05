@@ -1,4 +1,5 @@
 ﻿using Draw.it.Server.Models.Room;
+using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Repositories.Room;
 
@@ -30,6 +31,17 @@ public class InMemRoomRepository : IRoomRepository
         {
             ActiveRooms.TryGetValue(id, out var room);
             return room;
+        }
+    }
+    
+    public void AddUserToRoom(string roomId, UserModel user)
+    {
+        lock (_lock) 
+        {
+            if (ActiveRooms.TryGetValue(roomId, out var room))
+            {
+                room.Players.Add(user);
+            }
         }
     }
 }
