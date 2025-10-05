@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Repositories.User;
@@ -13,17 +12,14 @@ public class InMemUserRepository : IUserRepository
         _users[user.Id] = user;
     }
 
-    public void Delete(UserModel user)
+    public bool DeleteById(long id)
     {
-        _users.TryRemove(user.Id, out _);
+        return _users.TryRemove(id, out _);
     }
 
     public UserModel? GetById(long id)
     {
-        if (!_users.TryGetValue(id, out var user))
-        {
-            throw new EntityNotFoundException($"User with id {id} not found.");
-        }
+        _users.TryGetValue(id, out var user);
         return user;
     }
 
