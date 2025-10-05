@@ -1,7 +1,7 @@
 .host-screen-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 20px;
     background-color: #1a1a1a;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
@@ -38,17 +38,17 @@
 .main-content {
     width: 100%;
     display: flex;
-    gap: 2rem;
+    gap: 30px;
     flex-wrap: wrap;
     align-items: flex-start;
 }
 
 .players-container {
-    width: 200px;
-    min-width: 200px;
+    min-width: 350px;
     display: flex;
     flex-direction: column;
     text-align: left;
+    flex: 0 0 40%;
 }
 
 .players-table {
@@ -70,6 +70,7 @@
 
     .players-table td {
         background-color: #242424;
+        word-break: break-word;
     }
 
 
@@ -77,6 +78,24 @@
             background-color: #384d38;
         }
 
+.players-table th:nth-child(1),
+.players-table td:nth-child(1) {
+    width: 10%;
+    text-align: center;
+}
+
+.players-table th:nth-child(2),
+.players-table td:nth-child(2) {
+    width: 60%; 
+    white-space: normal; 
+}
+
+.players-table th:nth-child(3),
+.players-table td:nth-child(3) {
+    width: 30%;
+    text-align: center;
+}        
+        
 .settings-container {
     flex: 1;
     min-width: 300px;

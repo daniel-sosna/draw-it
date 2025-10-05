@@ -3,9 +3,9 @@ using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Services;
 
-public static class DependencyInjection
+public static class ServiceDependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddSingleton<IUserService, UserService>();
         services.AddSingleton<IRoomService, RoomService>();

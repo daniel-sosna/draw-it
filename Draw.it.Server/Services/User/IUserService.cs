@@ -1,8 +1,10 @@
-﻿namespace Draw.it.Server.Services.User;
+﻿using Draw.it.Server.Models.User;
+
+namespace Draw.it.Server.Services.User;
 
 public interface IUserService
 {
-    long GenerateUserId();
+    UserModel CreateUser(string name);
 
-    List<long> GetActiveUserIds();
+    UserModel FindUserById(long id);
 }
