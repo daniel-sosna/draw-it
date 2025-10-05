@@ -168,7 +168,7 @@ namespace Draw.it.Server.Services.Room
                 throw new InvalidGameStateException("Žaidimas negali būti pradėtas: ne visi žaidėjai pasiruošę (Ready) arba per mažai žaidėjų.");
             }
             
-            room.Status = "IN_GAME";
+            room.Status = RoomStatus.InGame; 
 
             return _roomRepository.Save(room);
         }

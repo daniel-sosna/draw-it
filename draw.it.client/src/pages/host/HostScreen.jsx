@@ -10,7 +10,7 @@ const UI_CATEGORIES = ['Animals', 'Vehicle type', 'Games', 'Custom'];
 const initialRoomState = {
     settings: { drawingTime: 60, numberOfRounds: 2, categories: [], roomName: "" },
     players: [],
-    status: 'LOBBY'
+    status: 'Lobby'
 };
 
 function HostScreen() {
@@ -152,7 +152,7 @@ function HostScreen() {
     const allNonHostsReady = nonHostPlayers.length > 0 && nonHostPlayers.every(p => p.isReady);
     const canStartGame = joinedPlayers.length > 1 && allNonHostsReady;
 
-    if (room.status === 'IN_GAME') {
+    if (room.status === 1 ) {
         navigate(`/gameplay/${roomId}`);
         return null;
     }

@@ -15,6 +15,7 @@ const initialRoomState = {
         categories: [],
         roomName: ""
     },
+    status: 'Lobby'
 };
 
 export default function RoomPage() {
@@ -52,7 +53,7 @@ export default function RoomPage() {
                     return;
                 }
 
-                if (roomData.status === 'IN_GAME') {
+                if (roomData.status === 1 ) {
                     navigate(`/gameplay/${roomId}`);
                     return;
                 }
