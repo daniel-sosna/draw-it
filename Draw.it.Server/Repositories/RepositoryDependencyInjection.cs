@@ -1,5 +1,6 @@
 ﻿using Draw.it.Server.Enums;
 using Draw.it.Server.Repositories.Room;
+using Draw.it.Server.Repositories.Session;
 using Draw.it.Server.Repositories.User;
 
 namespace Draw.it.Server.Repositories;
@@ -15,6 +16,7 @@ public static class RepositoryDependencyInjection
         {
             services.AddSingleton<IUserRepository, InMemUserRepository>();
             services.AddSingleton<IRoomRepository, InMemRoomRepository>();
+            services.AddSingleton<ISessionRepository, InMemSessionRepository>();
         }
         else
         {

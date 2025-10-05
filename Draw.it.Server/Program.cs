@@ -9,8 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/auth/unauthorized"; // optional, can point to an endpoint
-        options.AccessDeniedPath = "/auth/forbidden";
+        options.LoginPath = "/api/v1/auth/unauthorized"; // optional, can point to an endpoint
+        options.AccessDeniedPath = "/api/v1/auth/forbidden";
+        options.Cookie.Name = "session-id";
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
         options.Cookie.SameSite = SameSiteMode.Lax;

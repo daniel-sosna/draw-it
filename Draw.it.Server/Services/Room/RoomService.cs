@@ -56,6 +56,11 @@ namespace Draw.it.Server.Services.Room
             _logger.LogInformation("Room with id={roomId} created", roomId);
         }
 
+        public bool JoinRoom(string roomId, UserModel user)
+        {
+            return true; // Placeholder implementation
+        }
+
         public void DeleteRoom(string roomId)
         {
             if (!_roomRepository.DeleteById(roomId))
