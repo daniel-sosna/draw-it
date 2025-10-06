@@ -17,7 +17,7 @@ public class InMemSessionRepository : ISessionRepository
         return _sessions.TryRemove(id, out _);
     }
 
-    public SessionModel? GetById(string id)
+    public SessionModel? FindById(string id)
     {
         _sessions.TryGetValue(id, out var session);
         return session;

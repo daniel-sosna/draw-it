@@ -33,7 +33,7 @@ public class SessionService : ISessionService
 
     public SessionModel GetSession(string sessionId)
     {
-        return _sessionRepository.GetById(sessionId) ?? throw new EntityNotFoundException($"Session with id={sessionId} not found");
+        return _sessionRepository.FindById(sessionId) ?? throw new EntityNotFoundException($"Session with id={sessionId} not found");
     }
 
     public void SetRoom(string sessionId, string roomId)

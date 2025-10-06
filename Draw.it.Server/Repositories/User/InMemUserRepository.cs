@@ -22,7 +22,7 @@ public class InMemUserRepository : IUserRepository
         return _users.TryRemove(id, out _);
     }
 
-    public UserModel? GetById(long id)
+    public UserModel? FindById(long id)
     {
         _users.TryGetValue(id, out var user);
         return user;

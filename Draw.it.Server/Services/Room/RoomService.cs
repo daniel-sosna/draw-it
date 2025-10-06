@@ -61,12 +61,12 @@ namespace Draw.it.Server.Services.Room
 
         public RoomModel GetRoom(string roomId)
         {
-            return _roomRepository.GetById(roomId) ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
+            return _roomRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
         }
 
         public void JoinRoom(string roomId, long userId)
         {
-            var room = _roomRepository.GetById(roomId);
+            var room = _roomRepository.FindById(roomId);
             if (room == null)
             {
                 throw new EntityNotFoundException($"Room with id={roomId} not found");
@@ -81,7 +81,7 @@ namespace Draw.it.Server.Services.Room
 
         public void LeaveRoom(string roomId, long userId)
         {
-            var room = _roomRepository.GetById(roomId);
+            var room = _roomRepository.FindById(roomId);
             if (room == null)
             {
                 throw new EntityNotFoundException($"Room with id={roomId} not found");

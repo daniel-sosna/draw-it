@@ -42,6 +42,6 @@ public class UserService : IUserService
 
     public UserModel GetUser(long userId)
     {
-        return _userRepository.GetById(userId) ?? throw new EntityNotFoundException($"User with id={userId} not found");
+        return _userRepository.FindById(userId) ?? throw new EntityNotFoundException($"User with id={userId} not found");
     }
 }
