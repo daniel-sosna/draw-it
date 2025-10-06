@@ -44,9 +44,8 @@ public class RoomController : ControllerBase
     public IActionResult CreateRoom()
     {
         var (user, session) = ResolveUserSession();
-        var room = _roomService.CreateRoom(user.Id);
 
-        _sessionService.SetRoom(session.Id, room.Id);
+        var room = _roomService.CreateRoom(session);
 
         return Created($"api/v1/host/{room.Id}", new RoomCreateResponseDto(room.Id));
     }
@@ -58,11 +57,8 @@ public class RoomController : ControllerBase
     public IActionResult JoinRoom(string roomId)
     {
         var (user, session) = ResolveUserSession();
-        if (session.RoomId != null)
-            return BadRequest("User is already in a room.");
 
-        _roomService.JoinRoom(roomId, user.Id);
-        _sessionService.SetRoom(session.Id, roomId);
+        _roomService.JoinRoom(roomId, session);
 
         return NoContent();
     }
@@ -74,13 +70,8 @@ public class RoomController : ControllerBase
     public IActionResult LeaveRoom(string roomId)
     {
         var (user, session) = ResolveUserSession();
-        if (session.RoomId == null)
-            return BadRequest("User is not in a room.");
-        if (session.RoomId != roomId)
-            return BadRequest("User is not in this room.");
 
-        _roomService.LeaveRoom(roomId, user.Id);
-        _sessionService.SetRoom(session.Id, null);
+        _roomService.LeaveRoom(roomId, session);
 
         return NoContent();
     }
@@ -105,13 +96,12 @@ public class RoomController : ControllerBase
     public IActionResult DeleteRoom(string roomId)
     {
         var (user, session) = ResolveUserSession();
+
         var room = _roomService.GetRoom(roomId);
         if (room.HostId != user.Id)
             return Forbid();
 
         _roomService.DeleteRoom(roomId);
-        if (session.RoomId == roomId)
-            _sessionService.SetRoom(session.Id, null);
 
         return NoContent();
     }
