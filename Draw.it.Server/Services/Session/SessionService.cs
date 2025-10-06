@@ -35,11 +35,4 @@ public class SessionService : ISessionService
     {
         return _sessionRepository.FindById(sessionId) ?? throw new EntityNotFoundException($"Session with id={sessionId} not found");
     }
-
-    public void SetRoom(string sessionId, string? roomId)
-    {
-        var session = GetSession(sessionId);
-        session.RoomId = roomId;
-        _sessionRepository.Save(session);
-    }
 }

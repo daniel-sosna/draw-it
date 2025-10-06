@@ -27,9 +27,9 @@ public class RoomController : BaseController
     [ProducesResponseType(typeof(RoomCreateResponseDto), StatusCodes.Status201Created)]
     public IActionResult CreateRoom()
     {
-        var session = ResolveSession();
+        var user = ResolveUser();
 
-        var room = _roomService.CreateRoom(session);
+        var room = _roomService.CreateRoom(user);
 
         return Created($"api/v1/host/{room.Id}", new RoomCreateResponseDto(room.Id));
     }
@@ -40,9 +40,9 @@ public class RoomController : BaseController
     [HttpPost("{roomId}/join")]
     public IActionResult JoinRoom(string roomId)
     {
-        var session = ResolveSession();
+        var user = ResolveUser();
 
-        _roomService.JoinRoom(roomId, session);
+        _roomService.JoinRoom(roomId, user);
 
         return NoContent();
     }
@@ -53,9 +53,9 @@ public class RoomController : BaseController
     [HttpPost("{roomId}/leave")]
     public IActionResult LeaveRoom(string roomId)
     {
-        var session = ResolveSession();
+        var user = ResolveUser();
 
-        _roomService.LeaveRoom(roomId, session);
+        _roomService.LeaveRoom(roomId, user);
 
         return NoContent();
     }
@@ -79,9 +79,9 @@ public class RoomController : BaseController
     [HttpDelete("{roomId}")]
     public IActionResult DeleteRoom(string roomId)
     {
-        var session = ResolveSession();
+        var user = ResolveUser();
 
-        _roomService.DeleteRoom(roomId, session);
+        _roomService.DeleteRoom(roomId, user);
 
         return NoContent();
     }

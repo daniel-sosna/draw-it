@@ -7,4 +7,5 @@ public interface IUserService
     UserModel CreateUser(string name);
     void DeleteUser(long userId);
     UserModel GetUser(long userId);
+    void SetRoom(long userId, string? roomId);
 }

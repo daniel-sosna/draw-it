@@ -27,9 +27,6 @@ public class AuthController : BaseController
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> Join([FromBody] SessionJoinRequestDto request)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-            return BadRequest("User name cannot be empty.");
-
         // For simplicity, we create a new user every time. It's ok, since we don't store user data permanently.
         var user = _userService.CreateUser(request.Name);
         var session = _sessionService.CreateSession(user.Id);
@@ -63,9 +60,9 @@ public class AuthController : BaseController
     [Authorize]
     public IActionResult Me()
     {
-        var (user, session) = ResolveUserAndSession();
+        var user = ResolveUser();
 
-        return Ok(new SessionMeResponseDto(user, session.RoomId));
+        return Ok(new SessionMeResponseDto(user));
     }
 
     /// <summary>

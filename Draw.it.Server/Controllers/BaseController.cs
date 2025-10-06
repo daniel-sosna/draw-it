@@ -36,4 +36,11 @@ public abstract class BaseController : ControllerBase
 
         return (user, session);
     }
+
+    // Helper to get current user from claims
+    protected UserModel ResolveUser()
+    {
+        var (user, _) = ResolveUserAndSession();
+        return user;
+    }
 }

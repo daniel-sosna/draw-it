@@ -1,14 +1,14 @@
 ﻿using Draw.it.Server.Models.Room;
-using Draw.it.Server.Models.Session;
+using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Services.Room
 {
     public interface IRoomService
     {
-        RoomModel CreateRoom(SessionModel session);
-        void DeleteRoom(string roomId, SessionModel session);
+        RoomModel CreateRoom(UserModel user);
+        void DeleteRoom(string roomId, UserModel user);
         RoomModel GetRoom(string roomId);
-        void JoinRoom(string roomId, SessionModel session);
-        void LeaveRoom(string roomId, SessionModel session);
+        void JoinRoom(string roomId, UserModel user);
+        void LeaveRoom(string roomId, UserModel user);
     }
 }
