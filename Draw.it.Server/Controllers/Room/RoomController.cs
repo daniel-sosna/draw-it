@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Exceptions;
-using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
@@ -47,27 +46,29 @@ public class RoomController : ControllerBase
         return Created($"/api/v1/room/{room.Id}", new { room.Id, host = user });
     }
 
-    [HttpPost("join")]
-    public IActionResult JoinRoom([FromBody] JoinRoomRequest request)
+    [HttpPost("{roomId}/join")]
+    public IActionResult JoinRoom(string roomId)
     {
         var (user, session) = ResolveUserSession();
         if (session.RoomId != null)
             return BadRequest("User is already in a room.");
 
-        _roomService.JoinRoom(request.RoomId, user.Id);
-        session.RoomId = request.RoomId;
+        _roomService.JoinRoom(roomId, user.Id);
+        session.RoomId = roomId;
 
         return NoContent();
     }
 
-    [HttpPost("leave")]
-    public IActionResult LeaveRoom()
+    [HttpPost("{roomId}/leave")]
+    public IActionResult LeaveRoom(string roomId)
     {
         var (user, session) = ResolveUserSession();
         if (session.RoomId == null)
             return BadRequest("User is not in a room.");
+        if (session.RoomId != roomId)
+            return BadRequest("User is not in this room.");
 
-        _roomService.LeaveRoom(session.RoomId, user.Id);
+        _roomService.LeaveRoom(roomId, user.Id);
         session.RoomId = null;
 
         return NoContent();
