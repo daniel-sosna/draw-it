@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Draw.it.Server.Exceptions;
 using Draw.it.Server.Controllers.Session.DTO;
 using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
@@ -12,15 +11,12 @@ namespace Draw.it.Server.Controllers.Session;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : BaseController
 {
-    private readonly IUserService _userService;
-    private readonly ISessionService _sessionService;
 
     public AuthController(IUserService userService, ISessionService sessionService)
+        : base(sessionService, userService)
     {
-        _userService = userService;
-        _sessionService = sessionService;
     }
 
     /// <summary>
@@ -67,10 +63,8 @@ public class AuthController : ControllerBase
     [Authorize]
     public IActionResult Me()
     {
-        var sessionId = (User.FindFirst("sessionId")?.Value) ?? throw new UnauthorizedUserException("Session ID claim missing.");
+        var (user, session) = ResolveUserAndSession();
 
-        var session = _sessionService.GetSession(sessionId);
-        var user = _userService.GetUser(session.UserId);
         return Ok(new SessionMeResponseDto(user, session.RoomId));
     }
 

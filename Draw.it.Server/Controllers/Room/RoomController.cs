@@ -1,39 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Draw.it.Server.Exceptions;
 using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
-using Draw.it.Server.Models.Session;
-using Draw.it.Server.Models.User;
 
 namespace Draw.it.Server.Controllers.Room;
 
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize]
-public class RoomController : ControllerBase
+public class RoomController : BaseController
 {
     private readonly IRoomService _roomService;
-    private readonly ISessionService _sessionService;
-    private readonly IUserService _userService;
 
     public RoomController(IRoomService roomService, ISessionService sessionService, IUserService userService)
+        : base(sessionService, userService)
     {
         _roomService = roomService;
-        _sessionService = sessionService;
-        _userService = userService;
-    }
-
-    // Helper to get current user and session from claims
-    private (UserModel user, SessionModel session) ResolveUserSession()
-    {
-        var sessionId = (User.FindFirst("sessionId")?.Value) ?? throw new UnauthorizedUserException("Session ID claim missing.");
-
-        var session = _sessionService.GetSession(sessionId);
-        var user = _userService.GetUser(session.UserId);
-        return (user, session);
     }
 
     /// <summary>
@@ -43,7 +27,7 @@ public class RoomController : ControllerBase
     [ProducesResponseType(typeof(RoomCreateResponseDto), StatusCodes.Status201Created)]
     public IActionResult CreateRoom()
     {
-        var (user, session) = ResolveUserSession();
+        var session = ResolveSession();
 
         var room = _roomService.CreateRoom(session);
 
@@ -56,7 +40,7 @@ public class RoomController : ControllerBase
     [HttpPost("{roomId}/join")]
     public IActionResult JoinRoom(string roomId)
     {
-        var (user, session) = ResolveUserSession();
+        var session = ResolveSession();
 
         _roomService.JoinRoom(roomId, session);
 
@@ -69,7 +53,7 @@ public class RoomController : ControllerBase
     [HttpPost("{roomId}/leave")]
     public IActionResult LeaveRoom(string roomId)
     {
-        var (user, session) = ResolveUserSession();
+        var session = ResolveSession();
 
         _roomService.LeaveRoom(roomId, session);
 
@@ -95,7 +79,7 @@ public class RoomController : ControllerBase
     [HttpDelete("{roomId}")]
     public IActionResult DeleteRoom(string roomId)
     {
-        var (user, session) = ResolveUserSession();
+        var (user, _) = ResolveUserAndSession();
 
         var room = _roomService.GetRoom(roomId);
         if (room.HostId != user.Id)
