@@ -1,6 +1,5 @@
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.Room;
-using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.Room;
 
 namespace Draw.it.Server.Services.Room
@@ -26,7 +25,7 @@ namespace Draw.it.Server.Services.Room
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public string GenerateUniqueRoomId()
+        private string GenerateUniqueRoomId()
         {
             string roomId;
 
@@ -38,27 +37,18 @@ namespace Draw.it.Server.Services.Room
             return roomId;
         }
 
-        public void CreateRoom(string roomId, RoomSettingsModel settings)
+        public RoomModel CreateRoom(long hostId)
         {
-            var newRoom = new RoomModel
+            var roomId = GenerateUniqueRoomId();
+            var room = new RoomModel
             {
                 Id = roomId,
-                Settings = settings,
-                Players = new List<UserModel>()
+                HostId = hostId,
+                PlayerIds = new List<long> { hostId }
             };
-
-            if (_roomRepository.ExistsById(roomId))
-            {
-                throw new DuplicateEntityException("Room with such ID already exists");
-            }
-
-            _roomRepository.Save(newRoom);
+            _roomRepository.Save(room);
             _logger.LogInformation("Room with id={roomId} created", roomId);
-        }
-
-        public bool JoinRoom(string roomId, UserModel user)
-        {
-            return true; // Placeholder implementation
+            return room;
         }
 
         public void DeleteRoom(string roomId)
@@ -72,6 +62,40 @@ namespace Draw.it.Server.Services.Room
         public RoomModel GetRoom(string roomId)
         {
             return _roomRepository.GetById(roomId) ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
+        }
+
+        public void JoinRoom(string roomId, long userId)
+        {
+            var room = _roomRepository.GetById(roomId);
+            if (room == null)
+            {
+                throw new EntityNotFoundException($"Room with id={roomId} not found");
+            }
+            if (room.PlayerIds.Contains(userId))
+            {
+                throw new InvalidOperationException($"User with id={userId} is already in the room with id={roomId}");
+            }
+            room.PlayerIds.Add(userId);
+            _roomRepository.Save(room);
+        }
+
+        public void LeaveRoom(string roomId, long userId)
+        {
+            var room = _roomRepository.GetById(roomId);
+            if (room == null)
+            {
+                throw new EntityNotFoundException($"Room with id={roomId} not found");
+            }
+            if (!room.PlayerIds.Contains(userId))
+            {
+                throw new InvalidOperationException($"User with id={userId} is not in the room with id={roomId}");
+            }
+            if (room.HostId == userId)
+            {
+                throw new InvalidOperationException("Host cannot leave the room. Consider deleting the room instead.");
+            }
+            room.PlayerIds.Remove(userId);
+            _roomRepository.Save(room);
         }
     }
 }

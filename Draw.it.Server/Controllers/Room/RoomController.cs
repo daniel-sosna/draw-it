@@ -5,7 +5,6 @@ using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
-using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.Session;
 using Draw.it.Server.Models.User;
 
@@ -41,37 +40,34 @@ public class RoomController : ControllerBase
     public IActionResult CreateRoom()
     {
         var (user, session) = ResolveUserSession();
+        var room = _roomService.CreateRoom(user.Id);
 
-        var roomId = _roomService.GenerateUniqueRoomId();
-        _roomService.CreateRoom(roomId, new RoomSettingsModel());
-        var room = _roomService.GetRoom(roomId);
-        room.Players.Add(user);
+        _sessionService.SetRoom(session.Id, room.Id);
 
-        session.RoomId = roomId;
-        return Created($"/api/v1/room/{roomId}", new { roomId, host = user });
+        return Created($"/api/v1/room/{room.Id}", new { room.Id, host = user });
     }
 
     [HttpPost("join")]
     public IActionResult JoinRoom([FromBody] JoinRoomRequest request)
     {
         var (user, session) = ResolveUserSession();
-        var success = _roomService.JoinRoom(request.RoomId, user);
-        if (!success) return BadRequest("Room not found or cannot join.");
+        if (session.RoomId != null)
+            return BadRequest("User is already in a room.");
 
+        _roomService.JoinRoom(request.RoomId, user.Id);
         session.RoomId = request.RoomId;
 
-        var room = _roomService.GetRoom(request.RoomId);
-        return Ok(room);
+        return NoContent();
     }
 
     [HttpPost("leave")]
     public IActionResult LeaveRoom()
     {
         var (user, session) = ResolveUserSession();
-        if (session.RoomId == null) return BadRequest("User is not in a room.");
+        if (session.RoomId == null)
+            return BadRequest("User is not in a room.");
 
-        var room = _roomService.GetRoom(session.RoomId);
-        room.Players.RemoveAll(p => p.Id == user.Id);
+        _roomService.LeaveRoom(session.RoomId, user.Id);
         session.RoomId = null;
 
         return NoContent();
@@ -82,7 +78,6 @@ public class RoomController : ControllerBase
     public IActionResult GetRoom(string roomId)
     {
         var room = _roomService.GetRoom(roomId);
-        if (room == null) return NotFound();
 
         return Ok(room);
     }
@@ -92,13 +87,13 @@ public class RoomController : ControllerBase
     {
         var (user, session) = ResolveUserSession();
         var room = _roomService.GetRoom(roomId);
-        if (room == null) return NotFound();
-
-        // Host verification could be implemented with room.HostId or similar
-        if (room.Players.FirstOrDefault()?.Id != user.Id)
+        if (room.HostId != user.Id)
             return Forbid();
 
         _roomService.DeleteRoom(roomId);
+        if (session.RoomId == roomId)
+            session.RoomId = null;
+
         return NoContent();
     }
 }
