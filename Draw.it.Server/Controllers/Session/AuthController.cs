@@ -23,8 +23,13 @@ public class AuthController : ControllerBase
         _sessionService = sessionService;
     }
 
+    /// <summary>
+    /// Creates a new session for a user and sets cookie
+    /// * For now just creates a new user every time
+    /// </summary>
     [HttpPost("join")]
-    public async Task<IActionResult> Join([FromBody] JoinRequest request)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    public async Task<IActionResult> Join([FromBody] SessionJoinRequestDto request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("User name cannot be empty.");
@@ -51,15 +56,14 @@ public class AuthController : ControllerBase
                 ExpiresUtc = DateTimeOffset.UtcNow.AddHours(6)
             });
 
-        return Ok(new
-        {
-            user,
-            sessionId = session.Id,
-            roomId = session.RoomId
-        });
+        return Created();
     }
 
+    /// <summary>
+    /// Returns current user & session info
+    /// </summary>
     [HttpGet("me")]
+    [ProducesResponseType(typeof(SessionMeResponseDto), StatusCodes.Status200OK)]
     [Authorize]
     public IActionResult Me()
     {
@@ -67,14 +71,12 @@ public class AuthController : ControllerBase
 
         var session = _sessionService.GetSession(sessionId);
         var user = _userService.GetUser(session.UserId);
-        return Ok(new
-        {
-            user,
-            session.Id,
-            session.RoomId
-        });
+        return Ok(new SessionMeResponseDto(user, session.RoomId));
     }
 
+    /// <summary>
+    /// Logs out and clears cookie
+    /// </summary>
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()

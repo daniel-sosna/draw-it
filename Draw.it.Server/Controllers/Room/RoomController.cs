@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Exceptions;
+using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
@@ -35,7 +36,11 @@ public class RoomController : ControllerBase
         return (user, session);
     }
 
+    /// <summary>
+    /// Create a new room and assign user as host
+    /// </summary>
     [HttpPost("create")]
+    [ProducesResponseType(typeof(RoomCreateResponseDto), StatusCodes.Status201Created)]
     public IActionResult CreateRoom()
     {
         var (user, session) = ResolveUserSession();
@@ -43,9 +48,12 @@ public class RoomController : ControllerBase
 
         _sessionService.SetRoom(session.Id, room.Id);
 
-        return Created($"/api/v1/room/{room.Id}", new { room.Id, host = user });
+        return Created($"api/v1/host/{room.Id}", new RoomCreateResponseDto(room.Id));
     }
 
+    /// <summary>
+    /// Join existing room as a player
+    /// </summary>
     [HttpPost("{roomId}/join")]
     public IActionResult JoinRoom(string roomId)
     {
@@ -59,6 +67,9 @@ public class RoomController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Leave room as a player
+    /// </summary>
     [HttpPost("{roomId}/leave")]
     public IActionResult LeaveRoom(string roomId)
     {
@@ -74,6 +85,10 @@ public class RoomController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Get room info
+    /// * It is temporary endpoint. In the future access to the room info must be restricted!
+    /// </summary>
     [HttpGet("{roomId}")]
     [AllowAnonymous]
     public IActionResult GetRoom(string roomId)
@@ -83,6 +98,9 @@ public class RoomController : ControllerBase
         return Ok(room);
     }
 
+    /// <summary>
+    /// Delete room (host only)
+    /// </summary>
     [HttpDelete("{roomId}")]
     public IActionResult DeleteRoom(string roomId)
     {
