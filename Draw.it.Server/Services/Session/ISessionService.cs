@@ -7,5 +7,5 @@ public interface ISessionService
     SessionModel CreateSession(long userId);
     void DeleteSession(string sessionId);
     SessionModel GetSession(string sessionId);
-    void SetRoom(string sessionId, string roomId);
+    void SetRoom(string sessionId, string? roomId);
 }

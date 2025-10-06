@@ -62,7 +62,7 @@ public class RoomController : ControllerBase
             return BadRequest("User is already in a room.");
 
         _roomService.JoinRoom(roomId, user.Id);
-        session.RoomId = roomId;
+        _sessionService.SetRoom(session.Id, roomId);
 
         return NoContent();
     }
@@ -80,7 +80,7 @@ public class RoomController : ControllerBase
             return BadRequest("User is not in this room.");
 
         _roomService.LeaveRoom(roomId, user.Id);
-        session.RoomId = null;
+        _sessionService.SetRoom(session.Id, null);
 
         return NoContent();
     }
@@ -111,7 +111,7 @@ public class RoomController : ControllerBase
 
         _roomService.DeleteRoom(roomId);
         if (session.RoomId == roomId)
-            session.RoomId = null;
+            _sessionService.SetRoom(session.Id, null);
 
         return NoContent();
     }
