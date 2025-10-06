@@ -10,11 +10,17 @@ public class InMemUserRepository : IUserRepository
 
     public void Save(UserModel user)
     {
+        // Only allow saving users that were created via GetNextId (i.e. their Id must be
+        // strictly less than the current next id). This keeps ids sequential and prevents
+        // callers from inserting out-of-order ids. The check is done with a volatile read
+        // to ensure visibility between threads.
+        var currentNext = Volatile.Read(ref _nextId);
+        if (user.Id >= currentNext)
+            throw new InvalidOperationException(
+                "User indexes must be sequential: user.Id must be less than the repository's next id. "
+                + "Use GetNextId to get a new id before creating a user.");
+
         _users[user.Id] = user;
-        if (user.Id >= _nextId)
-        {
-            _nextId = user.Id + 1;
-        }
     }
 
     public bool DeleteById(long id)
@@ -35,6 +41,6 @@ public class InMemUserRepository : IUserRepository
 
     public long GetNextId()
     {
-        return _nextId++;
+        return Interlocked.Increment(ref _nextId) - 1;  // i.e. return current value, then increment.
     }
 }
