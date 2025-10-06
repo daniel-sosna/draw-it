@@ -1,3 +1,4 @@
+using System.Net;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.Session;
@@ -43,6 +44,10 @@ public class RoomService : IRoomService
 
     public RoomModel CreateRoom(SessionModel session)
     {
+        if (session.RoomId != null)
+        {
+            throw new AppException("You are already in a room. Leave the current room before creating a new one.", HttpStatusCode.Conflict);
+        }
         var roomId = GenerateUniqueRoomId();
         var room = new RoomModel
         {
@@ -56,14 +61,17 @@ public class RoomService : IRoomService
         return room;
     }
 
-    public void DeleteRoom(string roomId)
+    // Placeholder!
+    public void DeleteRoom(string roomId, SessionModel session)
     {
-        if (!_roomRepository.DeleteById(roomId))
+        var room = GetRoom(roomId);
+        if (room.HostId != session.UserId)
         {
-            throw new EntityNotFoundException($"Room with id={roomId} not found");
+            throw new AppException("Only the host can delete the room.", HttpStatusCode.Forbidden);
         }
-        // Placeholder!
-        // TODO: Remove roomId from all sessions that had this roomId set
+        // TODO: Check if game is in progress
+
+        // TODO: Remove roomId from all users that had this roomId set
     }
 
     public RoomModel GetRoom(string roomId)
@@ -73,15 +81,13 @@ public class RoomService : IRoomService
 
     public void JoinRoom(string roomId, SessionModel session)
     {
-        var room = _roomRepository.FindById(roomId);
-        if (room == null)
+        if (session.RoomId != null)
         {
-            throw new EntityNotFoundException($"Room with id={roomId} not found");
+            throw new AppException($"You are already in the room with id={session.RoomId}. Leave the current room before joining another one.", HttpStatusCode.Conflict);
         }
-        if (room.PlayerIds.Contains(session.UserId))
-        {
-            throw new InvalidOperationException($"User with id={session.UserId} is already in the room with id={roomId}");
-        }
+        var room = GetRoom(roomId);
+        // TODO: Check if game is in progress
+        // TODO: Check on number of players
         room.PlayerIds.Add(session.UserId);
         _roomRepository.Save(room);
         _sessionService.SetRoom(session.Id, roomId);
@@ -89,19 +95,16 @@ public class RoomService : IRoomService
 
     public void LeaveRoom(string roomId, SessionModel session)
     {
-        var room = _roomRepository.FindById(roomId);
-        if (room == null)
+        if (session.RoomId != roomId)
         {
-            throw new EntityNotFoundException($"Room with id={roomId} not found");
+            throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
         }
-        if (!room.PlayerIds.Contains(session.UserId))
-        {
-            throw new InvalidOperationException($"User with id={session.UserId} is not in the room with id={roomId}");
-        }
+        var room = GetRoom(roomId);
         if (room.HostId == session.UserId)
         {
-            throw new InvalidOperationException("Host cannot leave the room. Consider deleting the room instead.");
+            throw new AppException("Host cannot leave the room. Consider deleting the room instead.", HttpStatusCode.Forbidden);
         }
+        // TODO: Check if game is in progress
         room.PlayerIds.Remove(session.UserId);
         _roomRepository.Save(room);
         _sessionService.SetRoom(session.Id, null);

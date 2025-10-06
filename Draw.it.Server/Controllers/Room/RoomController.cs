@@ -79,13 +79,9 @@ public class RoomController : BaseController
     [HttpDelete("{roomId}")]
     public IActionResult DeleteRoom(string roomId)
     {
-        var (user, _) = ResolveUserAndSession();
+        var session = ResolveSession();
 
-        var room = _roomService.GetRoom(roomId);
-        if (room.HostId != user.Id)
-            return Forbid();
-
-        _roomService.DeleteRoom(roomId);
+        _roomService.DeleteRoom(roomId, session);
 
         return NoContent();
     }

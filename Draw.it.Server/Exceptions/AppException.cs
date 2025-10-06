@@ -6,7 +6,7 @@ public class AppException : Exception
 {
     public HttpStatusCode Status { get; }
 
-    protected AppException(string message, HttpStatusCode status) : base(message)
+    public AppException(string message, HttpStatusCode status) : base(message)
     {
         Status = status;
     }
