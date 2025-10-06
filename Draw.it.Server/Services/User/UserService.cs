@@ -17,10 +17,15 @@ public class UserService : IUserService
 
     public UserModel CreateUser(string name)
     {
-        var userRec = new UserModel { Name = name };
-        _logger.LogInformation("User with name={} created", name);
-        _userRepository.Save(userRec);
-        return userRec;
+        name = name.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new ArgumentException("Name cannot be empty");
+        }
+        var user = new UserModel { Name = name };
+        _userRepository.Save(user);
+        _logger.LogInformation("User with name={name} created", name);
+        return user;
     }
 
     public void DeleteUser(long userId)
