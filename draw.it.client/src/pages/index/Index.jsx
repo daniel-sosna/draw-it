@@ -30,10 +30,26 @@ function Index() {
         return false;
     }
 
-    const createRoomAndNavigate = async (name) => {
+    const joinRoomAndNavigate = async (name) => {
         const userReady = await createUser(name);
         if (!userReady) {
-            alert("Nepavyko gauti vartotojo ID. Bandykite dar kartą.");
+            alert("");
+            return;
+        }
+
+        const roomResponse = await api.post("api/v1/Room/join", { roomCode: roomCodeInputText });
+
+        if (roomResponse.status === 200) {
+            navigate(`/room/${roomCodeInputText}`);
+        } else {
+            alert("");
+        }
+    }
+
+    const createRoomAndNavigate = async () => {
+        const userReady = await createUser();
+        if (!userReady) {
+            alert("");
             return;
         }
 
@@ -45,7 +61,7 @@ function Index() {
             navigate(`/host/${roomId}`);
 
         } else {
-            alert("Klaida generuojant kambario ID!");
+            alert("");
         }
     }
     
@@ -70,7 +86,7 @@ function Index() {
                     <div className="modal-container">
                         <h1>Enter room code</h1>
                         <Input value={roomCodeInputText} placeholder="12..." onChange={(e) => setRoomCodeInputText(e.target.value)}/>
-                        <Button onClick={() => createUser(nameInputText)}>Join</Button>
+                        <Button onClick={() => joinRoomAndNavigate(nameInputText)}>Join</Button>
                     </div>
                 </Modal>
             </div>

@@ -17,10 +17,19 @@ public class UserService : IUserService
 
     public UserModel CreateUser(string name)
     {
-        var userRec = new UserModel { Name = name };
-        _logger.LogInformation("User with name={} created", name);
-        _userRepository.Save(userRec);
-        return userRec;
+        name = name.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new AppException("User name cannot be empty", System.Net.HttpStatusCode.BadRequest);
+        }
+        var user = new UserModel
+        {
+            Id = _userRepository.GetNextId(),
+            Name = name
+        };
+        _userRepository.Save(user);
+        _logger.LogInformation("User with name={name} created", name);
+        return user;
     }
 
     public void DeleteUser(long userId)
@@ -33,6 +42,13 @@ public class UserService : IUserService
 
     public UserModel GetUser(long userId)
     {
-        return _userRepository.GetById(userId) ?? throw new EntityNotFoundException($"User with id={userId} not found");
+        return _userRepository.FindById(userId) ?? throw new EntityNotFoundException($"User with id={userId} not found");
+    }
+
+    public void SetRoom(long userId, string? roomId)
+    {
+        var user = GetUser(userId);
+        user.RoomId = roomId;
+        _userRepository.Save(user);
     }
 }

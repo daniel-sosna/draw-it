@@ -17,7 +17,7 @@ public class InMemRoomRepository : IRoomRepository
         return _rooms.TryRemove(id, out _);
     }
 
-    public RoomModel? GetById(string id)
+    public RoomModel? FindById(string id)
     {
         _rooms.TryGetValue(id, out var room);
         return room;

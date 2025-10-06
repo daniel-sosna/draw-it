@@ -1,38 +1,88 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Draw.it.Server.Models.Room;
-using Draw.it.Server.Services.Room;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Controllers.Room.DTO;
+using Draw.it.Server.Services.Room;
+using Draw.it.Server.Services.Session;
+using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Controllers.Room;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class RoomController : ControllerBase
+[Authorize]
+public class RoomController : BaseController
 {
-
     private readonly IRoomService _roomService;
 
-    public RoomController(IRoomService roomService)
+    public RoomController(IRoomService roomService, ISessionService sessionService, IUserService userService)
+        : base(sessionService, userService)
     {
         _roomService = roomService;
     }
 
-    [HttpPost("generate-id")]
-    public IActionResult GenerateId()
+    /// <summary>
+    /// Create a new room and assign user as host
+    /// </summary>
+    [HttpPost("create")]
+    [ProducesResponseType(typeof(RoomCreateResponseDto), StatusCodes.Status201Created)]
+    public IActionResult CreateRoom()
     {
-        string roomId = _roomService.GenerateUniqueRoomId();
+        var user = ResolveUser();
 
-        var response = new GenerateRoomIdResponseDto(roomId);
-        return Ok(response);
+        var room = _roomService.CreateRoom(user);
+
+        return Created($"api/v1/host/{room.Id}", new RoomCreateResponseDto(room.Id));
     }
 
-
-
-    [HttpPost("{roomId}")]
-    public IActionResult CreateRoom([FromRoute] string roomId, [FromBody] RoomSettingsModel settings)
+    /// <summary>
+    /// Join existing room as a player
+    /// </summary>
+    [HttpPost("{roomId}/join")]
+    public IActionResult JoinRoom(string roomId)
     {
-        _roomService.CreateRoom(roomId, settings);
+        var user = ResolveUser();
 
-        return StatusCode(StatusCodes.Status201Created);
+        _roomService.JoinRoom(roomId, user);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Leave room as a player
+    /// </summary>
+    [HttpPost("{roomId}/leave")]
+    public IActionResult LeaveRoom(string roomId)
+    {
+        var user = ResolveUser();
+
+        _roomService.LeaveRoom(roomId, user);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Get room info
+    /// * It is temporary endpoint. In the future access to the room info must be restricted!
+    /// </summary>
+    [HttpGet("{roomId}")]
+    [AllowAnonymous]
+    public IActionResult GetRoom(string roomId)
+    {
+        var room = _roomService.GetRoom(roomId);
+
+        return Ok(room);
+    }
+
+    /// <summary>
+    /// Delete room (host only)
+    /// </summary>
+    [HttpDelete("{roomId}")]
+    public IActionResult DeleteRoom(string roomId)
+    {
+        var user = ResolveUser();
+
+        _roomService.DeleteRoom(roomId, user);
+
+        return NoContent();
     }
 }

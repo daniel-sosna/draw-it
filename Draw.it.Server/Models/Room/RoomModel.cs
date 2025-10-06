@@ -1,11 +1,10 @@
-﻿using Draw.it.Server.Models.User;
-
-namespace Draw.it.Server.Models.Room
+﻿namespace Draw.it.Server.Models.Room
 {
     public class RoomModel
     {
-        public string Id { get; set; } = string.Empty;
+        public required string Id { get; set; }
+        public required long HostId { get; set; }
         public RoomSettingsModel Settings { get; set; } = new RoomSettingsModel();
-        public List<UserModel> Players { get; set; } = new List<UserModel>();
+        public List<long> PlayerIds { get; set; } = new List<long>();
     }
 }
