@@ -22,7 +22,11 @@ public class UserService : IUserService
         {
             throw new ArgumentException("Name cannot be empty");
         }
-        var user = new UserModel { Name = name };
+        var user = new UserModel
+        {
+            Id = _userRepository.GetNextId(),
+            Name = name
+        };
         _userRepository.Save(user);
         _logger.LogInformation("User with name={name} created", name);
         return user;
