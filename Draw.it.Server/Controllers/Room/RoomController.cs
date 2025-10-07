@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Services.Room;
-using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Controllers.Room;
@@ -14,8 +13,8 @@ public class RoomController : BaseController
 {
     private readonly IRoomService _roomService;
 
-    public RoomController(IRoomService roomService, ISessionService sessionService, IUserService userService)
-        : base(sessionService, userService)
+    public RoomController(IRoomService roomService, IUserService userService)
+        : base(userService)
     {
         _roomService = roomService;
     }

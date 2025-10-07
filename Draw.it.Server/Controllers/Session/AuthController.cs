@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Draw.it.Server.Controllers.Session.DTO;
-using Draw.it.Server.Services.Session;
 using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Controllers.Session;
@@ -14,13 +13,13 @@ namespace Draw.it.Server.Controllers.Session;
 public class AuthController : BaseController
 {
 
-    public AuthController(IUserService userService, ISessionService sessionService)
-        : base(sessionService, userService)
+    public AuthController(IUserService userService)
+        : base(userService)
     {
     }
 
     /// <summary>
-    /// Creates a new session for a user and sets cookie
+    /// Creates a new user and sets claims in cookie
     /// * For now just creates a new user every time
     /// </summary>
     [HttpPost("join")]
@@ -29,12 +28,11 @@ public class AuthController : BaseController
     {
         // For simplicity, we create a new user every time. It's ok, since we don't store user data permanently.
         var user = _userService.CreateUser(request.Name);
-        var session = _sessionService.CreateSession(user.Id);
 
-        // Create identity with sessionId as claim
+        // Create identity with userId as claim
         var claims = new List<Claim>
         {
-            new Claim("sessionId", session.Id)
+            new Claim("userId", user.Id.ToString())
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -46,7 +44,7 @@ public class AuthController : BaseController
     }
 
     /// <summary>
-    /// Returns current user & session info
+    /// Returns current user info
     /// </summary>
     [HttpGet("me")]
     [ProducesResponseType(typeof(SessionMeResponseDto), StatusCodes.Status200OK)]
@@ -65,11 +63,11 @@ public class AuthController : BaseController
     [Authorize]
     public async Task<IActionResult> Logout()
     {
-        var sessionId = User.FindFirst("sessionId")?.Value;
-        if (sessionId != null)
-            _sessionService.DeleteSession(sessionId);
+        var userId = ResolveUserId();
 
+        _userService.DeleteUser(userId); // Clean up user, since it's anyway impossible to log back in
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
         return NoContent();
     }
 
