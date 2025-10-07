@@ -22,7 +22,7 @@ public class RoomController : BaseController
     /// <summary>
     /// Create a new room and assign user as host
     /// </summary>
-    [HttpPost("create")]
+    [HttpPost("")]
     [ProducesResponseType(typeof(RoomCreateResponseDto), StatusCodes.Status201Created)]
     public IActionResult CreateRoom()
     {

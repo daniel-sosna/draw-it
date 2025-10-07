@@ -14,54 +14,64 @@ function Index() {
 
     const navigate = useNavigate();
 
-    const createUser = async (name) => {
-        if (localStorage.getItem("userId")) return true;
+    // Try to get current user. If not authenticated (401) then create a new user by calling join
+    const createUserIfNotSignedIn = async (name) => {
+        // Check if user exists
+        try {
+            const meResponse = await api.get("auth/me");
 
-        const response = await api.post("api/v1/User", { 
-            name: name
-        });
+            if (meResponse.status === 200) {
+                // Already signed in
+                return meResponse.data;
+            }
+        } catch (err) {}
 
-        if (response.status === 201) {
-            console.log(response)
-            localStorage.setItem("userId", response.data.id);
-            localStorage.setItem("userName", response.data.name);
-            return true;
-        }
-        return false;
-    }
+        // Create user
+        try {
+            const joinResponse = await api.post("auth/join", {
+                name: name
+            });
 
-    const joinRoomAndNavigate = async (name) => {
-        const userReady = await createUser(name);
-        if (!userReady) {
-            alert("");
-            return;
-        }
-
-        const roomResponse = await api.post("api/v1/Room/join", { roomCode: roomCodeInputText });
-
-        if (roomResponse.status === 200) {
-            navigate(`/room/${roomCodeInputText}`);
-        } else {
-            alert("");
+            if (joinResponse.status === 201) {
+                return joinResponse.data;
+            }
+        } catch (err) {
+            console.error("Error creating user:", err);
+            alert("Could not sign in. Please try again.");
+            throw err;
         }
     }
 
-    const createRoomAndNavigate = async () => {
-        const userReady = await createUser();
-        if (!userReady) {
-            alert("");
-            return;
+    // Try to join room and navigate to it
+    const joinRoomAndNavigate = async (name, roomId) => {
+        await createUserIfNotSignedIn(name);
+
+        try {
+            const roomResponse = await api.post(`room/${roomId}/join`);
+
+            if (roomResponse.status === 204) {
+                navigate(`/room/${roomId}`);
+            }
+        } catch (err) {
+            console.error("Error joining room:", err);
+            alert(err.response?.data?.error || "Could not join room. Please check the room code and try again.");
         }
+    }
 
-        const roomResponse = await api.post("api/v1/Room/generate-id");
+    // Create room and navigate to it
+    const createRoomAndNavigate = async (name) => {
+        await createUserIfNotSignedIn(name);
 
-        if (roomResponse.status === 200) {
-            const roomId = roomResponse.data.roomId;
+        try {
+            const roomResponse = await api.post("room");
 
-            navigate(`/host/${roomId}`);
-
-        } else {
-            alert("");
+            if (roomResponse.status === 201) {
+                const roomId = roomResponse.data.roomId;
+                navigate(`/room/${roomId}`);
+            }
+        } catch (err) {
+            console.error("Error creating room:", err);
+            alert(err.response?.data?.error || "Could not create room. Please try again.");
         }
     }
     
@@ -78,15 +88,15 @@ function Index() {
                 />
 
                 <div className="action-button-container">
-                    <Button onClick={() => nameInputText ? setModalOpen(!modalOpen) : alert("Įveskite vardą")}>Join Room</Button>
-                    <Button onClick={() => nameInputText ? createRoomAndNavigate(nameInputText) : alert("Įveskite vardą")}>Create Room</Button>
+                    <Button onClick={() => nameInputText.trim() ? setModalOpen(!modalOpen) : alert("Name is required")}>Join Room</Button>
+                    <Button onClick={() => nameInputText.trim() ? createRoomAndNavigate(nameInputText) : alert("Name is required")}>Create Room</Button>
                 </div>
 
                 <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
                     <div className="modal-container">
                         <h1>Enter room code</h1>
                         <Input value={roomCodeInputText} placeholder="12..." onChange={(e) => setRoomCodeInputText(e.target.value)}/>
-                        <Button onClick={() => joinRoomAndNavigate(nameInputText)}>Join</Button>
+                        <Button onClick={() => roomCodeInputText.trim() ? joinRoomAndNavigate(nameInputText, roomCodeInputText) : alert("Room code is required")}>Join</Button>
                     </div>
                 </Modal>
             </div>

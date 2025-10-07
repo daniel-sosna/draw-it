@@ -23,7 +23,7 @@ public class AuthController : BaseController
     /// * For now just creates a new user every time
     /// </summary>
     [HttpPost("join")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(AuthMeResponseDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> Join([FromBody] AuthJoinRequestDto request)
     {
         // For simplicity, we create a new user every time. It's ok, since we don't store user data permanently.
@@ -40,7 +40,7 @@ public class AuthController : BaseController
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-        return Created();
+        return Created("api/v1/auth/me", new AuthMeResponseDto(user));
     }
 
     /// <summary>
