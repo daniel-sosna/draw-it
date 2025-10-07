@@ -1,3 +1,3 @@
-namespace Draw.it.Server.Controllers.Session.DTO;
+namespace Draw.it.Server.Controllers.Auth.DTO;
 
-public record SessionJoinRequestDto(string Name);
+public record AuthJoinRequestDto(string Name);

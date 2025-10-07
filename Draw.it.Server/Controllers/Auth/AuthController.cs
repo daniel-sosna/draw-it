@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Draw.it.Server.Controllers.Session.DTO;
+using Draw.it.Server.Controllers.Auth.DTO;
 using Draw.it.Server.Services.User;
 
-namespace Draw.it.Server.Controllers.Session;
+namespace Draw.it.Server.Controllers.Auth;
 
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -24,7 +24,7 @@ public class AuthController : BaseController
     /// </summary>
     [HttpPost("join")]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    public async Task<IActionResult> Join([FromBody] SessionJoinRequestDto request)
+    public async Task<IActionResult> Join([FromBody] AuthJoinRequestDto request)
     {
         // For simplicity, we create a new user every time. It's ok, since we don't store user data permanently.
         var user = _userService.CreateUser(request.Name);
@@ -47,13 +47,13 @@ public class AuthController : BaseController
     /// Returns current user info
     /// </summary>
     [HttpGet("me")]
-    [ProducesResponseType(typeof(SessionMeResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthMeResponseDto), StatusCodes.Status200OK)]
     [Authorize]
     public IActionResult Me()
     {
         var user = ResolveUser();
 
-        return Ok(new SessionMeResponseDto(user));
+        return Ok(new AuthMeResponseDto(user));
     }
 
     /// <summary>
