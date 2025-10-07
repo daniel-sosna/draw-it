@@ -10,12 +10,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/api/v1/auth/unauthorized"; // optional, can point to an endpoint
-        options.AccessDeniedPath = "/api/v1/auth/forbidden";
-        options.Cookie.Name = "session-id";
+        options.Cookie.Name = "user-id";
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
         options.Cookie.SameSite = SameSiteMode.Lax;
-        options.ExpireTimeSpan = TimeSpan.FromHours(6);
+        options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
     });
 
