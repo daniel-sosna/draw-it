@@ -85,13 +85,13 @@ public class RoomController : BaseController
 
         return NoContent();
     }
-    
+
     /// <summary>
     /// Update room settings (host only)
     /// </summary>
     [HttpPut("{roomId}/settings")]
     public IActionResult UpdateRoomSettings(
-        [FromRoute] string roomId, 
+        [FromRoute] string roomId,
         [FromBody] RoomSettingsRequestDto request)
     {
         var user = ResolveUser();
@@ -101,14 +101,14 @@ public class RoomController : BaseController
             RoomName = request.RoomName,
             DrawingTime = request.DrawingTime,
             NumberOfRounds = request.NumberOfRounds,
-            CategoryId = request.CategoryId 
+            CategoryId = request.CategoryId
         };
-    
-        _roomService.UpdateSettings(roomId, user.Id, newSettings); 
+
+        _roomService.UpdateSettings(roomId, user.Id, newSettings);
 
         return NoContent();
     }
-    
+
     /// <summary>
     /// Start game
     /// </summary>
@@ -117,7 +117,7 @@ public class RoomController : BaseController
     {
         var user = ResolveUser();
 
-        _roomService.StartGame(roomId, user.Id); 
+        _roomService.StartGame(roomId, user.Id);
 
         return NoContent();
     }

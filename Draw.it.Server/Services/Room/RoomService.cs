@@ -86,9 +86,9 @@ public class RoomService : IRoomService
         // TODO: Remove roomId from all users that had this roomId set
         foreach (var playerId in room.PlayerIds)
         {
-            _userService.SetRoom(playerId, null); 
+            _userService.SetRoom(playerId, null);
         }
-        
+
         _roomRepository.DeleteById(roomId);
     }
 
@@ -127,7 +127,7 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, null);
     }
-    
+
     public void UpdateSettings(string roomId, long hostId, RoomSettingsModel newSettings)
     {
         var room = GetRoom(roomId);
@@ -145,12 +145,12 @@ public class RoomService : IRoomService
                 HttpStatusCode.Forbidden);
         }
         */
-    
+
         room.Settings = newSettings;
-    
+
         _roomRepository.Save(room);
     }
-    
+
     public void StartGame(string roomId, long hostId)
     {
         var room = GetRoom(roomId);
@@ -164,14 +164,14 @@ public class RoomService : IRoomService
             throw new AppException("Game is already in progress.", HttpStatusCode.Conflict);
         }
         */
-        
+
         // TODO: Patikrinti, ar visi žaidėjai (room.PlayerIds) yra IsReady (naudojant UserService)
         // TODO: Patikrinti, ar žaidėjų skaičius > 1
-    
+
         /*
         room.Status = RoomStatus.InGame; 
         */
-    
+
         _roomRepository.Save(room);
     }
 }
