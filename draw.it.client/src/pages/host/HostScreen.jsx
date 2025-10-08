@@ -1,20 +1,45 @@
 import './HostScreen.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
 
+const MOCK_CATEGORIES = [
+    { id: 1, name: "Animals" },
+    { id: 2, name: "Vehicle type" },
+    { id: 3, name: "Games" },
+];
 function HostScreen() {
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [customWords, setCustomWords] = useState('');
+    const [categoryId, setCategoryId] = useState(MOCK_CATEGORIES[0].id);
     const [drawingTime, setDrawingTime] = useState(60);
     const [numberOfRounds, setNumberOfRounds] = useState(2);
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
+    const [roomData, setRoomData] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
 
+    useEffect(() => {
+        const fetchHostData = async () => {
+            try {
+                const meResponse = await api.get("auth/me");
+                if (meResponse.status === 200) {
+                    setCurrentUserId(meResponse.data.id);
+                } else {
+                    navigate('/');
+                }
+            } catch (err) {
+                console.warn("User not authenticated or error fetching host data.", err);
+                navigate("/");
+            }
+        };
+        fetchHostData();
+    }, [roomId, navigate]);
+    
     const [joinedPlayers] = useState([
         { id: 1, name: 'Player 1', isReady: true },
         { id: 2, name: 'Player 2', isReady: false },
@@ -22,15 +47,8 @@ function HostScreen() {
     ]);
 
     const handleCategoryChange = (event) => {
-        const { value, checked } = event.target;
-        if (value === 'Custom') {
-            setSelectedCategories(checked ? ['Custom'] : []);
-        } else {
-            setSelectedCategories(prev => {
-                const updated = prev.filter(cat => cat !== 'Custom');
-                return checked ? [...updated, value] : updated.filter(cat => cat !== value);
-            });
-        }
+        const value = parseInt(event.target.value, 10);
+        setCategoryId(value);
     };
 
     const handleNumberInput = (event, setter, min) => {
@@ -42,22 +60,39 @@ function HostScreen() {
         }
     };
 
-    const startGame = async () => {
-        setLoading(true);
-
+    const saveSettings = async () => {
+        setSaving(true);
         const settingsPayload = {
-            roomName: roomName || `Room-${roomId}`, 
-            categories: selectedCategories,
-            customWords: selectedCategories.includes('Custom')
-                ? customWords.split(',').map(word => word.trim()).filter(w => w)
-                : [],
+            roomName: roomName || `Room-${roomId}`,
+            categoryId: categoryId,
             drawingTime: drawingTime,
             numberOfRounds: numberOfRounds,
         };
 
         try {
-            await api.put(`room/${roomId}/settings`, settingsPayload); // Endpoint is not implemented yet
-            const response = await api.post(`room/${roomId}/start`); // Endpoint is not implemented yet
+            await api.put(`room/${roomId}/settings`, settingsPayload);
+            alert("Settings saved successfully!");
+        } catch (err) {
+            console.error('Error saving settings:', err);
+            alert(err.response?.data?.error || 'Could not save settings. Please try again.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const startGame = async () => {
+        setLoading(true);
+
+        const settingsPayload = {
+            roomName: settings.roomName || `Room-${roomId}`,
+            categoryId: settings.categoryId, 
+            drawingTime: settings.drawingTime,
+            numberOfRounds: settings.numberOfRounds,
+        };
+
+        try {
+            await api.put(`room/${roomId}/settings`, settingsPayload);
+            const response = await api.post(`room/${roomId}/start`);
 
             if (response.status === 204) {
                 navigate(`/gameplay/${roomId}`);
@@ -70,6 +105,23 @@ function HostScreen() {
         }
     };
 
+    const deleteRoom = async () => {
+        if (!window.confirm("Are you sure you want to delete this room? This action cannot be undone.")) {
+            return;
+        }
+        setDeleting(true);
+        try {
+            await api.delete(`room/${roomId}`);
+            alert("Room deleted successfully!");
+            navigate("/"); 
+        } catch (err) {
+            console.error('Error deleting room:', err);
+            alert(err.response?.data?.error || 'Could not delete room. Please try again.');
+        } finally {
+            setDeleting(false);
+        }
+    };
+    
     return (
         <div className="host-screen-container">
             <div className="top-info-bar">
@@ -111,35 +163,27 @@ function HostScreen() {
                     <h2>Game Settings</h2>
                     <div className="settings-content">
                         <div className="categories-section">
-                            <h3>Choose Categories:</h3>
-                            <div className="checkbox-group" style={{
+                            <h3>Choose Category:</h3>
+                            <div className="radio-group" style={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: '8px',
                                 alignItems: 'flex-start'
                             }}>
-                                {['Animals', 'Vehicle type', 'Games', 'Custom'].map(cat => (
-                                    <label key={cat} style={{ display: 'flex',  alignItems: 'center', gap: '8px' }}>
-                                        <Input
-                                            type="checkbox"
-                                            value={cat}
-                                            checked={selectedCategories.includes(cat)}
+                                {MOCK_CATEGORIES.map(cat => (
+                                    <label key={cat.id} className="radio-label">
+                                        <input 
+                                            type="radio"
+                                            name="categoryId" 
+                                            value={cat.id}
+                                            checked={categoryId === cat.id}
                                             onChange={handleCategoryChange}
+                                            className="category-radio"
                                         />
-                                        {cat}
+                                        {cat.name}
                                     </label>
                                 ))}
                             </div>
-                            {selectedCategories.includes('Custom') && (
-                                <div className="custom-input" style={{ marginTop: '10px' }}>
-                                    <Input
-                                        type="text"
-                                        value={customWords}
-                                        onChange={(e) => setCustomWords(e.target.value)}
-                                        placeholder="Enter words separated by commas"
-                                    />
-                                </div>
-                            )}
                         </div>
 
                         <div className="game-options-section">
@@ -172,9 +216,15 @@ function HostScreen() {
                 </div>
             </div>
 
-            <div className="button-container">
+            <div className="button-container action-buttons"> 
+                <Button onClick={saveSettings} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Settings'}
+                </Button>
                 <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
+                </Button>
+                <Button onClick={deleteRoom} disabled={deleting} className="delete-button"> 
+                    {deleting ? 'Deleting...' : 'Delete Room'}
                 </Button>
             </div>
         </div>
