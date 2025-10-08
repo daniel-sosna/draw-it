@@ -17,17 +17,6 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    /// <summary>
-    /// Set player ready status.
-    /// </summary>
-    [HttpPut("{userId}/ready")]
-    public IActionResult SetUserReadyStatus([FromRoute] long userId, [FromBody] SetReadyStatusRequestDto request)
-    {
-        _userService.SetReady(userId, request.IsReady);
-
-        return NoContent();
-    }
-
     // Additional user-related endpoints can be added here
     // For example, fetching user details, updating user info, customizing user settings, etc.
 }
