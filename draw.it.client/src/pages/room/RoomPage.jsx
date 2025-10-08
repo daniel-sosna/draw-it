@@ -1,5 +1,8 @@
-import { useParams } from "react-router";
 import "./RoomPage.css";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import api from "@/utils/api.js";
+import Button from "@/components/button/button.jsx";
 
 const mockRoom = (id) => ({
   id,
@@ -9,10 +12,13 @@ const mockRoom = (id) => ({
     { id: "3", name: "Lukas" },
   ],
   settings: { durationSec: 90, rounds: 3, category: "Animals" },
-  youAreHost: true,
 });
 
 export default function RoomPage() {
+  const [isReady, setIsReady] = useState(false);
+
+  const navigate = useNavigate();
+
   const { roomId = "DEMO" } = useParams();   // paims id iš URL, pvz. /room/ABCD
   const room = mockRoom(roomId);
 
@@ -20,6 +26,19 @@ export default function RoomPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const leaveRoom = async () => {
+    try {
+      const response = api.post(`room/${roomId}/leave`);
+
+      if (response.status === 204) {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Error leaving room:", err);
+      alert(err.response?.data?.error || "Could not leave room. Please try again.");
+    }
   };
 
   return (
@@ -42,13 +61,9 @@ export default function RoomPage() {
                 </li>
               ))}
             </ul>
-            <button 
-              className="start-button"
-              disabled={!room.youAreHost} 
-              title={room.youAreHost ? "" : "Host only"}
-            >
-              START
-            </button>
+            <Button onClick={() => {setIsReady((prev) => !prev);}}>
+              READY
+            </Button>
           </div>
 
           {/* Divider */}
@@ -72,7 +87,11 @@ export default function RoomPage() {
               <span className="setting-label">ROUNDS:</span>
               <span className="setting-value">{room.settings.rounds}</span>
             </div>
-            <a href="/" className="back-link">LEAVE ROOM</a>
+            <div className="leave-button-container">
+              <Button onClick={leaveRoom}>
+                LEAVE ROOM
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,11 +1,12 @@
-﻿using Draw.it.Server.Controllers.User.DTO;
-using Draw.it.Server.Services.User;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Controllers.User;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -15,19 +16,6 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    [HttpPost("generate-id")]
-    public IActionResult GenerateId()
-    {
-        var id = _userService.GenerateUserId();
-        var response = new GenerateUserIdResponseDto(id);
-        return Ok(response);
-    }
-
-    [HttpGet("")]
-    public IActionResult GetUsers()
-    {
-        var ids = _userService.GetActiveUserIds();
-        var response = new GetUsersResponseDto(ids);
-        return Ok(response);
-    }
+    // Additional user-related endpoints can be added here
+    // For example, fetching user details, updating user info, customizing user settings, etc.
 }

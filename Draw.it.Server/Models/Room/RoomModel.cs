@@ -2,8 +2,9 @@
 {
     public class RoomModel
     {
-        public string Id { get; set; } = string.Empty;
+        public required string Id { get; set; }
+        public required long HostId { get; set; }
         public RoomSettingsModel Settings { get; set; } = new RoomSettingsModel();
-        public List<string> Players { get; set; } = new List<string>();
+        public List<long> PlayerIds { get; set; } = new List<long>();
     }
 }

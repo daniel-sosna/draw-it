@@ -1,6 +1,24 @@
+using Draw.it.Server.Exceptions;
+using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add cookie authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/api/v1/auth/unauthorized"; // optional, can point to an endpoint
+        options.Cookie.Name = "user-id";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
+        options.Cookie.SameSite = SameSiteMode.None; // Allow cross-site cookies
+        options.ExpireTimeSpan = TimeSpan.FromHours(12);
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 
@@ -8,7 +26,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddApplication();
+builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
@@ -18,7 +36,8 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins("https://localhost:61528")
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
@@ -39,10 +58,14 @@ app.UseHttpsRedirection();
 
 app.UseCors("Frontend");
 
+// Use authentication/authorization middlewares
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
+
+app.UseMiddleware<ExceptionHandler>();
 
 app.Run();

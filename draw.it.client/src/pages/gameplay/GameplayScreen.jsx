@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import { useState } from "react";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 
