@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Controllers.Room.DTO;
+using Draw.it.Server.Models.Room;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 
@@ -81,6 +82,42 @@ public class RoomController : BaseController
         var user = ResolveUser();
 
         _roomService.DeleteRoom(roomId, user);
+
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Update room settings (host only)
+    /// </summary>
+    [HttpPut("{roomId}/settings")]
+    public IActionResult UpdateRoomSettings(
+        [FromRoute] string roomId, 
+        [FromBody] RoomSettingsRequestDto request)
+    {
+        var user = ResolveUser();
+
+        var newSettings = new RoomSettingsModel
+        {
+            RoomName = request.RoomName,
+            DrawingTime = request.DrawingTime,
+            NumberOfRounds = request.NumberOfRounds,
+            CategoryId = request.CategoryId 
+        };
+    
+        _roomService.UpdateSettings(roomId, user.Id, newSettings); 
+
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Start game
+    /// </summary>
+    [HttpPost("{roomId}/start")]
+    public IActionResult StartGame([FromRoute] string roomId)
+    {
+        var user = ResolveUser();
+
+        _roomService.StartGame(roomId, user.Id); 
 
         return NoContent();
     }
