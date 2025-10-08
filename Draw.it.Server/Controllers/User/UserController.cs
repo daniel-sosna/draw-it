@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Draw.it.Server.Controllers.User.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Services.User;
 
@@ -14,6 +15,17 @@ public class UserController : ControllerBase
     public UserController(IUserService userService)
     {
         _userService = userService;
+    }
+
+    /// <summary>
+    /// Set player ready status.
+    /// </summary>
+    [HttpPut("{userId}/ready")]
+    public IActionResult SetUserReadyStatus([FromRoute] long userId, [FromBody] SetReadyStatusRequestDto request)
+    {
+        _userService.SetReady(userId, request.IsReady);
+
+        return NoContent();
     }
 
     // Additional user-related endpoints can be added here

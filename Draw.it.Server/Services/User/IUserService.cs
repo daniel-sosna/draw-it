@@ -8,4 +8,6 @@ public interface IUserService
     void DeleteUser(long userId);
     UserModel GetUser(long userId);
     void SetRoom(long userId, string? roomId);
+    void SetReady(long userId, bool isReady);
+
 }
