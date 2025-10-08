@@ -51,4 +51,12 @@ public class UserService : IUserService
         user.RoomId = roomId;
         _userRepository.Save(user);
     }
+
+    public void SetReady(long userId, bool isReady)
+    {
+        var user = GetUser(userId);
+        user.IsReady = isReady;
+        _userRepository.Save(user);
+        _logger.LogInformation("User {} ready status set to {}", userId, isReady);
+    }
 }

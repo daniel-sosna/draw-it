@@ -75,15 +75,12 @@ public class RoomService : IRoomService
         {
             throw new AppException("Only the host can delete the room.", HttpStatusCode.Forbidden);
         }
-        // TODO: Check if game is in progress
-        /*
+
         if (room.Status == RoomStatus.InGame)
         {
             throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Forbidden);
         }
-        */
 
-        // TODO: Remove roomId from all users that had this roomId set
         foreach (var playerId in room.PlayerIds)
         {
             _userService.SetRoom(playerId, null);
@@ -103,8 +100,12 @@ public class RoomService : IRoomService
         {
             throw new AppException($"You are already in the room with id={user.RoomId}. Leave the current room before joining another one.", HttpStatusCode.Conflict);
         }
+
         var room = GetRoom(roomId);
-        // TODO: Check if game is in progress
+        if (room.Status != RoomStatus.InLobby)
+        {
+            throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Forbidden);
+        }
         // TODO: Check on number of players
         room.PlayerIds.Add(user.Id);
         _roomRepository.Save(room);
@@ -122,7 +123,12 @@ public class RoomService : IRoomService
         {
             throw new AppException("Host cannot leave the room. Consider deleting the room instead.", HttpStatusCode.Forbidden);
         }
-        // TODO: Check if game is in progress
+
+        if (room.Status == RoomStatus.InGame)
+        {
+            throw new AppException("Cannot leave room while the game is in progress.", HttpStatusCode.Forbidden);
+        }
+
         room.PlayerIds.Remove(user.Id);
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, null);
@@ -136,15 +142,13 @@ public class RoomService : IRoomService
         {
             throw new UnauthorizedUserException("Only the host can change room settings.");
         }
-
-        // TODO: Check if game is in progress
-        /*
-        if (room.Settings != RoomStatus.Lobby)
+        
+        if (room.Status != RoomStatus.InLobby)
         {
             throw new AppException("Room settings cannot be changed while the game is in progress.", 
                 HttpStatusCode.Forbidden);
         }
-        */
+        
 
         room.Settings = newSettings;
 
@@ -158,19 +162,19 @@ public class RoomService : IRoomService
         if (room.HostId != hostId)
             throw new UnauthorizedUserException("Only the host can start the game.");
 
-        /*
-        if (room.Status != RoomStatus.Lobby)
+        
+        if (room.Status != RoomStatus.InLobby)
         {
             throw new AppException("Game is already in progress.", HttpStatusCode.Conflict);
         }
-        */
+        
 
         // TODO: Patikrinti, ar visi žaidėjai (room.PlayerIds) yra IsReady (naudojant UserService)
         // TODO: Patikrinti, ar žaidėjų skaičius > 1
 
-        /*
+        
         room.Status = RoomStatus.InGame; 
-        */
+        
 
         _roomRepository.Save(room);
     }
