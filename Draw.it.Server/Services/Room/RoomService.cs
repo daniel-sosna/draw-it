@@ -1,4 +1,5 @@
 using System.Net;
+using Draw.it.Server.Enums;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
@@ -53,7 +54,8 @@ public class RoomService : IRoomService
         {
             Id = roomId,
             HostId = user.Id,
-            PlayerIds = new List<long> { user.Id }
+            PlayerIds = new List<long> { user.Id },
+            Status = RoomStatus.Lobby
         };
         _roomRepository.Save(room);
         _logger.LogInformation("Room with id={roomId} created", roomId);
@@ -73,7 +75,11 @@ public class RoomService : IRoomService
         {
             throw new AppException("Only the host can delete the room.", HttpStatusCode.Forbidden);
         }
-        // TODO: Check if game is in progress
+
+        if (room.Status == RoomStatus.InGame)
+        {
+            throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Forbidden);
+        }
 
         // TODO: Remove roomId from all users that had this roomId set
     }
@@ -89,8 +95,12 @@ public class RoomService : IRoomService
         {
             throw new AppException($"You are already in the room with id={user.RoomId}. Leave the current room before joining another one.", HttpStatusCode.Conflict);
         }
+
         var room = GetRoom(roomId);
-        // TODO: Check if game is in progress
+        if (room.Status != RoomStatus.Lobby)
+        {
+            throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Forbidden);
+        }
         // TODO: Check on number of players
         room.PlayerIds.Add(user.Id);
         _roomRepository.Save(room);
@@ -108,7 +118,12 @@ public class RoomService : IRoomService
         {
             throw new AppException("Host cannot leave the room. Consider deleting the room instead.", HttpStatusCode.Forbidden);
         }
-        // TODO: Check if game is in progress
+
+        if (room.Status == RoomStatus.InGame)
+        {
+            throw new AppException("Cannot leave room while the game is in progress.", HttpStatusCode.Forbidden);
+        }
+
         room.PlayerIds.Remove(user.Id);
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, null);
