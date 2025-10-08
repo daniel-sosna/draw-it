@@ -55,7 +55,6 @@ public class RoomService : IRoomService
             Id = roomId,
             HostId = user.Id,
             PlayerIds = new List<long> { user.Id },
-            Status = RoomStatus.Lobby
         };
         _roomRepository.Save(room);
         _logger.LogInformation("Room with id={roomId} created", roomId);
@@ -97,7 +96,7 @@ public class RoomService : IRoomService
         }
 
         var room = GetRoom(roomId);
-        if (room.Status != RoomStatus.Lobby)
+        if (room.Status != RoomStatus.InLobby)
         {
             throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Forbidden);
         }

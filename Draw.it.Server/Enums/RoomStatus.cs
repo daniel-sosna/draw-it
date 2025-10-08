@@ -2,7 +2,7 @@
 
 public enum RoomStatus
 {
-    Lobby,
+    InLobby,
     InGame,
     Archived
 }
