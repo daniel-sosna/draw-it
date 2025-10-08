@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Controllers.Room.DTO;
+using Draw.it.Server.Extensions;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 
@@ -9,14 +10,15 @@ namespace Draw.it.Server.Controllers.Room;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize]
-public class RoomController : BaseController
+public class RoomController : ControllerBase
 {
     private readonly IRoomService _roomService;
+    private readonly IUserService _userService;
 
     public RoomController(IRoomService roomService, IUserService userService)
-        : base(userService)
     {
         _roomService = roomService;
+        _userService = userService;
     }
 
     /// <summary>
@@ -26,7 +28,7 @@ public class RoomController : BaseController
     [ProducesResponseType(typeof(RoomCreateResponseDto), StatusCodes.Status201Created)]
     public IActionResult CreateRoom()
     {
-        var user = ResolveUser();
+        var user = HttpContext.ResolveUser(_userService);
 
         var room = _roomService.CreateRoom(user);
 
@@ -39,7 +41,7 @@ public class RoomController : BaseController
     [HttpPost("{roomId}/join")]
     public IActionResult JoinRoom(string roomId)
     {
-        var user = ResolveUser();
+        var user = HttpContext.ResolveUser(_userService);
 
         _roomService.JoinRoom(roomId, user);
 
@@ -52,7 +54,7 @@ public class RoomController : BaseController
     [HttpPost("{roomId}/leave")]
     public IActionResult LeaveRoom(string roomId)
     {
-        var user = ResolveUser();
+        var user = HttpContext.ResolveUser(_userService);
 
         _roomService.LeaveRoom(roomId, user);
 
@@ -78,7 +80,7 @@ public class RoomController : BaseController
     [HttpDelete("{roomId}")]
     public IActionResult DeleteRoom(string roomId)
     {
-        var user = ResolveUser();
+        var user = HttpContext.ResolveUser(_userService);
 
         _roomService.DeleteRoom(roomId, user);
 

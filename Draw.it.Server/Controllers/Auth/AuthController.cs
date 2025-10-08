@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Draw.it.Server.Extensions;
 using Draw.it.Server.Controllers.Auth.DTO;
 using Draw.it.Server.Services.User;
 
@@ -10,12 +11,13 @@ namespace Draw.it.Server.Controllers.Auth;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class AuthController : BaseController
+public class AuthController : ControllerBase
 {
+    private readonly IUserService _userService;
 
     public AuthController(IUserService userService)
-        : base(userService)
     {
+        _userService = userService;
     }
 
     /// <summary>
@@ -51,7 +53,7 @@ public class AuthController : BaseController
     [Authorize]
     public IActionResult Me()
     {
-        var user = ResolveUser();
+        var user = HttpContext.ResolveUser(_userService);
 
         return Ok(new AuthMeResponseDto(user));
     }
@@ -63,7 +65,7 @@ public class AuthController : BaseController
     [Authorize]
     public async Task<IActionResult> Logout()
     {
-        var userId = ResolveUserId();
+        var userId = HttpContext.ResolveUserId();
 
         _userService.DeleteUser(userId); // Clean up user, since it's anyway impossible to log back in
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
