@@ -1,5 +1,4 @@
-﻿using Draw.it.Server.Controllers.User.DTO;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Services.User;
 
