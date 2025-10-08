@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import './HostScreen.css';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
-import './HostScreen.css';
-import api from "@/utils/api.js";
-import { useParams } from 'react-router'; 
-import { useNavigate } from 'react-router';
 
 function HostScreen() {
     const { roomId } = useParams();
@@ -43,14 +42,8 @@ function HostScreen() {
         }
     };
 
-    const handleStartGame = async () => {
+    const startGame = async () => {
         setLoading(true);
-
-        if (!roomId) {
-            alert("Kambario ID nerastas.");
-            setLoading(false);
-            return;
-        }
 
         const settingsPayload = {
             roomName: roomName || `Room-${roomId}`, 
@@ -63,18 +56,15 @@ function HostScreen() {
         };
 
         try {
-            const response = await api.post(`api/v1/Room/${roomId}`, settingsPayload);
+            await api.put(`room/${roomId}/settings`, settingsPayload); // Endpoint is not implemented yet
+            const response = await api.post(`room/${roomId}/start`); // Endpoint is not implemented yet
 
-            if (response.status === 201) {
-                alert(`Kambarys ${roomId} sukurtas..`);
+            if (response.status === 204) {
                 navigate(`/gameplay/${roomId}`);
-            } else {
-                alert('Klaida kuriant kambari.');
-                console.error('Failed to create room with status:', response.status);
             }
-        } catch (error) {
-            console.error('Network error during room creation:', error);
-            alert('Tinklo klaida bandant sukurti kambari.');
+        } catch (err) {
+            console.error('Error starting game:', err);
+            alert(err.response?.data?.error || 'Could not start game. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -183,8 +173,8 @@ function HostScreen() {
             </div>
 
             <div className="button-container">
-                <Button onClick={handleStartGame} disabled={loading}>
-                    {loading ? 'Creating room...' : 'Start Game'}
+                <Button onClick={startGame} disabled={loading}>
+                    {loading ? 'Starting...' : 'Start Game'}
                 </Button>
             </div>
         </div>

@@ -1,11 +1,11 @@
 ﻿import "./Index.css"
-import Input from "@/components/input/Input.jsx"
-import {useState} from "react";
-import Button from "@/components/button/button.jsx";
-import colors from "@/constants/colors.js";
-import Modal from "@/components/modal/Modal.jsx";
-import api from "@/utils/api.js";
+import { useState } from "react";
 import { useNavigate } from "react-router";
+import api from "@/utils/api.js";
+import colors from "@/constants/colors.js";
+import Input from "@/components/input/Input.jsx"
+import Button from "@/components/button/button.jsx";
+import Modal from "@/components/modal/Modal.jsx";
 
 function Index() {
     const [nameInputText, setNameInputText] = useState("");
@@ -37,12 +37,12 @@ function Index() {
             }
         } catch (err) {
             console.error("Error creating user:", err);
-            alert("Could not sign in. Please try again.");
+            alert(err.response?.data?.error || "Could not sign in. Please try again.");
             throw err;
         }
     }
 
-    // Try to join room and navigate to it
+    // Join room and navigate to it
     const joinRoomAndNavigate = async (name, roomId) => {
         await createUserIfNotSignedIn(name);
 
@@ -67,7 +67,7 @@ function Index() {
 
             if (roomResponse.status === 201) {
                 const roomId = roomResponse.data.roomId;
-                navigate(`/room/${roomId}`);
+                navigate(`/host/${roomId}`);
             }
         } catch (err) {
             console.error("Error creating room:", err);
