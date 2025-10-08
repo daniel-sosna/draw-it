@@ -142,13 +142,13 @@ public class RoomService : IRoomService
         {
             throw new UnauthorizedUserException("Only the host can change room settings.");
         }
-        
+
         if (room.Status != RoomStatus.InLobby)
         {
-            throw new AppException("Room settings cannot be changed while the game is in progress.", 
+            throw new AppException("Room settings cannot be changed while the game is in progress.",
                 HttpStatusCode.Forbidden);
         }
-        
+
 
         room.Settings = newSettings;
 
@@ -162,19 +162,19 @@ public class RoomService : IRoomService
         if (room.HostId != hostId)
             throw new UnauthorizedUserException("Only the host can start the game.");
 
-        
+
         if (room.Status != RoomStatus.InLobby)
         {
             throw new AppException("Game is already in progress.", HttpStatusCode.Conflict);
         }
-        
+
 
         // TODO: Patikrinti, ar visi žaidėjai (room.PlayerIds) yra IsReady (naudojant UserService)
         // TODO: Patikrinti, ar žaidėjų skaičius > 1
 
-        
-        room.Status = RoomStatus.InGame; 
-        
+
+        room.Status = RoomStatus.InGame;
+
 
         _roomRepository.Save(room);
     }
