@@ -4,6 +4,7 @@ using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Services.User;
+using Draw.it.Server.Enums;
 
 namespace Draw.it.Server.Services.Room;
 
@@ -64,6 +65,7 @@ public class RoomService : IRoomService
     // Placeholder!
     public void DeleteRoom(string roomId, UserModel user)
     {
+
         if (user.RoomId != roomId)
         {
             throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
@@ -74,8 +76,20 @@ public class RoomService : IRoomService
             throw new AppException("Only the host can delete the room.", HttpStatusCode.Forbidden);
         }
         // TODO: Check if game is in progress
+        /*
+        if (room.Status == RoomStatus.InGame)
+        {
+            throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Forbidden);
+        }
+        */
 
         // TODO: Remove roomId from all users that had this roomId set
+        foreach (var playerId in room.PlayerIds)
+        {
+            _userService.SetRoom(playerId, null); 
+        }
+        
+        _roomRepository.DeleteById(roomId);
     }
 
     public RoomModel GetRoom(string roomId)
@@ -112,5 +126,52 @@ public class RoomService : IRoomService
         room.PlayerIds.Remove(user.Id);
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, null);
+    }
+    
+    public void UpdateSettings(string roomId, long hostId, RoomSettingsModel newSettings)
+    {
+        var room = GetRoom(roomId);
+
+        if (room.HostId != hostId)
+        {
+            throw new UnauthorizedUserException("Only the host can change room settings.");
+        }
+
+        // TODO: Check if game is in progress
+        /*
+        if (room.Settings != RoomStatus.Lobby)
+        {
+            throw new AppException("Room settings cannot be changed while the game is in progress.", 
+                HttpStatusCode.Forbidden);
+        }
+        */
+    
+        room.Settings = newSettings;
+    
+        _roomRepository.Save(room);
+    }
+    
+    public void StartGame(string roomId, long hostId)
+    {
+        var room = GetRoom(roomId);
+
+        if (room.HostId != hostId)
+            throw new UnauthorizedUserException("Only the host can start the game.");
+
+        /*
+        if (room.Status != RoomStatus.Lobby)
+        {
+            throw new AppException("Game is already in progress.", HttpStatusCode.Conflict);
+        }
+        */
+        
+        // TODO: Patikrinti, ar visi žaidėjai (room.PlayerIds) yra IsReady (naudojant UserService)
+        // TODO: Patikrinti, ar žaidėjų skaičius > 1
+    
+        /*
+        room.Status = RoomStatus.InGame; 
+        */
+    
+        _roomRepository.Save(room);
     }
 }
