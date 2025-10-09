@@ -13,6 +13,8 @@ function HostScreen() {
     const [drawingTime, setDrawingTime] = useState(60);
     const [numberOfRounds, setNumberOfRounds] = useState(2);
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
 
     const [joinedPlayers] = useState([
@@ -173,9 +175,15 @@ function HostScreen() {
                 </div>
             </div>
 
-            <div className="button-container">
+            <div className="button-container action-buttons">
+                <Button disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Settings'}
+                </Button>
                 <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
+                </Button>
+                <Button disabled={deleting} className="delete-button">
+                    {deleting ? 'Deleting...' : 'Delete Room'}
                 </Button>
             </div>
         </div>
