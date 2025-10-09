@@ -147,3 +147,21 @@
         min-width: initial;
     }
 }
+
+.button-container.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
