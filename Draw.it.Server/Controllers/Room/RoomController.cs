@@ -12,13 +12,11 @@ namespace Draw.it.Server.Controllers.Room;
 public class RoomController : BaseController
 {
     private readonly IRoomService _roomService;
-    private readonly IUserService _userService;
 
     public RoomController(IRoomService roomService, IUserService userService)
         : base(userService)
     {
         _roomService = roomService;
-        _userService = userService;
     }
 
     /// <summary>
