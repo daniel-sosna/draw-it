@@ -111,20 +111,21 @@ function HostScreen() {
                     <h2>Game Settings</h2>
                     <div className="settings-content">
                         <div className="categories-section">
-                            <h3>Choose Categories:</h3>
-                            <div className="checkbox-group" style={{
+                            <h3>Choose Category:</h3>
+                            <div className="radio-group" style={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: '8px',
                                 alignItems: 'flex-start'
                             }}>
                                 {['Animals', 'Vehicle type', 'Games', 'Custom'].map(cat => (
-                                    <label key={cat} style={{ display: 'flex',  alignItems: 'center', gap: '8px' }}>
-                                        <Input
-                                            type="checkbox"
-                                            value={cat}
-                                            checked={selectedCategories.includes(cat)}
+                                    <label key={cat.id} className="radio-label">
+                                        <input
+                                            type="radio"
+                                            name="categoryId"
+                                            value={cat.id}
                                             onChange={handleCategoryChange}
+                                            className="category-radio"
                                         />
                                         {cat}
                                     </label>
