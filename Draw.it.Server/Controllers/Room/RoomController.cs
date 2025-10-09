@@ -12,11 +12,13 @@ namespace Draw.it.Server.Controllers.Room;
 public class RoomController : BaseController
 {
     private readonly IRoomService _roomService;
+    private readonly IUserService _userService;
 
     public RoomController(IRoomService roomService, IUserService userService)
         : base(userService)
     {
         _roomService = roomService;
+        _userService = userService;
     }
 
     /// <summary>
@@ -83,5 +85,18 @@ public class RoomController : BaseController
         _roomService.DeleteRoom(roomId, user);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Get all users currently in the room
+    /// </summary>
+    [HttpGet("{roomId}/users")]
+    public IActionResult GetRoomUsers(string roomId)
+    {
+        _roomService.GetRoom(roomId);
+
+        var users = _userService.GetUsersInRoom(roomId);
+
+        return Ok(users);
     }
 }
