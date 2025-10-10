@@ -91,8 +91,6 @@ public class RoomController : BaseController
     [HttpGet("{roomId}/users")]
     public IActionResult GetRoomUsers(string roomId)
     {
-        _roomService.GetRoom(roomId);
-
         var users = _roomService.GetUsersInRoom(roomId);
 
         return Ok(users);
