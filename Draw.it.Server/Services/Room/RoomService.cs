@@ -127,4 +127,14 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, null);
     }
+
+    public IEnumerable<UserModel> GetUsersInRoom(string roomId)
+    {
+        if (!_roomRepository.ExistsById(roomId))
+        {
+            throw new EntityNotFoundException($"Room with id={roomId} not found");
+        }
+
+        return _userService.GetUsersInRoom(roomId);
+    }
 }

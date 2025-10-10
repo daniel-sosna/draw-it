@@ -93,7 +93,7 @@ public class RoomController : BaseController
     {
         _roomService.GetRoom(roomId);
 
-        var users = _userService.GetUsersInRoom(roomId);
+        var users = _roomService.GetUsersInRoom(roomId);
 
         return Ok(users);
     }
