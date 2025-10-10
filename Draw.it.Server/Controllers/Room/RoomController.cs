@@ -86,4 +86,15 @@ public class RoomController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Get all users currently in the room
+    /// </summary>
+    [HttpGet("{roomId}/users")]
+    public IActionResult GetRoomUsers(string roomId)
+    {
+        var users = _roomService.GetUsersInRoom(roomId);
+
+        return Ok(users);
+    }
 }

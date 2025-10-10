@@ -5,4 +5,5 @@ namespace Draw.it.Server.Repositories.User;
 public interface IUserRepository : IRepository<UserModel, long>
 {
     long GetNextId();
+    IEnumerable<UserModel> FindByRoomId(string roomId);
 }

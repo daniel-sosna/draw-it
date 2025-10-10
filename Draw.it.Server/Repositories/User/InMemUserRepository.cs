@@ -43,4 +43,9 @@ public class InMemUserRepository : IUserRepository
     {
         return Interlocked.Increment(ref _nextId) - 1;  // i.e. return current value, then increment.
     }
+
+    public IEnumerable<UserModel> FindByRoomId(string roomId)
+    {
+        return _users.Values.Where(u => u.RoomId == roomId);
+    }
 }
