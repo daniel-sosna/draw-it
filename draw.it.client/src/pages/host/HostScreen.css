@@ -96,19 +96,24 @@
     width: 100%;
 }
 
-.checkbox-group {
+.radio-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-    .checkbox-group label {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-    }
+.radio-group label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.radio-group label input[type="radio"] {
+    flex-shrink: 0;
+}
 
 .custom-input input {
     margin-top: 0.5rem;
@@ -146,4 +151,22 @@
         width: 100%;
         min-width: initial;
     }
+}
+
+.button-container.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
 }

@@ -13,6 +13,8 @@ function HostScreen() {
     const [drawingTime, setDrawingTime] = useState(60);
     const [numberOfRounds, setNumberOfRounds] = useState(2);
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
 
     const [joinedPlayers] = useState([
@@ -111,20 +113,21 @@ function HostScreen() {
                     <h2>Game Settings</h2>
                     <div className="settings-content">
                         <div className="categories-section">
-                            <h3>Choose Categories:</h3>
-                            <div className="checkbox-group" style={{
+                            <h3>Choose Category:</h3>
+                            <div className="radio-group" style={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: '8px',
                                 alignItems: 'flex-start'
                             }}>
                                 {['Animals', 'Vehicle type', 'Games', 'Custom'].map(cat => (
-                                    <label key={cat} style={{ display: 'flex',  alignItems: 'center', gap: '8px' }}>
-                                        <Input
-                                            type="checkbox"
-                                            value={cat}
-                                            checked={selectedCategories.includes(cat)}
+                                    <label key={cat.id} className="radio-label">
+                                        <input
+                                            type="radio"
+                                            name="categoryId"
+                                            value={cat.id}
                                             onChange={handleCategoryChange}
+                                            className="category-radio"
                                         />
                                         {cat}
                                     </label>
@@ -172,9 +175,15 @@ function HostScreen() {
                 </div>
             </div>
 
-            <div className="button-container">
+            <div className="button-container action-buttons">
+                <Button disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Settings'}
+                </Button>
                 <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
+                </Button>
+                <Button disabled={deleting} className="delete-button">
+                    {deleting ? 'Deleting...' : 'Delete Room'}
                 </Button>
             </div>
         </div>
