@@ -9,5 +9,4 @@ public interface IUserService
     UserModel GetUser(long userId);
     void SetRoom(long userId, string? roomId);
     void SetReady(long userId, bool isReady);
-
 }

@@ -59,4 +59,5 @@ public class UserService : IUserService
         _userRepository.Save(user);
         _logger.LogInformation("User {} ready status set to {}", userId, isReady);
     }
+
 }

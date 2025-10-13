@@ -10,5 +10,6 @@ namespace Draw.it.Server.Services.Room
         RoomModel GetRoom(string roomId);
         void JoinRoom(string roomId, UserModel user);
         void LeaveRoom(string roomId, UserModel user);
+        IEnumerable<UserModel> GetUsersInRoom(string roomId);
     }
 }
