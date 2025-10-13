@@ -14,7 +14,6 @@ public class LobbyHub : Hub
     
     public async Task joinRoomGroup(string user, string roomId)
     {
-        
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
         
         // Maybe tell the service that a user has joined (for state/database).
@@ -22,7 +21,6 @@ public class LobbyHub : Hub
         
         // Maybe add a message that a user has joined
         // await Clients.Group(roomId).SendAsync("UserJoined", Context.UserIdentifier);
-
     }
     
 }

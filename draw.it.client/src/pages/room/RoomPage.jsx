@@ -43,8 +43,9 @@ export default function RoomPage() {
             try {
                 await connection.start();
                 console.log("SignalR Connected.");
+                console.log(`Room id: ${roomId}`);
                 connection.invoke("JoinRoomGroup", userId, roomId); 
-                // Need to extract actual userId and use actual roomId
+                // Need to extract actual userId
             } catch (err) {
                 console.log(err);
                 setTimeout(start, 5000);
