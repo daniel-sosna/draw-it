@@ -31,23 +31,31 @@ export default function RoomPage() {
     };
     useEffect(() => {
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/lobbyHub")
+            .withUrl("https://localhost:7200/lobbyHub")
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
         setLobbyConnection(connection);
 
         const userId = "12345"
-        
-        connection.start()
-            .then(() => {
-                connection.invoke("JoinRoomGroup", userId, roomId) // Need to extract actual userId and use actual roomId
-            })
-            .catch(err => console.error("Connection failed:", err));
 
-        return () => {
-            connection.stop();
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+                connection.invoke("JoinRoomGroup", userId, roomId); 
+                // Need to extract actual userId and use actual roomId
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
         };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        start();
     }, [roomId]); // Ensures it runs once per room ID
 
     const leaveRoom = async () => {

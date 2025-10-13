@@ -2,6 +2,7 @@ using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
+using Draw.it.Server.Services.Hub;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 
@@ -30,7 +31,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
 builder.Services.AddSignalR();
-
+builder.Services.AddScoped<LobbyHubService>();
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
