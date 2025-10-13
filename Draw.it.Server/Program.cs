@@ -1,7 +1,9 @@
 using Draw.it.Server.Exceptions;
+using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
+builder.Services.AddSignalR();
+
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
@@ -63,6 +67,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<LobbyHub>("/lobbyHub");
 
 app.MapFallbackToFile("/index.html");
 

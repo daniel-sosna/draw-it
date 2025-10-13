@@ -2,12 +2,15 @@
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 
+
 export default function GameplayScreen() {
     const [messages, setMessages] = useState([
         { user: "Laimis", text: "Bananas" },
         { user: "Titas", text: "Lol" },
     ]);
 
+    
+    
     const handleSendMessage = (text) => {
         setMessages((prevMessages) => [...prevMessages, { user: "You", text }]);
         // TODO: send message to backend 
