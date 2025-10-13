@@ -60,8 +60,4 @@ public class UserService : IUserService
         _logger.LogInformation("User {} ready status set to {}", userId, isReady);
     }
 
-    public IEnumerable<UserModel> GetUsersInRoom(string roomId)
-    {
-        return _userRepository.FindByRoomId(roomId);
-    }
 }

@@ -4,6 +4,7 @@ using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.Room;
+using Draw.it.Server.Repositories.User;
 using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Services.Room;
@@ -15,11 +16,13 @@ public class RoomService : IRoomService
     private readonly ILogger<RoomService> _logger;
     private readonly IRoomRepository _roomRepository;
     private readonly IUserService _userService;
+    private readonly IUserRepository _userRepository;
 
-    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService)
+    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, IUserRepository userRepository)
     {
         _logger = logger;
         _roomRepository = roomRepository;
+        _userRepository = userRepository;
         _userService = userService;
     }
 
@@ -135,6 +138,6 @@ public class RoomService : IRoomService
             throw new EntityNotFoundException($"Room with id={roomId} not found");
         }
 
-        return _userService.GetUsersInRoom(roomId);
+        return _userRepository.FindByRoomId(roomId);
     }
 }
