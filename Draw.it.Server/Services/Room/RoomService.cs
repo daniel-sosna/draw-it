@@ -150,6 +150,15 @@ public class RoomService : IRoomService
             throw new AppException("Only the host can start the game.", HttpStatusCode.Forbidden);
         }
 
+        var players = GetUsersInRoom(roomId).ToList();
+
+        var notReadyPlayers = players.Where(p => !p.IsReady).ToList();
+
+        if (notReadyPlayers.Any())
+        {
+            var notReadyNames = string.Join(", ", notReadyPlayers.Select(p => p.Name));
+            throw new AppException($"Cannot start game. The following players are not ready: {notReadyNames}.", HttpStatusCode.Forbidden);
+        }
         room.Status = RoomStatus.InGame;
 
         _roomRepository.Save(room);
@@ -164,7 +173,7 @@ public class RoomService : IRoomService
             throw new AppException("Only the host can update the room.", HttpStatusCode.Forbidden);
         }
 
-        if (room.Status != RoomStatus.InGame)
+        if (room.Status == RoomStatus.InGame)
         {
             throw new AppException("Cannot change settings while the game is in progress.", HttpStatusCode.Forbidden);
         }
