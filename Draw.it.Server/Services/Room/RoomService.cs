@@ -151,6 +151,11 @@ public class RoomService : IRoomService
         {
             throw new AppException("Only the host can start the game.", HttpStatusCode.Forbidden);
         }
+        
+        if (room.Status != RoomStatus.InLobby)
+        {
+            throw new AppException("Cannot start game: It is already in progress or has ended.", HttpStatusCode.Conflict);
+        }
 
         var players = GetUsersInRoom(roomId).ToList();
 
@@ -180,9 +185,9 @@ public class RoomService : IRoomService
             throw new AppException("Only the host can update the room.", HttpStatusCode.Forbidden);
         }
 
-        if (room.Status == RoomStatus.InGame)
+        if (room.Status != RoomStatus.InLobby)
         {
-            throw new AppException("Cannot change settings while the game is in progress.", HttpStatusCode.Forbidden);
+            throw new AppException("Cannot change settings: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
 
         room.Settings = newSettings;
