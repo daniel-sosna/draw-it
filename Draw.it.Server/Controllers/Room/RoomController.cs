@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Draw.it.Server.Controllers.Room.DTO;
 using Draw.it.Server.Extensions;
+using Draw.it.Server.Models.Room;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 
@@ -90,11 +91,47 @@ public class RoomController : ControllerBase
     /// <summary>
     /// Get all users currently in the room
     /// </summary>
-    [HttpGet("{roomId}/users")]
+    [HttpGet("{roomId}/players")]
     public IActionResult GetRoomUsers(string roomId)
     {
         var users = _roomService.GetUsersInRoom(roomId);
 
         return Ok(users);
+    }
+
+    /// <summary>
+    /// Start the game
+    /// </summary>
+    [HttpPost("{roomId}/start")]
+    public IActionResult StartGame(string roomId)
+    {
+        var user = HttpContext.ResolveUser(_userService);
+
+        _roomService.StartGame(roomId, user);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Updates room settings (Host only)
+    /// </summary>
+    [HttpPut("{roomId}/settings")]
+    public IActionResult UpdateSettings(
+        string roomId,
+        [FromBody] RoomSettingsUpdateRequestDto requestDto)
+    {
+        var user = HttpContext.ResolveUser(_userService);
+
+        var newSettings = new RoomSettingsModel
+        {
+            RoomName = requestDto.RoomName,
+            CategoryId = requestDto.CategoryId,
+            DrawingTime = requestDto.DrawingTime,
+            NumberOfRounds = requestDto.NumberOfRounds
+        };
+
+        _roomService.UpdateSettings(roomId, user, newSettings);
+
+        return NoContent();
     }
 }
