@@ -118,17 +118,9 @@ public class RoomController : ControllerBase
     [HttpPut("{roomId}/settings")]
     public IActionResult UpdateSettings(
         string roomId,
-        [FromBody] RoomSettingsUpdateRequestDto requestDto)
+        [FromBody] RoomSettingsModel newSettings)
     {
         var user = HttpContext.ResolveUser(_userService);
-
-        var newSettings = new RoomSettingsModel
-        {
-            RoomName = requestDto.RoomName,
-            CategoryId = requestDto.CategoryId,
-            DrawingTime = requestDto.DrawingTime,
-            NumberOfRounds = requestDto.NumberOfRounds
-        };
 
         _roomService.UpdateSettings(roomId, user, newSettings);
 
