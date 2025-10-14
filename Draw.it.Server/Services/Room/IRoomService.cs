@@ -11,5 +11,7 @@ namespace Draw.it.Server.Services.Room
         void JoinRoom(string roomId, UserModel user);
         void LeaveRoom(string roomId, UserModel user);
         IEnumerable<UserModel> GetUsersInRoom(string roomId);
+        void StartGame(string roomId, UserModel user);
+        void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings);
     }
 }

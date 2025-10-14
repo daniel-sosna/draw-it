@@ -140,4 +140,37 @@ public class RoomService : IRoomService
 
         return _userRepository.FindByRoomId(roomId);
     }
+
+    public void StartGame(string roomId, UserModel user)
+    {
+        var room = GetRoom(roomId);
+
+        if (room.HostId != user.Id)
+        {
+            throw new AppException("Only the host can start the game.", HttpStatusCode.Forbidden);
+        }
+
+        room.Status = RoomStatus.InGame;
+
+        _roomRepository.Save(room);
+    }
+
+    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings)
+    {
+        var room = GetRoom(roomId);
+
+        if (room.HostId != user.Id)
+        {
+            throw new AppException("Only the host can update the room.", HttpStatusCode.Forbidden);
+        }
+
+        if (room.Status != RoomStatus.InGame)
+        {
+            throw new AppException("Cannot change settings while the game is in progress.", HttpStatusCode.Forbidden);
+        }
+
+        room.Settings = newSettings;
+
+        _roomRepository.Save(room);
+    }
 }
