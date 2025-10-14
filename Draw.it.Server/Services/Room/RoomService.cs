@@ -151,7 +151,7 @@ public class RoomService : IRoomService
         {
             throw new AppException("Only the host can start the game.", HttpStatusCode.Forbidden);
         }
-        
+
         if (room.Status != RoomStatus.InLobby)
         {
             throw new AppException("Cannot start game: It is already in progress or has ended.", HttpStatusCode.Conflict);
