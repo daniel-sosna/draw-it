@@ -83,7 +83,9 @@ public class RoomService : IRoomService
             throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Forbidden);
         }
 
-        // TODO: Remove roomId from all users that had this roomId set
+        _userService.RemoveRoomFromAllUsers(roomId);
+
+        _roomRepository.DeleteById(roomId);
     }
 
     public RoomModel GetRoom(string roomId)
