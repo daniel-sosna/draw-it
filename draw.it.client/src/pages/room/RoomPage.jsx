@@ -32,6 +32,7 @@ export default function RoomPage() {
     useEffect(() => {
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("https://localhost:7200/lobbyHub")
+            .withAutomaticReconnect()
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
@@ -47,8 +48,7 @@ export default function RoomPage() {
                 connection.invoke("JoinRoomGroup", userId, roomId); 
                 // Need to extract actual userId
             } catch (err) {
-                console.log(err);
-                setTimeout(start, 5000);
+                console.error("Initial connection failed:", err);
             }
         };
 
@@ -58,8 +58,12 @@ export default function RoomPage() {
                 .then(() => console.log(`Re-joined Room id: ${roomId}`))
                 .catch(err => console.error("Failed to re-join group:", err));
         })
-
+        
         start();
+        
+        return () => {
+            connection.stop(); // fail-safe on unmount
+        }
     }, [roomId]); // Ensures it runs once per room ID
 
     const leaveRoom = async () => {

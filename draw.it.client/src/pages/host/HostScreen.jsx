@@ -46,7 +46,6 @@ function HostScreen() {
                 connection.invoke("JoinRoomGroup", roomId);
             } catch (err) {
                 console.log(err);
-                setTimeout(start, 5000);
             }
         };
 
@@ -58,6 +57,10 @@ function HostScreen() {
             })
 
         start();
+        
+        return () => {
+            connection.stop(); // fail-safe on unmount
+        }
         
     }, [roomId]); // Ensures it runs once per room ID
     
