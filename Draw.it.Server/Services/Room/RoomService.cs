@@ -109,7 +109,7 @@ public class RoomService : IRoomService
         room.PlayerIds.Add(user.Id);
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, roomId);
-        
+
     }
 
     public void LeaveRoom(string roomId, UserModel user)

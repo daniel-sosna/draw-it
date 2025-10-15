@@ -11,7 +11,7 @@ public class GameplayHub : Hub
     {
         _gameplayHubService = gameplayHubService;
     }
-    
+
     public async Task joinGameGroup(string user, string roomId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
@@ -21,5 +21,5 @@ public class GameplayHub : Hub
     {
         // send message
     }
-    
+
 }
