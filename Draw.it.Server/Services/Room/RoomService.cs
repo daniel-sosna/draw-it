@@ -150,9 +150,5 @@ public class RoomService : IRoomService
 
         return _userRepository.FindByRoomId(roomId);
     }
-
-    public async Task HandlePlayerLeave(string userId, string roomId)
-    {
-        
-    }
+    
 }

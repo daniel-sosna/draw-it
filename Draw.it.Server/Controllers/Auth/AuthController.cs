@@ -35,7 +35,8 @@ public class AuthController : ControllerBase
         var claims = new List<Claim>
         {
             // new Claim("userId", user.Id.ToString()) 
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Name) // Automatically add identifier of Context.User.Identity.Name to signalr
 
         };
 
