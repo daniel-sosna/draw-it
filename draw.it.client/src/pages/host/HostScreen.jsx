@@ -1,11 +1,14 @@
 import './HostScreen.css';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useNavigate, useParams } from 'react-router';
 import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
+import * as signalR from "@microsoft/signalr";
 
 function HostScreen() {
+
+    const [lobbyConnection, setLobbyConnection] = useState(null);
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
     const [selectedCategories, setSelectedCategories] = useState([]);
@@ -23,6 +26,36 @@ function HostScreen() {
         { id: 3, name: 'Player 3', isReady: true },
     ]);
 
+    useEffect(() => {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7200/lobbyHub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        setLobbyConnection(connection);
+
+        const userId = "345"
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+                console.log(`Room id: ${roomId}`);
+                connection.invoke("JoinRoomGroup", userId, roomId);
+                // Need to extract actual userId
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        start();
+    }, [roomId]); // Ensures it runs once per room ID
+    
     const handleCategoryChange = (event) => {
         const { value, checked } = event.target;
         if (value === 'Custom') {
