@@ -1,15 +1,17 @@
-﻿using Draw.it.Server.Services.Hub;
+﻿using Draw.it.Server.Extensions;
+using Draw.it.Server.Services.Hub;
+using Draw.it.Server.Services.Room;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Draw.it.Server.Hubs;
 
 public class LobbyHub : Hub
 {
-    private readonly LobbyHubService _lobbyHubService;
+    private readonly IRoomService _roomService;
 
-    public LobbyHub(LobbyHubService lobbyHubService)
+    public LobbyHub(IRoomService roomService)
     {
-        _lobbyHubService = lobbyHubService;
+        _roomService = roomService;
     }
 
     public async Task joinRoomGroup(string roomId)
@@ -22,4 +24,11 @@ public class LobbyHub : Hub
         // Maybe add a message that a user has joined
         // await Clients.Group(roomId).SendAsync("UserJoined", Context.UserIdentifier);
     }
+
+    public async Task leaveRoom(string roomId)
+    {
+        await _roomService.HandlePlayerLeave(roomId);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+    }
+    
 }

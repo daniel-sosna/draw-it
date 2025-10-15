@@ -1,11 +1,14 @@
 using System.Net;
 using Draw.it.Server.Enums;
 using Draw.it.Server.Exceptions;
+using Draw.it.Server.Extensions;
+using Draw.it.Server.Hubs;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Repositories.User;
 using Draw.it.Server.Services.User;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Draw.it.Server.Services.Room;
 
@@ -17,13 +20,17 @@ public class RoomService : IRoomService
     private readonly IRoomRepository _roomRepository;
     private readonly IUserService _userService;
     private readonly IUserRepository _userRepository;
+    private readonly IHubContext<LobbyHub> _lobbyContext;
 
-    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, IUserRepository userRepository)
+
+    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, 
+        IUserRepository userRepository, IHubContext<LobbyHub> lobbyContext)
     {
         _logger = logger;
         _roomRepository = roomRepository;
         _userRepository = userRepository;
         _userService = userService;
+        _lobbyContext = lobbyContext;
     }
 
     private string GenerateRandomRoomId()
@@ -142,5 +149,10 @@ public class RoomService : IRoomService
         }
 
         return _userRepository.FindByRoomId(roomId);
+    }
+
+    public async Task HandlePlayerLeave(string roomId)
+    {
+        
     }
 }
