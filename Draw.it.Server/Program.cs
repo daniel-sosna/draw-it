@@ -54,8 +54,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseCors("Frontend");
 
 // Use authentication/authorization middlewares
