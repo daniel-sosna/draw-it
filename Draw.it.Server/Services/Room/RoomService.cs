@@ -80,7 +80,7 @@ public class RoomService : IRoomService
 
         if (room.Status == RoomStatus.InGame)
         {
-            throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Forbidden);
+            throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Conflict);
         }
 
         _userService.RemoveRoomFromAllUsers(roomId);
@@ -103,7 +103,7 @@ public class RoomService : IRoomService
         var room = GetRoom(roomId);
         if (room.Status != RoomStatus.InLobby)
         {
-            throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Forbidden);
+            throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
         // TODO: Check on number of players
         room.PlayerIds.Add(user.Id);
@@ -125,7 +125,7 @@ public class RoomService : IRoomService
 
         if (room.Status == RoomStatus.InGame)
         {
-            throw new AppException("Cannot leave room while the game is in progress.", HttpStatusCode.Forbidden);
+            throw new AppException("Cannot leave room while the game is in progress.", HttpStatusCode.Conflict);
         }
 
         room.PlayerIds.Remove(user.Id);
@@ -141,5 +141,57 @@ public class RoomService : IRoomService
         }
 
         return _userRepository.FindByRoomId(roomId);
+    }
+
+    public void StartGame(string roomId, UserModel user)
+    {
+        var room = GetRoom(roomId);
+
+        if (room.HostId != user.Id)
+        {
+            throw new AppException("Only the host can start the game.", HttpStatusCode.Forbidden);
+        }
+
+        if (room.Status != RoomStatus.InLobby)
+        {
+            throw new AppException("Cannot start game: It is already in progress or has ended.", HttpStatusCode.Conflict);
+        }
+
+        var players = GetUsersInRoom(roomId).ToList();
+
+        if (players.Count < 2)
+        {
+            throw new AppException("Cannot start game: At least 2 players are required.", HttpStatusCode.Conflict);
+        }
+
+        var notReadyPlayers = players.Where(p => !p.IsReady).ToList();
+
+        if (notReadyPlayers.Any())
+        {
+            var notReadyNames = string.Join(", ", notReadyPlayers.Select(p => p.Name));
+            throw new AppException($"Cannot start game. The following players are not ready: {notReadyNames}.", HttpStatusCode.Conflict);
+        }
+        room.Status = RoomStatus.InGame;
+
+        _roomRepository.Save(room);
+    }
+
+    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings)
+    {
+        var room = GetRoom(roomId);
+
+        if (room.HostId != user.Id)
+        {
+            throw new AppException("Only the host can update the room.", HttpStatusCode.Forbidden);
+        }
+
+        if (room.Status != RoomStatus.InLobby)
+        {
+            throw new AppException("Cannot change settings: Game is already in progress or has ended.", HttpStatusCode.Conflict);
+        }
+
+        room.Settings = newSettings;
+
+        _roomRepository.Save(room);
     }
 }
