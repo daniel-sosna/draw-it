@@ -59,4 +59,17 @@ public class UserService : IUserService
         _userRepository.Save(user);
         _logger.LogInformation("User {} ready status set to {}", userId, isReady);
     }
+
+    public void RemoveRoomFromAllUsers(string roomId)
+    {
+        var users = _userRepository.FindByRoomId(roomId);
+
+        foreach (var user in users)
+        {
+            user.RoomId = null;
+
+            _userRepository.Save(user);
+        }
+    }
+
 }

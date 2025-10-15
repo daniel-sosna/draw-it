@@ -65,15 +65,8 @@ function HostScreen() {
     }, [roomId]); // Ensures it runs once per room ID
     
     const handleCategoryChange = (event) => {
-        const { value, checked } = event.target;
-        if (value === 'Custom') {
-            setSelectedCategories(checked ? ['Custom'] : []);
-        } else {
-            setSelectedCategories(prev => {
-                const updated = prev.filter(cat => cat !== 'Custom');
-                return checked ? [...updated, value] : updated.filter(cat => cat !== value);
-            });
-        }
+        const value = parseInt(event.target.value, 10);
+        setCategoryId(value);
     };
 
     const handleNumberInput = (event, setter, min) => {
@@ -174,16 +167,6 @@ function HostScreen() {
                                     </label>
                                 ))}
                             </div>
-                            {selectedCategories.includes('Custom') && (
-                                <div className="custom-input" style={{ marginTop: '10px' }}>
-                                    <Input
-                                        type="text"
-                                        value={customWords}
-                                        onChange={(e) => setCustomWords(e.target.value)}
-                                        placeholder="Enter words separated by commas"
-                                    />
-                                </div>
-                            )}
                         </div>
 
                         <div className="game-options-section">
