@@ -34,7 +34,9 @@ public class AuthController : ControllerBase
         // Create identity with userId as claim
         var claims = new List<Claim>
         {
-            new Claim("userId", user.Id.ToString())
+            // new Claim("userId", user.Id.ToString()) 
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

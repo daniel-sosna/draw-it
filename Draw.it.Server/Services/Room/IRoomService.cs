@@ -11,6 +11,6 @@ namespace Draw.it.Server.Services.Room
         void JoinRoom(string roomId, UserModel user);
         void LeaveRoom(string roomId, UserModel user);
         IEnumerable<UserModel> GetUsersInRoom(string roomId);
-        Task HandlePlayerLeave(string roomId);
+        Task HandlePlayerLeave(string userId, string roomId);
     }
 }

@@ -27,7 +27,7 @@ public class LobbyHub : Hub
 
     public async Task leaveRoom(string roomId)
     {
-        await _roomService.HandlePlayerLeave(roomId);
+        await _roomService.HandlePlayerLeave(Context.UserIdentifier, roomId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
     }
     
