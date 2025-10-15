@@ -37,16 +37,13 @@ export default function RoomPage() {
             .build();
 
         setLobbyConnection(connection);
-
-        const userId = "12345"
-
+        
         async function start() {
             try {
                 await connection.start();
                 console.log("SignalR Connected.");
                 console.log(`Room id: ${roomId}`);
-                connection.invoke("JoinRoomGroup", userId, roomId); 
-                // Need to extract actual userId
+                connection.invoke("JoinRoomGroup", roomId); 
             } catch (err) {
                 console.error("Initial connection failed:", err);
             }
