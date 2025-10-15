@@ -12,7 +12,7 @@ public class LobbyHub : Hub
         _lobbyHubService = lobbyHubService;
     }
     
-    public async Task joinRoomGroup(string user, string roomId)
+    public async Task joinRoomGroup(string roomId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
         

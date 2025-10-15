@@ -5,6 +5,7 @@ import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
 import * as signalR from "@microsoft/signalr";
+import {startLobbyConnection} from "@/connection/useLobbyConnection.jsx";
 
 function HostScreen() {
 
@@ -27,33 +28,37 @@ function HostScreen() {
     ]);
 
     useEffect(() => {
+        
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("https://localhost:7200/lobbyHub")
             .configureLogging(signalR.LogLevel.Information)
+            .withAutomaticReconnect()
             .build();
 
         setLobbyConnection(connection);
 
-        const userId = "345"
 
         async function start() {
             try {
                 await connection.start();
                 console.log("SignalR Connected.");
                 console.log(`Room id: ${roomId}`);
-                connection.invoke("JoinRoomGroup", userId, roomId);
-                // Need to extract actual userId
+                connection.invoke("JoinRoomGroup", roomId);
             } catch (err) {
                 console.log(err);
                 setTimeout(start, 5000);
             }
         };
 
-        connection.onclose(async () => {
-            await start();
-        });
+        connection.onreconnected(connectionId => {
+            console.log("Reconnected successfully!");
+            connection.invoke("JoinRoomGroup", roomId)
+                .then(() => console.log(`Re-joined Room id: ${roomId}`))
+                .catch(err => console.error("Failed to re-join group:", err));
+            })
 
         start();
+        
     }, [roomId]); // Ensures it runs once per room ID
     
     const handleCategoryChange = (event) => {

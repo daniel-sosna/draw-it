@@ -52,9 +52,12 @@ export default function RoomPage() {
             }
         };
 
-        connection.onclose(async () => {
-            await start();
-        });
+        connection.onreconnected(connectionId => {
+            console.log("Reconnected successfully!");
+            connection.invoke("JoinRoomGroup", roomId)
+                .then(() => console.log(`Re-joined Room id: ${roomId}`))
+                .catch(err => console.error("Failed to re-join group:", err));
+        })
 
         start();
     }, [roomId]); // Ensures it runs once per room ID
