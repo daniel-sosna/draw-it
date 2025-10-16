@@ -24,13 +24,12 @@ public class LobbyHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        // 1. Get the authenticated user ID (string)
+        // Get the user id
         string? hubUserIdString = Context.UserIdentifier;
         
-        // Log the disconnection and potential error
         _logger.LogInformation("User {UserId} disconnected. Exception: {Ex}", hubUserIdString, exception?.Message);
 
-        // 2. Safely parse and validate the user ID
+        // Safely parse and validate the user ID
         if (long.TryParse(hubUserIdString, out long usrId))
         {
             try
@@ -49,7 +48,7 @@ public class LobbyHub : Hub
                     _logger.LogInformation("User {UserId} cleaned up from room {RoomId}.", usrId, currentRoomId);
                 }
                 
-                // 6. Delete the user from the repository (if they are temporary)
+                // Delete the user
                 _userService.DeleteUser(usrId); 
             }
             catch (Exception ex)
@@ -88,6 +87,7 @@ public class LobbyHub : Hub
     {
         // Maybe add additional checking to see if this is the host
         // if (_roomService.GetRoomHostId(roomId) != Context.UserIdentifier) { return; }
+        
         
         await _roomService.SetSettingsAsync(roomId, categoryId, drawingTime, numberOfRounds);
     }

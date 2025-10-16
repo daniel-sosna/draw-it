@@ -152,6 +152,28 @@ public class RoomService : IRoomService
 
     public async Task SetSettingsAsync(string roomId, string categoryId, string drawingTime, string numberOfRounds)
     {
+        // Validation
+        if (!int.TryParse(drawingTime, out int durationSec) || durationSec < 20 || durationSec > 180)
+        {
+            throw new AppException("Invalid drawing time value.", HttpStatusCode.BadRequest);
+        }
+        if (!int.TryParse(numberOfRounds, out int rounds) || rounds < 1 || rounds > 10)
+        {
+            throw new AppException("Invalid number of rounds value.", HttpStatusCode.BadRequest);
+        }
         
+        /*
+        var room = _roomRepository.GetRoom(roomId);
+        if (room == null)
+        {
+            throw new EntityNotFoundException($"Room with id={roomId} not found");
+        }
+        */
+        
+        // room.Settings.Category = categoryId;
+        // room.Settings.DrawingTime = durationSec;
+        // room.Settings.NumberOfRounds = rounds;
+        
+        // await _roomRepository.SaveAsync(room);
     }
 }

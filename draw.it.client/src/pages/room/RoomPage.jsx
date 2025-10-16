@@ -26,6 +26,7 @@ export default function RoomPage() {
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
+    
     useEffect(() => {
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("https://localhost:7200/lobbyHub")
@@ -43,15 +44,6 @@ export default function RoomPage() {
                 connection.invoke("JoinRoomGroup", roomId); 
             } catch (err) {
                 console.error("Initial connection failed:", err);
-            }
-        }
-        async function fetchInitialRoomData() {
-            try {
-                const response = await api.get(`/api/v1/room/${roomId}`); // Get the current settings
-                setRoomState(response.data);
-            } catch (err) {
-                console.error("Error fetching initial room data:", err);
-                navigate("/"); // Quit if no settings returned
             }
         }
         
@@ -77,7 +69,6 @@ export default function RoomPage() {
         });
         
         
-        fetchInitialRoomData();
         start();
         
         return () => {
@@ -109,17 +100,17 @@ export default function RoomPage() {
     <div className="game-room">
       <div className="game-room-container">
         <h1 className="game-room-title">GAME ROOM</h1>
-        <div className="room-id">Room ID: {room.id}</div>
+        <div className="room-id">Room ID: {roomState.id}</div>
         
         <div className="game-room-content">
           {/* Left Column - Players */}
           <div className="players-section">
             <h2 className="section-title">PLAYERS</h2>
             <div className="player-count">
-              {room.players.length} / 4
+              {players.length} / 4
             </div>
             <ul className="players-list">
-              {room.players.map((p) => (
+              {players.map((p) => (
                 <li key={p.id} className="player-item">
                   {p.name} {p.isHost ? "👑" : ""}
                 </li>
@@ -137,19 +128,19 @@ export default function RoomPage() {
           <div className="game-details-section">
             <div className="game-setting">
               <span className="setting-label">COUNT:</span>
-              <span className="setting-value">{room.players.length}</span>
+              <span className="setting-value">{players.length}</span>
             </div>
             <div className="game-setting">
               <span className="setting-label">CATEGORY:</span>
-              <span className="setting-value category-value">{room.settings.category}</span>
+              <span className="setting-value category-value">{settings.category}</span>
             </div>
             <div className="game-setting">
               <span className="setting-label">DURATION:</span>
-              <span className="setting-value">{formatDuration(room.settings.durationSec)}</span>
+              <span className="setting-value">{formatDuration(settings.durationSec)}</span>
             </div>
             <div className="game-setting">
               <span className="setting-label">ROUNDS:</span>
-              <span className="setting-value">{room.settings.rounds}</span>
+              <span className="setting-value">{settings.rounds}</span>
             </div>
             <div className="leave-button-container">
               <Button onClick={leaveRoom}>
