@@ -83,13 +83,13 @@ public class LobbyHub : Hub
         _logger.LogInformation("User {usrId} successfully left room {roomId}. The connection identifier={Context.UserIdentifier}", usrId, roomId, Context.UserIdentifier);
     }
 
-    public async Task updateRoomSettings(string roomId, string categoryId, string drawingTime, string numberOfRounds)
+    public async Task updateRoomSettings(string userId, string roomId, string categoryId, string drawingTime, string numberOfRounds)
     {
         // Maybe add additional checking to see if this is the host
         // if (_roomService.GetRoomHostId(roomId) != Context.UserIdentifier) { return; }
         
         
-        await _roomService.SetSettingsAsync(roomId, categoryId, drawingTime, numberOfRounds);
+        await _roomService.SetSettingsAsync(userId, roomId, categoryId, drawingTime, numberOfRounds);
     }
     
 }

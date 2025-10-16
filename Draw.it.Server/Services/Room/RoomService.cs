@@ -183,7 +183,7 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
     }
 
-    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings)
+    public void UpdateSettingsInternal(string roomId, UserModel user, RoomSettingsModel newSettings)
     {
         var room = GetRoom(roomId);
 
@@ -202,9 +202,9 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
     }
 
-    public async Task SetSettingsAsync(string roomId, string categoryId, string drawingTime, string numberOfRounds)
+    public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, string drawingTime, string numberOfRounds)
     {
-        // Validation
+        // Data Parsing and Validation
         if (!int.TryParse(drawingTime, out int durationSec) || durationSec < 20 || durationSec > 180)
         {
             throw new AppException("Invalid drawing time value.", HttpStatusCode.BadRequest);
@@ -213,19 +213,32 @@ public class RoomService : IRoomService
         {
             throw new AppException("Invalid number of rounds value.", HttpStatusCode.BadRequest);
         }
-        
-        /*
-        var room = _roomRepository.GetRoom(roomId);
-        if (room == null)
+        if (!long.TryParse(categoryId, out long categoryIdLong))
         {
-            throw new EntityNotFoundException($"Room with id={roomId} not found");
+            throw new AppException("Invalid category ID.", HttpStatusCode.BadRequest);
         }
-        */
+        if (!long.TryParse(userIdString, out long userId))
+        {
+            throw new AppException("Invalid user ID.", HttpStatusCode.BadRequest);
+        }
+
+        // Execute ALL I/O
+        await Task.Run(() =>
+        { 
         
-        // room.Settings.Category = categoryId;
-        // room.Settings.DrawingTime = durationSec;
-        // room.Settings.NumberOfRounds = rounds;
-        
-        // await _roomRepository.SaveAsync(room);
+            UserModel user = _userService.GetUser(userId);
+            RoomModel room = GetRoom(roomId);
+
+            // Same RoomName and create the new settings model
+            var newSettings = new RoomSettingsModel()
+            {
+                RoomName = room.Settings.RoomName,
+                CategoryId = categoryIdLong,
+                DrawingTime = durationSec,
+                NumberOfRounds = rounds,
+            };
+            
+            UpdateSettingsInternal(roomId, user, newSettings);
+        });
     }
 }

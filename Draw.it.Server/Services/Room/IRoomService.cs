@@ -11,8 +11,9 @@ namespace Draw.it.Server.Services.Room
         void JoinRoom(string roomId, UserModel user);
         public void LeaveRoom(string roomId, UserModel user, Boolean unexpectedLeave = false);
         IEnumerable<UserModel> GetUsersInRoom(string roomId);
-        Task SetSettingsAsync(string roomId, string categoryId, string drawingTime, string numberOfRounds);
         void StartGame(string roomId, UserModel user);
-        void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings);
+        void UpdateSettingsInternal(string roomId, UserModel user, RoomSettingsModel newSettings);
+
+        Task SetSettingsAsync(string userIdString, string roomId, string categoryId, string drawingTime, string numberOfRounds);
     }
 }

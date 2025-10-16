@@ -122,7 +122,7 @@ public class RoomController : ControllerBase
     {
         var user = HttpContext.ResolveUser(_userService);
 
-        _roomService.UpdateSettings(roomId, user, newSettings);
+        _roomService.UpdateSettingsInternal(roomId, user, newSettings);
 
         return NoContent();
     }
