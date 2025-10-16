@@ -1,4 +1,5 @@
-﻿using Draw.it.Server.Exceptions;
+﻿using System.Net;
+using Draw.it.Server.Exceptions;
 using Draw.it.Server.Extensions;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Hub;
@@ -12,11 +13,13 @@ public class LobbyHub : Hub
 {
     private readonly IRoomService _roomService;
     private readonly IUserService _userService;
+    private readonly ILogger<LobbyHub> _logger;
 
-    public LobbyHub(IRoomService roomService, IUserService userService)
+    public LobbyHub(IRoomService roomService, IUserService userService, ILogger<LobbyHub> logger)
     {
         _roomService = roomService;
         _userService = userService;
+        _logger = logger;
     }
 
     public async Task joinRoomGroup(string roomId)
@@ -34,12 +37,12 @@ public class LobbyHub : Hub
     {
         if (!long.TryParse(Context.UserIdentifier, out long usrId))
         {
-            // Throw an exception
+            throw new AppException("Invalid user identifier provided", HttpStatusCode.NotFound);
         }
-        
         UserModel usr = _userService.GetUser(usrId);
         _roomService.LeaveRoom(roomId, usr);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+        _logger.LogInformation("User {usrId} successfully left room {roomId}. The connection identifier={Context.UserIdentifier}", usrId, roomId, Context.UserIdentifier);
     }
     
 }
