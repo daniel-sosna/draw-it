@@ -202,9 +202,10 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
     }
 
-    public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, string drawingTime, string numberOfRounds)
+    public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds)
     {
         // Data Parsing and Validation
+        /*
         if (!int.TryParse(drawingTime, out int durationSec) || durationSec < 20 || durationSec > 180)
         {
             throw new AppException("Invalid drawing time value.", HttpStatusCode.BadRequest);
@@ -213,10 +214,12 @@ public class RoomService : IRoomService
         {
             throw new AppException("Invalid number of rounds value.", HttpStatusCode.BadRequest);
         }
+        */
         if (!long.TryParse(categoryId, out long categoryIdLong))
         {
             throw new AppException("Invalid category ID.", HttpStatusCode.BadRequest);
         }
+        
         if (!long.TryParse(userIdString, out long userId))
         {
             throw new AppException("Invalid user ID.", HttpStatusCode.BadRequest);
@@ -234,8 +237,8 @@ public class RoomService : IRoomService
             {
                 RoomName = room.Settings.RoomName,
                 CategoryId = categoryIdLong,
-                DrawingTime = durationSec,
-                NumberOfRounds = rounds,
+                DrawingTime = drawingTime,
+                NumberOfRounds = numberOfRounds,
             };
             
             UpdateSettingsInternal(roomId, user, newSettings);

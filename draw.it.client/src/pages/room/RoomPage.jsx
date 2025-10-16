@@ -54,7 +54,7 @@ export default function RoomPage() {
                 .catch(err => console.error("Failed to re-join group:", err));
         });
 
-        connection.on("ReceiveSettingsUpdate", (categoryId, drawingTime, numberOfRounds) => {
+        connection.on("RecieveUpdateSettings", (categoryId, drawingTime, numberOfRounds) => {
             console.log("Received new settings:", categoryId, drawingTime, numberOfRounds);
             
             setRoomState(prev => ({
@@ -79,7 +79,7 @@ export default function RoomPage() {
 
     const leaveRoom = async () => {
         try {
-            await lobbyConnection.invoke("leaveRoom", roomId);
+            await lobbyConnection.invoke("LeaveRoom", roomId);
             console.log("Left room: " + roomId);
             navigate("/");
         

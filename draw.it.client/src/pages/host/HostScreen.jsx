@@ -1,5 +1,5 @@
 import './HostScreen.css';
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useMemo} from 'react';
 import { useNavigate, useParams } from 'react-router';
 import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
@@ -7,11 +7,34 @@ import Input from "@/components/input/Input.jsx"
 import * as signalR from "@microsoft/signalr";
 import {startLobbyConnection} from "@/connection/useLobbyConnection.jsx";
 
+// This debounce utility is for sending real time updates
+// so there is a slight delay
+// No need to send updates every milisecond
+const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+};
+
+const CATEGORIES = [
+    { id: 1, name: 'Animals' },
+    { id: 2, name: 'Vehicle type' },
+    { id: 3, name: 'Games' },
+    { id: 4, name: 'Custom' },
+];
+
 function HostScreen() {
 
     const [lobbyConnection, setLobbyConnection] = useState(null);
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
+    const [categoryId, setCategoryId] = useState(CATEGORIES[0].id.toString());
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [customWords, setCustomWords] = useState('');
     const [drawingTime, setDrawingTime] = useState(60);
@@ -26,6 +49,36 @@ function HostScreen() {
         { id: 2, name: 'Player 2', isReady: false },
         { id: 3, name: 'Player 3', isReady: true },
     ]);
+    
+    
+    const sendSettingsUpdate = async (newCatId, newDrawingTime, newNumberOfRounds) => {
+        if (!lobbyConnection) {
+            console.error("SignalR connection not established.");
+            return;
+        }
+
+        setSaving(true);
+        try {
+            await lobbyConnection.invoke("updateRoomSettings",
+                roomId,
+                newCatId,
+                newDrawingTime,
+                newNumberOfRounds,
+            );
+
+        } catch (err) {
+            console.error('Error sending real-time settings update:', err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Waits 500ms after the last change before sending the update
+    const debouncedSend = useMemo(() => {
+        return debounce((catId, drawTime, rounds) => {
+            sendSettingsUpdate(catId, drawTime, rounds);
+        }, 500);
+    }, [lobbyConnection, roomId]);
 
     useEffect(() => {
         
@@ -54,7 +107,15 @@ function HostScreen() {
             connection.invoke("JoinRoomGroup", roomId)
                 .then(() => console.log(`Re-joined Room id: ${roomId}`))
                 .catch(err => console.error("Failed to re-join group:", err));
-            })
+            });
+
+        connection.on("recieveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
+            console.log("Host received settings update broadcast.");
+            // This ensures state is corrected if the server rejects a value.
+            setCategoryId(newCategoryId);
+            setDrawingTime(parseInt(newDrawingTime));
+            setNumberOfRounds(parseInt(newNumberOfRounds));
+        });
 
         start();
         
@@ -63,21 +124,30 @@ function HostScreen() {
         }
         
     }, [roomId]); // Ensures it runs once per room ID
-    
+
     const handleCategoryChange = (event) => {
-        const value = parseInt(event.target.value, 10);
-        setCategoryId(value);
+        const newCatId = event.target.value;
+        setCategoryId(newCatId);
+        // Call debounced send with the new category ID
+        debouncedSend(newCatId, drawingTime, numberOfRounds);
     };
 
-    const handleNumberInput = (event, setter, min) => {
+    const handleNumberInput = (event, setter, fieldName) => {
         const value = parseInt(event.target.value, 10);
-        if (value < min || isNaN(value)) {
-            setter(min);
-        } else {
-            setter(value);
+
+        const newValue = isNaN(value) ? 0 : value;
+
+        setter(newValue);
+
+        // Check which state variable changed and call the debounced sender
+        if (fieldName === 'drawingTime') {
+            debouncedSend(categoryId, newValue, numberOfRounds);
+        } else if (fieldName === 'numberOfRounds') {
+            debouncedSend(categoryId, drawingTime, newValue);
         }
     };
 
+    // The settings payload will be obsolete because settings are now automatically saved to backend
     const startGame = async () => {
         setLoading(true);
 
@@ -154,16 +224,17 @@ function HostScreen() {
                                 gap: '8px',
                                 alignItems: 'flex-start'
                             }}>
-                                {['Animals', 'Vehicle type', 'Games', 'Custom'].map(cat => (
+                                {CATEGORIES.map(cat => (
                                     <label key={cat.id} className="radio-label">
                                         <input
                                             type="radio"
                                             name="categoryId"
-                                            value={cat.id}
+                                            value={cat.id.toString()}
+                                            checked={categoryId === cat.id.toString()}
                                             onChange={handleCategoryChange}
                                             className="category-radio"
                                         />
-                                        {cat}
+                                        {cat.name}
                                     </label>
                                 ))}
                             </div>

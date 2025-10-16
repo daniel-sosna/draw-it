@@ -60,7 +60,7 @@ public class LobbyHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task joinRoomGroup(string roomId)
+    public async Task JoinRoomGroup(string roomId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
@@ -71,7 +71,7 @@ public class LobbyHub : Hub
         // await Clients.Group(roomId).SendAsync("UserJoined", Context.UserIdentifier);
     }
 
-    public async Task leaveRoom(string roomId)
+    public async Task LeaveRoom(string roomId)
     {
         if (!long.TryParse(Context.UserIdentifier, out long usrId))
         {
@@ -83,13 +83,10 @@ public class LobbyHub : Hub
         _logger.LogInformation("User {usrId} successfully left room {roomId}. The connection identifier={Context.UserIdentifier}", usrId, roomId, Context.UserIdentifier);
     }
 
-    public async Task updateRoomSettings(string userId, string roomId, string categoryId, string drawingTime, string numberOfRounds)
+    public async Task updateRoomSettings(string roomId, string categoryId, int drawingTime, int numberOfRounds)
     {
-        // Maybe add additional checking to see if this is the host
-        // if (_roomService.GetRoomHostId(roomId) != Context.UserIdentifier) { return; }
-        
-        
-        await _roomService.SetSettingsAsync(userId, roomId, categoryId, drawingTime, numberOfRounds);
+        await _roomService.SetSettingsAsync(Context.UserIdentifier, roomId, categoryId, drawingTime, numberOfRounds);
+        await Clients.Group(roomId).SendAsync("RecieveUpdateSettings", categoryId, drawingTime, numberOfRounds);
     }
     
 }

@@ -14,6 +14,6 @@ namespace Draw.it.Server.Services.Room
         void StartGame(string roomId, UserModel user);
         void UpdateSettingsInternal(string roomId, UserModel user, RoomSettingsModel newSettings);
 
-        Task SetSettingsAsync(string userIdString, string roomId, string categoryId, string drawingTime, string numberOfRounds);
+        Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds);
     }
 }
