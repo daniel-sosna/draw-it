@@ -7,6 +7,7 @@ import * as signalR from "@microsoft/signalr";
 
 const initialRoomState = {
     id: "",
+    name: "Game Room",
     players: [],
     settings: { durationSec: 90, rounds: 3, category: "Loading..." },
 };
@@ -41,7 +42,8 @@ export default function RoomPage() {
                 await connection.start();
                 console.log("SignalR Connected.");
                 console.log(`Room id: ${roomId}`);
-                connection.invoke("JoinRoomGroup", roomId); 
+                connection.invoke("JoinRoomGroup", roomId);
+                await connection.invoke("RequestSettingsUpdate", roomId);
             } catch (err) {
                 console.error("Initial connection failed:", err);
             }
@@ -54,11 +56,12 @@ export default function RoomPage() {
                 .catch(err => console.error("Failed to re-join group:", err));
         });
 
-        connection.on("RecieveUpdateSettings", (categoryId, drawingTime, numberOfRounds) => {
-            console.log("Received new settings:", categoryId, drawingTime, numberOfRounds);
+        connection.on("RecieveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
+            console.log("Received new settings:", categoryId, drawingTime, numberOfRounds, roomName);
             
             setRoomState(prev => ({
                 ...prev,
+                name: roomName,
                 settings: {
                     ...prev.settings,
                     category: categoryId,
@@ -66,6 +69,10 @@ export default function RoomPage() {
                     rounds: numberOfRounds,
                 }
             }));
+        });
+
+        connection.on("RequestCurrentSettings", () => {
+            console.log("Ignoring request. Request for the host only");
         });
         
         
@@ -99,7 +106,7 @@ export default function RoomPage() {
     return (
     <div className="game-room">
       <div className="game-room-container">
-        <h1 className="game-room-title">GAME ROOM</h1>
+        <h1 className="game-room-title">{roomState.name}</h1>
         <div className="room-id">Room ID: {roomState.id}</div>
         
         <div className="game-room-content">

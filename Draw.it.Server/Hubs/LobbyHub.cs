@@ -83,10 +83,14 @@ public class LobbyHub : Hub
         _logger.LogInformation("User {usrId} successfully left room {roomId}. The connection identifier={Context.UserIdentifier}", usrId, roomId, Context.UserIdentifier);
     }
 
-    public async Task updateRoomSettings(string roomId, string categoryId, int drawingTime, int numberOfRounds)
+    public async Task UpdateRoomSettings(string roomId, string categoryId, int drawingTime, int numberOfRounds, string roomName)
     {
-        await _roomService.SetSettingsAsync(Context.UserIdentifier, roomId, categoryId, drawingTime, numberOfRounds);
-        await Clients.Group(roomId).SendAsync("RecieveUpdateSettings", categoryId, drawingTime, numberOfRounds);
+        await _roomService.SetSettingsAsync(Context.UserIdentifier, roomId, categoryId, drawingTime, numberOfRounds, roomName);
+        await Clients.Group(roomId).SendAsync("RecieveUpdateSettings", categoryId, drawingTime, numberOfRounds, roomName);
     }
     
+    public async Task RequestSettingsUpdate(string roomId)
+    {
+       await Clients.Group(roomId).SendAsync("RequestCurrentSettings");
+    }
 }

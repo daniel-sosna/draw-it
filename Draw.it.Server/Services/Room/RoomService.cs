@@ -202,7 +202,7 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
     }
 
-    public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds)
+    public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds, string? roomName)
     {
         // Data Parsing and Validation
         /*
@@ -232,10 +232,12 @@ public class RoomService : IRoomService
             UserModel user = _userService.GetUser(userId);
             RoomModel room = GetRoom(roomId);
 
+            roomName = roomName ?? "Game Room";
+            
             // Same RoomName and create the new settings model
             var newSettings = new RoomSettingsModel()
             {
-                RoomName = room.Settings.RoomName,
+                RoomName = roomName,
                 CategoryId = categoryIdLong,
                 DrawingTime = drawingTime,
                 NumberOfRounds = numberOfRounds,

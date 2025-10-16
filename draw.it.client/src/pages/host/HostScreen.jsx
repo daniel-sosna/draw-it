@@ -51,7 +51,7 @@ function HostScreen() {
     ]);
     
     
-    const sendSettingsUpdate = async (newCatId, newDrawingTime, newNumberOfRounds) => {
+    const sendSettingsUpdate = async (newCatId, newDrawingTime, newNumberOfRounds, newRoomName) => {
         if (!lobbyConnection) {
             console.error("SignalR connection not established.");
             return;
@@ -59,11 +59,12 @@ function HostScreen() {
 
         setSaving(true);
         try {
-            await lobbyConnection.invoke("updateRoomSettings",
+            await lobbyConnection.invoke("UpdateRoomSettings",
                 roomId,
                 newCatId,
                 newDrawingTime,
                 newNumberOfRounds,
+                newRoomName,
             );
 
         } catch (err) {
@@ -75,8 +76,8 @@ function HostScreen() {
 
     // Waits 500ms after the last change before sending the update
     const debouncedSend = useMemo(() => {
-        return debounce((catId, drawTime, rounds) => {
-            sendSettingsUpdate(catId, drawTime, rounds);
+        return debounce((catId, drawTime, rounds, name) => {
+            sendSettingsUpdate(catId, drawTime, rounds, name);
         }, 500);
     }, [lobbyConnection, roomId]);
 
@@ -109,8 +110,13 @@ function HostScreen() {
                 .catch(err => console.error("Failed to re-join group:", err));
             });
 
-        connection.on("recieveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
+        connection.on("RecieveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
             console.log("Host received settings update broadcast. Ignoring this");
+        });
+
+        connection.on("RequestCurrentSettings", () => {
+            console.log("Server requested current settings. Sending state now.");
+            debouncedSend(categoryId, drawingTime, numberOfRounds, roomName);
         });
 
         start();
@@ -125,7 +131,7 @@ function HostScreen() {
         const newCatId = event.target.value;
         setCategoryId(newCatId);
         // Call debounced send with the new category ID
-        debouncedSend(newCatId, drawingTime, numberOfRounds);
+        debouncedSend(newCatId, drawingTime, numberOfRounds, roomName);
     };
 
     const handleNumberInput = (event, setter, fieldName) => {
@@ -143,7 +149,14 @@ function HostScreen() {
             newNumberOfRounds = newValue;
         }
 
-        debouncedSend(categoryId, newDrawingTime, newNumberOfRounds);
+        debouncedSend(categoryId, newDrawingTime, newNumberOfRounds, roomName);
+    };
+
+    const handleRoomNameChange = (event) => {
+        const newName = event.target.value;
+        setRoomName(newName);
+        // Debounced send for room name only
+        debouncedSend(categoryId, drawingTime, numberOfRounds, newName);
     };
 
     // The settings payload will be obsolete because settings are now automatically saved to backend
@@ -184,7 +197,7 @@ function HostScreen() {
                         id="roomName"
                         type="text"
                         value={roomName}
-                        onChange={(e) => setRoomName(e.target.value)}
+                        onChange={handleRoomNameChange}
                         placeholder="e.g., Fun Room"
                     />
                 </div>
