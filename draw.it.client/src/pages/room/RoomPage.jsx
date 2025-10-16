@@ -65,7 +65,7 @@ export default function RoomPage() {
                 settings: {
                     ...prev.settings,
                     category: categoryId,
-                    durationSec: drawingTime, // Assuming server sends durationSec
+                    durationSec: drawingTime,
                     rounds: numberOfRounds,
                 }
             }));
@@ -89,14 +89,7 @@ export default function RoomPage() {
             await lobbyConnection.invoke("LeaveRoom", roomId);
             console.log("Left room: " + roomId);
             navigate("/");
-        
-        /*
-          const response = api.post(`room/${roomId}/leave`);
-        
-          if (response.status === 204) {
-            navigate("/");
-          }
-          */
+            
         } catch (err) {
           console.error("Error leaving room:", err);
           alert(err.response?.data?.error || "Could not leave room. Please try again.");

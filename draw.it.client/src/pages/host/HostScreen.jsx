@@ -1,5 +1,5 @@
 import './HostScreen.css';
-import {useEffect, useState, useMemo} from 'react';
+import {useEffect, useState, useMemo, useRef} from 'react';
 import { useNavigate, useParams } from 'react-router';
 import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
@@ -49,7 +49,15 @@ function HostScreen() {
         { id: 2, name: 'Player 2', isReady: false },
         { id: 3, name: 'Player 3', isReady: true },
     ]);
-    
+
+    // This is needed for sending users the current setting when the user joins for THE FIRST TIME
+    // Store the LATEST settings state
+    const settingsRef = useRef({ roomName, categoryId, drawingTime, numberOfRounds });
+
+    // Update the ref on every state change
+    useEffect(() => {
+        settingsRef.current = { roomName, categoryId, drawingTime, numberOfRounds };
+    }, [roomName, categoryId, drawingTime, numberOfRounds]);
     
     const sendSettingsUpdate = async (newCatId, newDrawingTime, newNumberOfRounds, newRoomName) => {
         if (!lobbyConnection) {
@@ -92,6 +100,26 @@ function HostScreen() {
         setLobbyConnection(connection);
 
 
+        const sendImmediateSettings = async (conn) => {
+            if (conn.state !== signalR.HubConnectionState.Connected) return;
+
+            const currentSettings = settingsRef.current;
+            try {
+                // Use the latest state values captured by the useEffect closure
+                await conn.invoke("UpdateRoomSettings",
+                    roomId,
+                    currentSettings.categoryId,
+                    currentSettings.drawingTime,
+                    currentSettings.numberOfRounds,
+                    currentSettings.roomName,
+                );
+                console.log("Initial settings sent successfully.");
+            } catch (err) {
+                console.error('Error sending initial settings:', err);
+            }
+        };
+
+
         async function start() {
             try {
                 await connection.start();
@@ -116,7 +144,7 @@ function HostScreen() {
 
         connection.on("RequestCurrentSettings", () => {
             console.log("Server requested current settings. Sending state now.");
-            debouncedSend(categoryId, drawingTime, numberOfRounds, roomName);
+            sendImmediateSettings(connection);
         });
 
         start();
@@ -130,7 +158,6 @@ function HostScreen() {
     const handleCategoryChange = (event) => {
         const newCatId = event.target.value;
         setCategoryId(newCatId);
-        // Call debounced send with the new category ID
         debouncedSend(newCatId, drawingTime, numberOfRounds, roomName);
     };
 
@@ -151,7 +178,7 @@ function HostScreen() {
 
         debouncedSend(categoryId, newDrawingTime, newNumberOfRounds, roomName);
     };
-
+    
     const handleRoomNameChange = (event) => {
         const newName = event.target.value;
         setRoomName(newName);
@@ -259,7 +286,7 @@ function HostScreen() {
                                     id="drawingTime"
                                     type="number"
                                     value={drawingTime}
-                                    onChange={(e) => handleNumberInput(e, setDrawingTime, 20)}
+                                    onChange={(e) => handleNumberInput(e, setDrawingTime, 'drawingTime')}
                                     min="20"
                                     max="180"
                                     step="1"
@@ -271,7 +298,7 @@ function HostScreen() {
                                     id="numberOfRounds"
                                     type="number"
                                     value={numberOfRounds}
-                                    onChange={(e) => handleNumberInput(e, setNumberOfRounds, 1)}
+                                    onChange={(e) => handleNumberInput(e, setNumberOfRounds, 'numberOfRounds')}
                                     min="1"
                                     max="10"
                                     step="1"
