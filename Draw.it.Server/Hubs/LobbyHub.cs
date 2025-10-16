@@ -22,6 +22,45 @@ public class LobbyHub : Hub
         _logger = logger;
     }
 
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        // 1. Get the authenticated user ID (string)
+        string? hubUserIdString = Context.UserIdentifier;
+        
+        // Log the disconnection and potential error
+        _logger.LogInformation("User {UserId} disconnected. Exception: {Ex}", hubUserIdString, exception?.Message);
+
+        // 2. Safely parse and validate the user ID
+        if (long.TryParse(hubUserIdString, out long usrId))
+        {
+            try
+            {
+                UserModel usr = _userService.GetUser(usrId);
+                string? currentRoomId = usr.RoomId;
+
+                if (!string.IsNullOrEmpty(currentRoomId))
+                {
+                    // Add this flag because the user left abruptly
+                    _roomService.LeaveRoom(currentRoomId, usr, unexpectedLeave:true);
+                    
+                    // Broadcast the change to the remaining users in the room
+                    // await Clients.Group(currentRoomId).SendAsync("ReceivePlayerLeft", usrId.ToString(), usr.Name);
+                    
+                    _logger.LogInformation("User {UserId} cleaned up from room {RoomId}.", usrId, currentRoomId);
+                }
+                
+                // 6. Delete the user from the repository (if they are temporary)
+                _userService.DeleteUser(usrId); 
+            }
+            catch (Exception ex)
+            {
+                // Log any errors
+                _logger.LogError(ex, "Error during OnDisconnectedAsync cleanup for user {UserId}.", usrId);
+            }
+        }
+        await base.OnDisconnectedAsync(exception);
+    }
+
     public async Task joinRoomGroup(string roomId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);

@@ -116,22 +116,21 @@ public class RoomService : IRoomService
         room.PlayerIds.Add(user.Id);
         _roomRepository.Save(room);
         _userService.SetRoom(user.Id, roomId);
-
     }
 
-    public void LeaveRoom(string roomId, UserModel user)
+    public void LeaveRoom(string roomId, UserModel user, Boolean unexpectedLeave = false)
     {
         if (user.RoomId != roomId)
         {
             throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
         }
         var room = GetRoom(roomId);
-        if (room.HostId == user.Id)
+        if (!unexpectedLeave && room.HostId == user.Id)
         {
             throw new AppException("Host cannot leave the room. Consider deleting the room instead.", HttpStatusCode.Forbidden);
         }
 
-        if (room.Status == RoomStatus.InGame)
+        if (!unexpectedLeave && room.Status == RoomStatus.InGame)
         {
             throw new AppException("Cannot leave room while the game is in progress.", HttpStatusCode.Forbidden);
         }
