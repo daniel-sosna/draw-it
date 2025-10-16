@@ -110,11 +110,7 @@ function HostScreen() {
             });
 
         connection.on("recieveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
-            console.log("Host received settings update broadcast.");
-            // This ensures state is corrected if the server rejects a value.
-            setCategoryId(newCategoryId);
-            setDrawingTime(parseInt(newDrawingTime));
-            setNumberOfRounds(parseInt(newNumberOfRounds));
+            console.log("Host received settings update broadcast. Ignoring this");
         });
 
         start();
@@ -133,18 +129,21 @@ function HostScreen() {
     };
 
     const handleNumberInput = (event, setter, fieldName) => {
-        const value = parseInt(event.target.value, 10);
-
+        const value = parseInt(event.target.value);
         const newValue = isNaN(value) ? 0 : value;
 
         setter(newValue);
 
-        // Check which state variable changed and call the debounced sender
+        let newDrawingTime = drawingTime;
+        let newNumberOfRounds = numberOfRounds;
+
         if (fieldName === 'drawingTime') {
-            debouncedSend(categoryId, newValue, numberOfRounds);
+            newDrawingTime = newValue;
         } else if (fieldName === 'numberOfRounds') {
-            debouncedSend(categoryId, drawingTime, newValue);
+            newNumberOfRounds = newValue;
         }
+
+        debouncedSend(categoryId, newDrawingTime, newNumberOfRounds);
     };
 
     // The settings payload will be obsolete because settings are now automatically saved to backend
