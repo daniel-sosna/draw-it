@@ -5,24 +5,21 @@ import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import * as signalR from "@microsoft/signalr";
 
-const mockRoom = (id) => ({
-    id,
-    players: [
-    { id: "1", name: "Petras", isHost: true },
-    { id: "2", name: "Ona" },
-    { id: "3", name: "Lukas" },
-    ],
-    settings: { durationSec: 90, rounds: 3, category: "Animals" },
-    });
+const initialRoomState = {
+    id: "",
+    players: [],
+    settings: { durationSec: 90, rounds: 3, category: "Loading..." },
+};
 
 export default function RoomPage() {
     const [isReady, setIsReady] = useState(false);
     const [lobbyConnection, setLobbyConnection] = useState(null);
-
+    const [roomState, setRoomState] = useState(initialRoomState); // state for the room
+    const { players, settings } = roomState;
+    
     const navigate = useNavigate();
     
     const { roomId = "DEMO" } = useParams();   // paims id iš URL, pvz. /room/ABCD
-    const room = mockRoom(roomId);
     
     const formatDuration = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -47,21 +44,46 @@ export default function RoomPage() {
             } catch (err) {
                 console.error("Initial connection failed:", err);
             }
-        };
-
+        }
+        async function fetchInitialRoomData() {
+            try {
+                const response = await api.get(`/api/v1/room/${roomId}`); // Get the current settings
+                setRoomState(response.data);
+            } catch (err) {
+                console.error("Error fetching initial room data:", err);
+                navigate("/"); // Quit if no settings returned
+            }
+        }
+        
         connection.onreconnected(connectionId => {
             console.log("Reconnected successfully!");
             connection.invoke("JoinRoomGroup", roomId)
                 .then(() => console.log(`Re-joined Room id: ${roomId}`))
                 .catch(err => console.error("Failed to re-join group:", err));
-        })
+        });
+
+        connection.on("ReceiveSettingsUpdate", (categoryId, drawingTime, numberOfRounds) => {
+            console.log("Received new settings:", categoryId, drawingTime, numberOfRounds);
+            
+            setRoomState(prev => ({
+                ...prev,
+                settings: {
+                    ...prev.settings,
+                    category: categoryId,
+                    durationSec: drawingTime, // Assuming server sends durationSec
+                    rounds: numberOfRounds,
+                }
+            }));
+        });
         
+        fetchInitialRoomData();
         start();
         
         return () => {
             connection.stop(); // fail-safe on unmount
         }
-    }, [roomId]); // Ensures it runs once per room ID
+    }, [roomId, navigate]); // Ensures it runs once per room ID
+    // If we don't add 'navigate' it will be flagged by the ESLint rule exhaustive-deps
 
     const leaveRoom = async () => {
         try {

@@ -150,5 +150,9 @@ public class RoomService : IRoomService
 
         return _userRepository.FindByRoomId(roomId);
     }
-    
+
+    public async Task SetSettingsAsync(string roomId, string categoryId, string drawingTime, string numberOfRounds)
+    {
+        
+    }
 }
