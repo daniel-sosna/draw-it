@@ -225,7 +225,6 @@ public class RoomService : IRoomService
 
             roomName = roomName ?? "Game Room";
 
-            // Same RoomName and create the new settings model
             var newSettings = new RoomSettingsModel()
             {
                 RoomName = roomName,
