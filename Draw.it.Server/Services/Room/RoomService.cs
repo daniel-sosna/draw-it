@@ -72,7 +72,6 @@ public class RoomService : IRoomService
         return room;
     }
 
-    // Placeholder!
     public void DeleteRoom(string roomId, UserModel user)
     {
         if (user.RoomId != roomId)
@@ -118,7 +117,7 @@ public class RoomService : IRoomService
         _userService.SetRoom(user.Id, roomId);
     }
 
-    public void LeaveRoom(string roomId, UserModel user, Boolean unexpectedLeave = false)
+    public void LeaveRoom(string roomId, UserModel user, bool unexpectedLeave = false)
     {
         if (user.RoomId != roomId)
         {
@@ -183,7 +182,7 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
     }
 
-    public void UpdateSettingsInternal(string roomId, UserModel user, RoomSettingsModel newSettings)
+    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel settings)
     {
         var room = GetRoom(roomId);
 
@@ -197,43 +196,8 @@ public class RoomService : IRoomService
             throw new AppException("Cannot change settings: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
 
-        room.Settings = newSettings;
+        room.Settings = settings;
 
         _roomRepository.Save(room);
-    }
-
-    public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds, string? roomName)
-    {
-        // Data Parsing and Validation
-
-        if (!long.TryParse(categoryId, out long categoryIdLong))
-        {
-            throw new AppException("Invalid category ID.", HttpStatusCode.BadRequest);
-        }
-
-        if (!long.TryParse(userIdString, out long userId))
-        {
-            throw new AppException("Invalid user ID.", HttpStatusCode.BadRequest);
-        }
-
-        // Execute ALL I/O
-        await Task.Run(() =>
-        {
-
-            UserModel user = _userService.GetUser(userId);
-            RoomModel room = GetRoom(roomId);
-
-            roomName = roomName ?? "Game Room";
-
-            var newSettings = new RoomSettingsModel()
-            {
-                RoomName = roomName,
-                CategoryId = categoryIdLong,
-                DrawingTime = drawingTime,
-                NumberOfRounds = numberOfRounds,
-            };
-
-            UpdateSettingsInternal(roomId, user, newSettings);
-        });
     }
 }

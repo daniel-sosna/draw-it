@@ -1,4 +1,5 @@
 ﻿using Draw.it.Server.Extensions;
+using Draw.it.Server.Models.Room;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.SignalR;
@@ -69,10 +70,11 @@ public class LobbyHub : Hub
         _logger.LogInformation("User with id={UserId} successfully left room {RoomId}. The ConnectionId={ConnectionId}", user.Id, roomId, Context.ConnectionId);
     }
 
-    public async Task UpdateRoomSettings(string roomId, string categoryId, int drawingTime, int numberOfRounds, string roomName)
+    public async Task UpdateRoomSettings(string roomId, RoomSettingsModel settings)
     {
-        await _roomService.SetSettingsAsync(Context.UserIdentifier, roomId, categoryId, drawingTime, numberOfRounds, roomName);
-        await Clients.Group(roomId).SendAsync("RecieveUpdateSettings", categoryId, drawingTime, numberOfRounds, roomName);
+        _logger.LogInformation("User with ConnectionId={ConnectionId} is updating room settings {settings}", Context.ConnectionId, settings);
+        await Task.Run(() => _roomService.UpdateSettings(roomId, Context.ResolveUser(_userService), settings));
+        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", settings.CategoryId, settings.DrawingTime, settings.NumberOfRounds, settings.RoomName);
     }
 
     public async Task RequestSettingsUpdate(string roomId)
