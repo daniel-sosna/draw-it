@@ -56,7 +56,7 @@ export default function RoomPage() {
                 .catch(err => console.error("Failed to re-join group:", err));
         });
 
-        connection.on("RecieveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
+        connection.on("ReceiveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
             console.log("Received new settings:", categoryId, drawingTime, numberOfRounds, roomName);
             
             setRoomState(prev => ({

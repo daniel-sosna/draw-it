@@ -9,11 +9,9 @@ namespace Draw.it.Server.Services.Room
         void DeleteRoom(string roomId, UserModel user);
         RoomModel GetRoom(string roomId);
         void JoinRoom(string roomId, UserModel user);
-        public void LeaveRoom(string roomId, UserModel user, Boolean unexpectedLeave = false);
+        public void LeaveRoom(string roomId, UserModel user, bool unexpectedLeave = false);
         IEnumerable<UserModel> GetUsersInRoom(string roomId);
         void StartGame(string roomId, UserModel user);
-        void UpdateSettingsInternal(string roomId, UserModel user, RoomSettingsModel newSettings);
-
-        Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds, string roomName);
+        void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings);
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
@@ -19,17 +20,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
     });
-
 builder.Services.AddAuthorization();
 
-// Add services to the container.
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
-builder.Services.AddSignalR();
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>

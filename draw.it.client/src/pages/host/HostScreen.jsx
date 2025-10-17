@@ -66,13 +66,12 @@ function HostScreen() {
 
         setSaving(true);
         try {
-            await lobbyConnection.invoke("UpdateRoomSettings",
-                roomId,
-                newCatId,
-                newDrawingTime,
-                newNumberOfRounds,
-                newRoomName,
-            );
+            await lobbyConnection.invoke("UpdateRoomSettings", roomId, {
+                categoryId: Number(newCatId),
+                drawingTime: Number(newDrawingTime),
+                numberOfRounds: Number(newNumberOfRounds),
+                roomName: newRoomName,
+            });
 
         } catch (err) {
             console.error('Error sending real-time settings update:', err);
@@ -137,7 +136,7 @@ function HostScreen() {
                 .catch(err => console.error("Failed to re-join group:", err));
             });
 
-        connection.on("RecieveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
+        connection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
             console.log("Host received settings update broadcast. Ignoring this");
         });
 
