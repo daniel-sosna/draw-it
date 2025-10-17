@@ -2,7 +2,6 @@ using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
-using Draw.it.Server.Services.Hub;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 

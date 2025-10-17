@@ -2,7 +2,6 @@
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Extensions;
 using Draw.it.Server.Models.User;
-using Draw.it.Server.Services.Hub;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.SignalR;
