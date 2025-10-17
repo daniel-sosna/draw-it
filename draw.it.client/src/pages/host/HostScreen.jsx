@@ -5,7 +5,6 @@ import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
 import * as signalR from "@microsoft/signalr";
-import {startLobbyConnection} from "@/connection/useLobbyConnection.jsx";
 
 // This debounce utility is for sending real time updates
 // so there is a slight delay
