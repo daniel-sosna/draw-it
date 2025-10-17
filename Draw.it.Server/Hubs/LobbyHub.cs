@@ -1,7 +1,4 @@
-﻿using System.Net;
-using Draw.it.Server.Exceptions;
-using Draw.it.Server.Extensions;
-using Draw.it.Server.Models.User;
+﻿using Draw.it.Server.Extensions;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.SignalR;
@@ -24,37 +21,33 @@ public class LobbyHub : Hub
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         // Get the user id
-        string? hubUserIdString = Context.UserIdentifier;
+        var user = Context.ResolveUser(_userService);
 
-        _logger.LogInformation("User {UserId} disconnected. Exception: {Ex}", hubUserIdString, exception?.Message);
+        _logger.LogInformation("User with id={UserId} disconnected. Exception: {Ex}", user.Id, exception?.Message);
 
-        // Safely parse and validate the user ID
-        if (long.TryParse(hubUserIdString, out long usrId))
+        // Safely validate the user ID
+        try
         {
-            try
+            string? currentRoomId = user.RoomId;
+
+            if (!string.IsNullOrEmpty(currentRoomId))
             {
-                UserModel usr = _userService.GetUser(usrId);
-                string? currentRoomId = usr.RoomId;
+                // Add this flag because the user left abruptly
+                _roomService.LeaveRoom(currentRoomId, user, unexpectedLeave: true);
 
-                if (!string.IsNullOrEmpty(currentRoomId))
-                {
-                    // Add this flag because the user left abruptly
-                    _roomService.LeaveRoom(currentRoomId, usr, unexpectedLeave: true);
+                // Broadcast the change to the remaining users in the room
+                // await Clients.Group(currentRoomId).SendAsync("ReceivePlayerLeft", user.Name);
 
-                    // Broadcast the change to the remaining users in the room
-                    // await Clients.Group(currentRoomId).SendAsync("ReceivePlayerLeft", usrId.ToString(), usr.Name);
-
-                    _logger.LogInformation("User {UserId} cleaned up from room {RoomId}.", usrId, currentRoomId);
-                }
-
-                // Delete the user
-                _userService.DeleteUser(usrId);
+                _logger.LogInformation("User with id={UserId} cleaned up from room {RoomId}.", user.Id, currentRoomId);
             }
-            catch (Exception ex)
-            {
-                // Log any errors
-                _logger.LogError(ex, "Error during OnDisconnectedAsync cleanup for user {UserId}.", usrId);
-            }
+
+            // Delete the user
+            _userService.DeleteUser(user.Id);
+        }
+        catch (Exception ex)
+        {
+            // Log any errors
+            _logger.LogError(ex, "Error during OnDisconnectedAsync cleanup for user with id={UserId}.", user.Id);
         }
         await base.OnDisconnectedAsync(exception);
     }
@@ -63,23 +56,17 @@ public class LobbyHub : Hub
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
-        // Maybe tell the service that a user has joined (for state/database).
-        // await _lobbyHubService.UserJoinedLobby(Context.UserIdentifier, roomId);
-
         // Maybe add a message that a user has joined
-        // await Clients.Group(roomId).SendAsync("UserJoined", Context.UserIdentifier);
+        // var user = Context.ResolveUser(_userService);
+        // await Clients.Group(roomId).SendAsync("UserJoined", user.Name);
     }
 
     public async Task LeaveRoom(string roomId)
     {
-        if (!long.TryParse(Context.UserIdentifier, out long usrId))
-        {
-            throw new AppException("Invalid user identifier provided", HttpStatusCode.NotFound);
-        }
-        UserModel usr = _userService.GetUser(usrId);
-        _roomService.LeaveRoom(roomId, usr);
+        var user = Context.ResolveUser(_userService);
+        _roomService.LeaveRoom(roomId, user);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
-        _logger.LogInformation("User {usrId} successfully left room {roomId}. The connection identifier={Context.UserIdentifier}", usrId, roomId, Context.UserIdentifier);
+        _logger.LogInformation("User with id={UserId} successfully left room {RoomId}. The ConnectionId={ConnectionId}", user.Id, roomId, Context.ConnectionId);
     }
 
     public async Task UpdateRoomSettings(string roomId, string categoryId, int drawingTime, int numberOfRounds, string roomName)
