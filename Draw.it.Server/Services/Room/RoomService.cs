@@ -205,16 +205,7 @@ public class RoomService : IRoomService
     public async Task SetSettingsAsync(string userIdString, string roomId, string categoryId, int drawingTime, int numberOfRounds, string? roomName)
     {
         // Data Parsing and Validation
-        /*
-        if (!int.TryParse(drawingTime, out int durationSec) || durationSec < 20 || durationSec > 180)
-        {
-            throw new AppException("Invalid drawing time value.", HttpStatusCode.BadRequest);
-        }
-        if (!int.TryParse(numberOfRounds, out int rounds) || rounds < 1 || rounds > 10)
-        {
-            throw new AppException("Invalid number of rounds value.", HttpStatusCode.BadRequest);
-        }
-        */
+
         if (!long.TryParse(categoryId, out long categoryIdLong))
         {
             throw new AppException("Invalid category ID.", HttpStatusCode.BadRequest);
