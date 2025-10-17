@@ -26,7 +26,7 @@ public class LobbyHub : Hub
     {
         // Get the user id
         string? hubUserIdString = Context.UserIdentifier;
-        
+
         _logger.LogInformation("User {UserId} disconnected. Exception: {Ex}", hubUserIdString, exception?.Message);
 
         // Safely parse and validate the user ID
@@ -40,16 +40,16 @@ public class LobbyHub : Hub
                 if (!string.IsNullOrEmpty(currentRoomId))
                 {
                     // Add this flag because the user left abruptly
-                    _roomService.LeaveRoom(currentRoomId, usr, unexpectedLeave:true);
-                    
+                    _roomService.LeaveRoom(currentRoomId, usr, unexpectedLeave: true);
+
                     // Broadcast the change to the remaining users in the room
                     // await Clients.Group(currentRoomId).SendAsync("ReceivePlayerLeft", usrId.ToString(), usr.Name);
-                    
+
                     _logger.LogInformation("User {UserId} cleaned up from room {RoomId}.", usrId, currentRoomId);
                 }
-                
+
                 // Delete the user
-                _userService.DeleteUser(usrId); 
+                _userService.DeleteUser(usrId);
             }
             catch (Exception ex)
             {
@@ -88,9 +88,9 @@ public class LobbyHub : Hub
         await _roomService.SetSettingsAsync(Context.UserIdentifier, roomId, categoryId, drawingTime, numberOfRounds, roomName);
         await Clients.Group(roomId).SendAsync("RecieveUpdateSettings", categoryId, drawingTime, numberOfRounds, roomName);
     }
-    
+
     public async Task RequestSettingsUpdate(string roomId)
     {
-       await Clients.Group(roomId).SendAsync("RequestCurrentSettings");
+        await Clients.Group(roomId).SendAsync("RequestCurrentSettings");
     }
 }

@@ -23,7 +23,7 @@ public class RoomService : IRoomService
     private readonly IHubContext<LobbyHub> _lobbyContext;
 
 
-    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, 
+    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService,
         IUserRepository userRepository, IHubContext<LobbyHub> lobbyContext)
     {
         _logger = logger;
@@ -210,7 +210,7 @@ public class RoomService : IRoomService
         {
             throw new AppException("Invalid category ID.", HttpStatusCode.BadRequest);
         }
-        
+
         if (!long.TryParse(userIdString, out long userId))
         {
             throw new AppException("Invalid user ID.", HttpStatusCode.BadRequest);
@@ -218,13 +218,13 @@ public class RoomService : IRoomService
 
         // Execute ALL I/O
         await Task.Run(() =>
-        { 
-        
+        {
+
             UserModel user = _userService.GetUser(userId);
             RoomModel room = GetRoom(roomId);
 
             roomName = roomName ?? "Game Room";
-            
+
             // Same RoomName and create the new settings model
             var newSettings = new RoomSettingsModel()
             {
@@ -233,7 +233,7 @@ public class RoomService : IRoomService
                 DrawingTime = drawingTime,
                 NumberOfRounds = numberOfRounds,
             };
-            
+
             UpdateSettingsInternal(roomId, user, newSettings);
         });
     }
