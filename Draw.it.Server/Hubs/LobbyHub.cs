@@ -2,10 +2,12 @@
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Draw.it.Server.Hubs;
 
+[Authorize]
 public class LobbyHub : Hub
 {
     private readonly IRoomService _roomService;
@@ -19,9 +21,24 @@ public class LobbyHub : Hub
         _logger = logger;
     }
 
+    public override async Task OnConnectedAsync()
+    {
+        var user = Context.ResolveUser(_userService);
+
+        if (string.IsNullOrEmpty(user.RoomId))
+        {
+            _logger.LogWarning("User with id={UserId} has no RoomId on connection.", user.Id);
+            Context.Abort();  // Immediately close the connection
+            return;
+        }
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
+        await base.OnConnectedAsync();
+        _logger.LogInformation("User with id={UserId} connected to room {RoomId}", user.Id, user.RoomId);
+    }
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        // Get the user id
         var user = Context.ResolveUser(_userService);
 
         _logger.LogInformation("User with id={UserId} disconnected. Exception: {Ex}", user.Id, exception?.Message);
@@ -51,15 +68,6 @@ public class LobbyHub : Hub
             _logger.LogError(ex, "Error during OnDisconnectedAsync cleanup for user with id={UserId}.", user.Id);
         }
         await base.OnDisconnectedAsync(exception);
-    }
-
-    public async Task JoinRoomGroup(string roomId)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-
-        // Maybe add a message that a user has joined
-        // var user = Context.ResolveUser(_userService);
-        // await Clients.Group(roomId).SendAsync("UserJoined", user.Name);
     }
 
     public async Task LeaveRoom(string roomId)
