@@ -1,8 +1,8 @@
 import "./RoomPage.css";
-import {useEffect, useState} from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
+import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 import * as signalR from "@microsoft/signalr";
 
 const initialRoomState = {
@@ -13,8 +13,8 @@ const initialRoomState = {
 };
 
 export default function RoomPage() {
+    const lobbyConnection = useContext(LobbyHubContext);
     const [isReady, setIsReady] = useState(false);
-    const [lobbyConnection, setLobbyConnection] = useState(null);
     const [roomState, setRoomState] = useState(initialRoomState); // state for the room
     const { players, settings } = roomState;
     
@@ -29,34 +29,9 @@ export default function RoomPage() {
     };
     
     useEffect(() => {
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7200/lobbyHub")
-            .withAutomaticReconnect()
-            .configureLogging(signalR.LogLevel.Information)
-            .build();
+        if (!lobbyConnection) return;
 
-        setLobbyConnection(connection);
-        
-        async function start() {
-            try {
-                await connection.start();
-                console.log("SignalR Connected.");
-                console.log(`Room id: ${roomId}`);
-                connection.invoke("JoinRoomGroup", roomId);
-                await connection.invoke("RequestSettingsUpdate", roomId);
-            } catch (err) {
-                console.error("Initial connection failed:", err);
-            }
-        }
-        
-        connection.onreconnected(connectionId => {
-            console.log("Reconnected successfully!");
-            connection.invoke("JoinRoomGroup", roomId)
-                .then(() => console.log(`Re-joined Room id: ${roomId}`))
-                .catch(err => console.error("Failed to re-join group:", err));
-        });
-
-        connection.on("ReceiveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
+        lobbyConnection.on("ReceiveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
             console.log("Received new settings:", categoryId, drawingTime, numberOfRounds, roomName);
             
             setRoomState(prev => ({
@@ -71,18 +46,15 @@ export default function RoomPage() {
             }));
         });
 
-        connection.on("RequestCurrentSettings", () => {
+        lobbyConnection.on("RequestCurrentSettings", () => {
             console.log("Ignoring request. Request for the host only");
         });
-        
-        
-        start();
-        
+
         return () => {
-            connection.stop(); // fail-safe on unmount
+            lobbyConnection.off("ReceiveUpdateSettings");
+            lobbyConnection.off("RequestCurrentSettings");
         }
-    }, [roomId, navigate]); // Ensures it runs once per room ID
-    // If we don't add 'navigate' it will be flagged by the ESLint rule exhaustive-deps
+    }, [lobbyConnection, roomId]);
 
     const leaveRoom = async () => {
         try {
@@ -91,8 +63,8 @@ export default function RoomPage() {
             navigate("/");
             
         } catch (err) {
-          console.error("Error leaving room:", err);
-          alert(err.response?.data?.error || "Could not leave room. Please try again.");
+            console.error("Error leaving room:", err);
+            alert(err.response?.data?.error || "Could not leave room. Please try again.");
         }
     };
 
