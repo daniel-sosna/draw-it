@@ -1,9 +1,10 @@
 import './HostScreen.css';
-import {useEffect, useState, useMemo, useRef} from 'react';
+import { useContext, useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
+import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 import * as signalR from "@microsoft/signalr";
 
 // This debounce utility is for sending real time updates
@@ -29,7 +30,7 @@ const CATEGORIES = [
 ];
 
 function HostScreen() {
-    const [lobbyConnection, setLobbyConnection] = useState(null);
+    const lobbyConnection = useContext(LobbyHubContext);
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
     const [categoryId, setCategoryId] = useState(CATEGORIES[0].id.toString());
@@ -86,13 +87,7 @@ function HostScreen() {
     }, [lobbyConnection, roomId]);
 
     useEffect(() => {
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7200/lobbyHub")
-            .configureLogging(signalR.LogLevel.Information)
-            .withAutomaticReconnect()
-            .build();
-
-        setLobbyConnection(connection);
+        if (!lobbyConnection) return;
 
         const sendImmediateSettings = async (conn) => {
             if (conn.state !== signalR.HubConnectionState.Connected) return;
@@ -113,40 +108,21 @@ function HostScreen() {
             }
         };
 
-        async function start() {
-            try {
-                await connection.start();
-                console.log("SignalR Connected.");
-                console.log(`Room id: ${roomId}`);
-                connection.invoke("JoinRoomGroup", roomId);
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
-        connection.onreconnected(connectionId => {
-            console.log("Reconnected successfully!");
-            connection.invoke("JoinRoomGroup", roomId)
-                .then(() => console.log(`Re-joined Room id: ${roomId}`))
-                .catch(err => console.error("Failed to re-join group:", err));
-            });
-
-        connection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
+        lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
             console.log("Host received settings update broadcast. Ignoring this");
         });
 
-        connection.on("RequestCurrentSettings", () => {
+        lobbyConnection.on("RequestCurrentSettings", () => {
             console.log("Server requested current settings. Sending state now.");
-            sendImmediateSettings(connection);
+            sendImmediateSettings(lobbyConnection);
         });
 
-        start();
-        
         return () => {
-            connection.stop(); // fail-safe on unmount
+            lobbyConnection.off("ReceiveUpdateSettings");
+            lobbyConnection.off("RequestCurrentSettings");
         }
-        
-    }, [roomId]); // Ensures it runs once per room ID
+    }, [lobbyConnection, roomId]);
+
     const handleRoomNameChange = (event) => {
         const newName = event.target.value || `Room-${roomId}`;
         setRoomName(newName);
