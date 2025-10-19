@@ -29,7 +29,6 @@ const CATEGORIES = [
 ];
 
 function HostScreen() {
-
     const [lobbyConnection, setLobbyConnection] = useState(null);
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
@@ -72,7 +71,6 @@ function HostScreen() {
                 numberOfRounds: Number(newNumberOfRounds),
                 roomName: newRoomName,
             });
-
         } catch (err) {
             console.error('Error sending real-time settings update:', err);
         } finally {
@@ -88,7 +86,6 @@ function HostScreen() {
     }, [lobbyConnection, roomId]);
 
     useEffect(() => {
-        
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("https://localhost:7200/lobbyHub")
             .configureLogging(signalR.LogLevel.Information)
@@ -96,7 +93,6 @@ function HostScreen() {
             .build();
 
         setLobbyConnection(connection);
-
 
         const sendImmediateSettings = async (conn) => {
             if (conn.state !== signalR.HubConnectionState.Connected) return;
@@ -116,7 +112,6 @@ function HostScreen() {
                 console.error('Error sending initial settings:', err);
             }
         };
-
 
         async function start() {
             try {
@@ -152,6 +147,11 @@ function HostScreen() {
         }
         
     }, [roomId]); // Ensures it runs once per room ID
+    const handleRoomNameChange = (event) => {
+        const newName = event.target.value || `Room-${roomId}`;
+        setRoomName(newName);
+        debouncedSend(categoryId, drawingTime, numberOfRounds, newName);
+    };
 
     const handleCategoryChange = (event) => {
         const newCatId = event.target.value;
@@ -165,23 +165,11 @@ function HostScreen() {
 
         setter(newValue);
 
-        let newDrawingTime = drawingTime;
-        let newNumberOfRounds = numberOfRounds;
-
         if (fieldName === 'drawingTime') {
-            newDrawingTime = newValue;
+            debouncedSend(categoryId, newValue, numberOfRounds, roomName);
         } else if (fieldName === 'numberOfRounds') {
-            newNumberOfRounds = newValue;
+            debouncedSend(categoryId, drawingTime, newValue, roomName);
         }
-
-        debouncedSend(categoryId, newDrawingTime, newNumberOfRounds, roomName);
-    };
-    
-    const handleRoomNameChange = (event) => {
-        const newName = event.target.value;
-        setRoomName(newName);
-        // Debounced send for room name only
-        debouncedSend(categoryId, drawingTime, numberOfRounds, newName);
     };
 
     // The settings payload will be obsolete because settings are now automatically saved to backend
