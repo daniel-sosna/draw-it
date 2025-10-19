@@ -1,13 +1,38 @@
 import './HostScreen.css';
-import { useState } from 'react';
+import { useContext, useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
+import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
+
+// This debounce utility is for sending real time updates
+// so there is a slight delay
+// No need to send updates every milisecond
+const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+};
+
+const CATEGORIES = [
+    { id: 1, name: 'Animals' },
+    { id: 2, name: 'Vehicle type' },
+    { id: 3, name: 'Games' },
+    { id: 4, name: 'Custom' },
+];
 
 function HostScreen() {
+    const lobbyConnection = useContext(LobbyHubContext);
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
+    const [categoryId, setCategoryId] = useState(CATEGORIES[0].id.toString());
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [customWords, setCustomWords] = useState('');
     const [drawingTime, setDrawingTime] = useState(60);
@@ -23,35 +48,76 @@ function HostScreen() {
         { id: 3, name: 'Player 3', isReady: true },
     ]);
 
-    const handleCategoryChange = (event) => {
-        const value = parseInt(event.target.value, 10);
-        setCategoryId(value);
-    };
+    useEffect(() => {
+        if (!lobbyConnection) return;
 
-    const handleNumberInput = (event, setter, min) => {
-        const value = parseInt(event.target.value, 10);
-        if (value < min || isNaN(value)) {
-            setter(min);
-        } else {
-            setter(value);
+        lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
+            console.log("Host received settings update broadcast. Ignoring this");
+        });
+
+        return () => {
+            lobbyConnection.off("ReceiveUpdateSettings");
+        }
+    }, [lobbyConnection, roomId]);
+
+    const sendSettingsUpdate = async (roomName, catId, drawingTime, numberOfRounds) => {
+        if (!lobbyConnection) {
+            console.error("SignalR connection not established.");
+            return;
+        }
+
+        setSaving(true);
+        try {
+            await lobbyConnection.invoke("UpdateRoomSettings", roomId, {
+                roomName: roomName || `Room-${roomId}`,
+                categoryId: Number(catId),
+                drawingTime: Number(drawingTime),
+                numberOfRounds: Number(numberOfRounds),
+            });
+        } catch (err) {
+            console.error('Error sending real-time settings update:', err);
+        } finally {
+            setSaving(false);
         }
     };
 
+    // Waits 500ms after the last change before sending the update
+    const debouncedSend = useMemo(() => {
+        return debounce((catId, drawTime, rounds, name) => {
+            sendSettingsUpdate(name, catId, drawTime, rounds);
+        }, 500);
+    }, [lobbyConnection, roomId]);
+
+    const handleRoomNameChange = (event) => {
+        const newName = event.target.value || `Room-${roomId}`;
+        setRoomName(newName);
+        debouncedSend(categoryId, drawingTime, numberOfRounds, newName);
+    };
+
+    const handleCategoryChange = (event) => {
+        const newCatId = event.target.value;
+        setCategoryId(newCatId);
+        debouncedSend(newCatId, drawingTime, numberOfRounds, roomName);
+    };
+
+    const handleNumberInput = (event, setter, fieldName) => {
+        const value = parseInt(event.target.value);
+        const newValue = isNaN(value) ? 0 : value;
+
+        setter(newValue);
+
+        if (fieldName === 'drawingTime') {
+            debouncedSend(categoryId, newValue, numberOfRounds, roomName);
+        } else if (fieldName === 'numberOfRounds') {
+            debouncedSend(categoryId, drawingTime, newValue, roomName);
+        }
+    };
+
+    // The settings payload will be obsolete because settings are now automatically saved to backend
     const startGame = async () => {
         setLoading(true);
-
-        const settingsPayload = {
-            roomName: roomName || `Room-${roomId}`, 
-            categories: selectedCategories,
-            customWords: selectedCategories.includes('Custom')
-                ? customWords.split(',').map(word => word.trim()).filter(w => w)
-                : [],
-            drawingTime: drawingTime,
-            numberOfRounds: numberOfRounds,
-        };
-
         try {
-            await api.put(`room/${roomId}/settings`, settingsPayload); // Endpoint is not implemented yet
+            await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
             const response = await api.post(`room/${roomId}/start`); // Endpoint is not implemented yet
 
             if (response.status === 204) {
@@ -65,6 +131,13 @@ function HostScreen() {
         }
     };
 
+    const deleteRoom = async () => {
+        setDeleting(true);
+        console.log("Deleting room: " + roomId);
+        navigate("/");
+        setDeleting(false);
+    };
+
     return (
         <div className="host-screen-container">
             <div className="top-info-bar">
@@ -74,7 +147,7 @@ function HostScreen() {
                         id="roomName"
                         type="text"
                         value={roomName}
-                        onChange={(e) => setRoomName(e.target.value)}
+                        onChange={handleRoomNameChange}
                         placeholder="e.g., Fun Room"
                     />
                 </div>
@@ -113,16 +186,17 @@ function HostScreen() {
                                 gap: '8px',
                                 alignItems: 'flex-start'
                             }}>
-                                {['Animals', 'Vehicle type', 'Games', 'Custom'].map(cat => (
+                                {CATEGORIES.map(cat => (
                                     <label key={cat.id} className="radio-label">
                                         <input
                                             type="radio"
                                             name="categoryId"
-                                            value={cat.id}
+                                            value={cat.id.toString()}
+                                            checked={categoryId === cat.id.toString()}
                                             onChange={handleCategoryChange}
                                             className="category-radio"
                                         />
-                                        {cat}
+                                        {cat.name}
                                     </label>
                                 ))}
                             </div>
@@ -135,7 +209,7 @@ function HostScreen() {
                                     id="drawingTime"
                                     type="number"
                                     value={drawingTime}
-                                    onChange={(e) => handleNumberInput(e, setDrawingTime, 20)}
+                                    onChange={(e) => handleNumberInput(e, setDrawingTime, 'drawingTime')}
                                     min="20"
                                     max="180"
                                     step="1"
@@ -147,7 +221,7 @@ function HostScreen() {
                                     id="numberOfRounds"
                                     type="number"
                                     value={numberOfRounds}
-                                    onChange={(e) => handleNumberInput(e, setNumberOfRounds, 1)}
+                                    onChange={(e) => handleNumberInput(e, setNumberOfRounds, 'numberOfRounds')}
                                     min="1"
                                     max="10"
                                     step="1"
@@ -165,7 +239,7 @@ function HostScreen() {
                 <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
                 </Button>
-                <Button disabled={deleting} className="delete-button">
+                <Button onClick={deleteRoom} disabled={deleting} className="delete-button">
                     {deleting ? 'Deleting...' : 'Delete Room'}
                 </Button>
             </div>

@@ -1,61 +1,74 @@
 import "./RoomPage.css";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
+import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 
-const mockRoom = (id) => ({
-  id,
-  players: [
-    { id: "1", name: "Petras", isHost: true },
-    { id: "2", name: "Ona" },
-    { id: "3", name: "Lukas" },
-  ],
-  settings: { durationSec: 90, rounds: 3, category: "Animals" },
-});
+const initialRoomState = {
+    id: "",
+    name: "Game Room",
+    players: [],
+    settings: { durationSec: 90, rounds: 3, category: "Loading..." },
+};
 
 export default function RoomPage() {
-  const [isReady, setIsReady] = useState(false);
+    const lobbyConnection = useContext(LobbyHubContext);
+    const { roomId } = useParams();
+    const [isReady, setIsReady] = useState(false);
+    const [roomState, setRoomState] = useState(initialRoomState); // state for the room
+    const { players, settings } = roomState;
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const { roomId = "DEMO" } = useParams();   // paims id iš URL, pvz. /room/ABCD
-  const room = mockRoom(roomId);
+    const formatDuration = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
-  const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+    useEffect(() => {
+        if (!lobbyConnection) return;
 
-  const leaveRoom = async () => {
-    try {
-      const response = api.post(`room/${roomId}/leave`);
+        lobbyConnection.on("ReceiveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
+            console.log("Received new settings:", categoryId, drawingTime, numberOfRounds, roomName);
 
-      if (response.status === 204) {
+            setRoomState(prev => ({
+                ...prev,
+                name: roomName,
+                settings: {
+                    ...prev.settings,
+                    category: categoryId,
+                    durationSec: drawingTime,
+                    rounds: numberOfRounds,
+                }
+            }));
+        });
+
+        return () => {
+            lobbyConnection.off("ReceiveUpdateSettings");
+        }
+    }, [lobbyConnection, roomId]);
+
+    const leaveRoom = async () => {
+        console.log("Leaving room: " + roomId);
         navigate("/");
-      }
-    } catch (err) {
-      console.error("Error leaving room:", err);
-      alert(err.response?.data?.error || "Could not leave room. Please try again.");
-    }
-  };
+    };
 
-  return (
+    return (
     <div className="game-room">
       <div className="game-room-container">
-        <h1 className="game-room-title">GAME ROOM</h1>
-        <div className="room-id">Room ID: {room.id}</div>
-        
+        <h1 className="game-room-title">{roomState.name}</h1>
+        <div className="room-id">Room ID: {roomState.id}</div>
+
         <div className="game-room-content">
           {/* Left Column - Players */}
           <div className="players-section">
             <h2 className="section-title">PLAYERS</h2>
             <div className="player-count">
-              {room.players.length} / 4
+              {players.length} / 4
             </div>
             <ul className="players-list">
-              {room.players.map((p) => (
+              {players.map((p) => (
                 <li key={p.id} className="player-item">
                   {p.name} {p.isHost ? "👑" : ""}
                 </li>
@@ -73,19 +86,19 @@ export default function RoomPage() {
           <div className="game-details-section">
             <div className="game-setting">
               <span className="setting-label">COUNT:</span>
-              <span className="setting-value">{room.players.length}</span>
+              <span className="setting-value">{players.length}</span>
             </div>
             <div className="game-setting">
               <span className="setting-label">CATEGORY:</span>
-              <span className="setting-value category-value">{room.settings.category}</span>
+              <span className="setting-value category-value">{settings.category}</span>
             </div>
             <div className="game-setting">
               <span className="setting-label">DURATION:</span>
-              <span className="setting-value">{formatDuration(room.settings.durationSec)}</span>
+              <span className="setting-value">{formatDuration(settings.durationSec)}</span>
             </div>
             <div className="game-setting">
               <span className="setting-label">ROUNDS:</span>
-              <span className="setting-value">{room.settings.rounds}</span>
+              <span className="setting-value">{settings.rounds}</span>
             </div>
             <div className="leave-button-container">
               <Button onClick={leaveRoom}>
@@ -96,5 +109,5 @@ export default function RoomPage() {
         </div>
       </div>
     </div>
-  );
+    );
 }

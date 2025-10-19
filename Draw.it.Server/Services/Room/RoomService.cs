@@ -46,38 +46,45 @@ public class RoomService : IRoomService
         return roomId;
     }
 
+    /// <summary>
+    /// Create a new room and assign user as host
+    /// </summary>
     public RoomModel CreateRoom(UserModel user)
     {
         if (user.RoomId != null)
         {
             throw new AppException("You are already in a room. Leave the current room before creating a new one.", HttpStatusCode.Conflict);
         }
+
         var roomId = GenerateUniqueRoomId();
         var room = new RoomModel
         {
             Id = roomId,
-            HostId = user.Id,
-            PlayerIds = new List<long> { user.Id },
+            HostId = user.Id
         };
+
         _roomRepository.Save(room);
         _logger.LogInformation("Room with id={roomId} created", roomId);
         _userService.SetRoom(user.Id, roomId);
+
         return room;
     }
 
-    // Placeholder!
+    /// <summary>
+    /// Delete room (host only)
+    /// </summary>
     public void DeleteRoom(string roomId, UserModel user)
     {
         if (user.RoomId != roomId)
         {
             throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
         }
+
         var room = GetRoom(roomId);
         if (room.HostId != user.Id)
         {
             throw new AppException("Only the host can delete the room.", HttpStatusCode.Forbidden);
         }
-
         if (room.Status == RoomStatus.InGame)
         {
             throw new AppException("Cannot delete room while the game is in progress.", HttpStatusCode.Conflict);
@@ -88,11 +95,39 @@ public class RoomService : IRoomService
         _roomRepository.DeleteById(roomId);
     }
 
+    /// <summary>
+    /// Get room by id
+    /// </summary>
     public RoomModel GetRoom(string roomId)
     {
         return _roomRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Room with id={roomId} not found");
     }
 
+    /// <summary>
+    /// Get room settings
+    /// </summary>
+    public RoomSettingsModel GetRoomSettings(string roomId)
+    {
+        var room = GetRoom(roomId);
+        return room.Settings;
+    }
+
+    /// <summary>
+    /// Get all players in a room
+    /// </summary>
+    public IEnumerable<UserModel> GetUsersInRoom(string roomId)
+    {
+        if (!_roomRepository.ExistsById(roomId))
+        {
+            throw new EntityNotFoundException($"Room with id={roomId} not found");
+        }
+
+        return _userRepository.FindByRoomId(roomId);
+    }
+
+    /// <summary>
+    /// Assign a player to an existing room
+    /// </summary>
     public void JoinRoom(string roomId, UserModel user)
     {
         if (user.RoomId != null)
@@ -106,77 +141,85 @@ public class RoomService : IRoomService
             throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
         // TODO: Check on number of players
-        room.PlayerIds.Add(user.Id);
-        _roomRepository.Save(room);
+
         _userService.SetRoom(user.Id, roomId);
     }
 
+    /// <summary>
+    /// Remove a player from a room
+    /// </summary>
     public void LeaveRoom(string roomId, UserModel user)
     {
         if (user.RoomId != roomId)
         {
             throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
         }
+
         var room = GetRoom(roomId);
         if (room.HostId == user.Id)
         {
             throw new AppException("Host cannot leave the room. Consider deleting the room instead.", HttpStatusCode.Forbidden);
         }
-
         if (room.Status == RoomStatus.InGame)
         {
             throw new AppException("Cannot leave room while the game is in progress.", HttpStatusCode.Conflict);
         }
 
-        room.PlayerIds.Remove(user.Id);
-        _roomRepository.Save(room);
         _userService.SetRoom(user.Id, null);
     }
 
-    public IEnumerable<UserModel> GetUsersInRoom(string roomId)
+    /// <summary>
+    /// Check if user is host of a room
+    /// </summary>
+    public bool IsHost(string roomId, UserModel user)
     {
-        if (!_roomRepository.ExistsById(roomId))
+        if (user.RoomId != roomId)
         {
-            throw new EntityNotFoundException($"Room with id={roomId} not found");
+            throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
         }
 
-        return _userRepository.FindByRoomId(roomId);
+        var room = GetRoom(roomId);
+
+        return room.HostId == user.Id;
     }
 
+    /// <summary>
+    /// Start a game for a room (host only)
+    /// </summary>
     public void StartGame(string roomId, UserModel user)
     {
         var room = GetRoom(roomId);
-
         if (room.HostId != user.Id)
         {
             throw new AppException("Only the host can start the game.", HttpStatusCode.Forbidden);
         }
-
         if (room.Status != RoomStatus.InLobby)
         {
             throw new AppException("Cannot start game: It is already in progress or has ended.", HttpStatusCode.Conflict);
         }
 
         var players = GetUsersInRoom(roomId).ToList();
-
         if (players.Count < 2)
         {
             throw new AppException("Cannot start game: At least 2 players are required.", HttpStatusCode.Conflict);
         }
 
         var notReadyPlayers = players.Where(p => !p.IsReady).ToList();
-
         if (notReadyPlayers.Any())
         {
             var notReadyNames = string.Join(", ", notReadyPlayers.Select(p => p.Name));
             throw new AppException($"Cannot start game. The following players are not ready: {notReadyNames}.", HttpStatusCode.Conflict);
         }
+
         room.Status = RoomStatus.InGame;
 
         _roomRepository.Save(room);
     }
 
-    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings)
+    /// <summary>
+    /// Update room settings (host only)
+    /// </summary>
+    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel settings)
     {
         var room = GetRoom(roomId);
 
@@ -190,7 +233,7 @@ public class RoomService : IRoomService
             throw new AppException("Cannot change settings: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
 
-        room.Settings = newSettings;
+        room.Settings = settings;
 
         _roomRepository.Save(room);
     }

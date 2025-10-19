@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.User;
@@ -9,7 +10,7 @@ public static class HttpContextExtension
     // Extension method to get current user's ID from claims in HttpContext
     public static long ResolveUserId(this HttpContext context)
     {
-        var stringUserId = (context.User.FindFirst("userId")?.Value) ?? throw new UnauthorizedUserException("User ID claim missing.");
+        var stringUserId = (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value) ?? throw new UnauthorizedUserException("User ID claim missing.");
 
         if (!long.TryParse(stringUserId, out long userId))
         {

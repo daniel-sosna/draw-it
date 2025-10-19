@@ -15,6 +15,9 @@ public class UserService : IUserService
         _userRepository = userRepository;
     }
 
+    /// <summary>
+    /// Create a new user
+    /// </summary>
     public UserModel CreateUser(string name)
     {
         name = name.Trim();
@@ -32,6 +35,9 @@ public class UserService : IUserService
         return user;
     }
 
+    /// <summary>
+    /// Delete user
+    /// </summary>
     public void DeleteUser(long userId)
     {
         if (!_userRepository.DeleteById(userId))
@@ -40,11 +46,17 @@ public class UserService : IUserService
         }
     }
 
+    /// <summary>
+    /// Get user by id
+    /// </summary>
     public UserModel GetUser(long userId)
     {
         return _userRepository.FindById(userId) ?? throw new EntityNotFoundException($"User with id={userId} not found");
     }
 
+    /// <summary>
+    /// Set the room for a user
+    /// </summary>
     public void SetRoom(long userId, string? roomId)
     {
         var user = GetUser(userId);
@@ -52,6 +64,9 @@ public class UserService : IUserService
         _userRepository.Save(user);
     }
 
+    /// <summary>
+    /// Set the ready status for a user
+    /// </summary>
     public void SetReady(long userId, bool isReady)
     {
         var user = GetUser(userId);
@@ -60,6 +75,9 @@ public class UserService : IUserService
         _logger.LogInformation("User {} ready status set to {}", userId, isReady);
     }
 
+    /// <summary>
+    /// Remove room from all users in this room
+    /// </summary>
     public void RemoveRoomFromAllUsers(string roomId)
     {
         var users = _userRepository.FindByRoomId(roomId);
@@ -71,5 +89,4 @@ public class UserService : IUserService
             _userRepository.Save(user);
         }
     }
-
 }

@@ -1,7 +1,10 @@
+using System.Text.Json;
 using Draw.it.Server.Exceptions;
+using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +20,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
     });
-
 builder.Services.AddAuthorization();
 
-// Add services to the container.
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -61,6 +67,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<LobbyHub>("/lobbyHub");
 
 app.MapFallbackToFile("/index.html");
 
