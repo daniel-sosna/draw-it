@@ -146,6 +146,18 @@ public class RoomService : IRoomService
         _userService.SetRoom(user.Id, null);
     }
 
+    public bool IsHost(string roomId, UserModel user)
+    {
+        if (user.RoomId != roomId)
+        {
+            throw new AppException($"You are not in the room with id={roomId}.", HttpStatusCode.Conflict);
+        }
+
+        var room = GetRoom(roomId);
+
+        return room.HostId == user.Id;
+    }
+
     /// <summary>
     /// Get all players in a room
     /// </summary>

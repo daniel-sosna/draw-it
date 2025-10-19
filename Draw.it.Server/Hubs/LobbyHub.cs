@@ -34,7 +34,7 @@ public class LobbyHub : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
         await base.OnConnectedAsync();
-        _logger.LogInformation("User with id={UserId} connected to room {RoomId}", user.Id, user.RoomId);
+        _logger.LogInformation("Connected: User with id={UserId} to room {RoomId}", user.Id, user.RoomId);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -46,36 +46,33 @@ public class LobbyHub : Hub
         // Safely validate the user ID
         try
         {
-            string? currentRoomId = user.RoomId;
-
-            if (!string.IsNullOrEmpty(currentRoomId))
+            if (!string.IsNullOrEmpty(user.RoomId))
             {
-                // Add this flag because the user left abruptly
-                _roomService.LeaveRoom(currentRoomId, user, unexpectedLeave: true);
+                if (_roomService.IsHost(user.RoomId, user))
+                {
+                    // If the user is the host, delete the room
+                    _roomService.DeleteRoom(user.RoomId, user);
+                    _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, user.RoomId);
+                }
+                else
+                {
+                    // If the user is not the host, just leave the room
+                    _roomService.LeaveRoom(user.RoomId, user);
+                    _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, user.RoomId);
+                }
 
-                // Broadcast the change to the remaining users in the room
-                // await Clients.Group(currentRoomId).SendAsync("ReceivePlayerLeft", user.Name);
-
-                _logger.LogInformation("User with id={UserId} cleaned up from room {RoomId}.", user.Id, currentRoomId);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.RoomId);
+                _logger.LogInformation("User with id={UserId} cleaned up from room {RoomId}.", user.Id, user.RoomId);
             }
 
-            // Delete the user
-            _userService.DeleteUser(user.Id);
+            // Broadcast the change to the remaining users in the room
+            // await Clients.Group(user.RoomId).SendAsync("ReceivePlayerLeft", user.Name);
         }
         catch (Exception ex)
         {
-            // Log any errors
             _logger.LogError(ex, "Error during OnDisconnectedAsync cleanup for user with id={UserId}.", user.Id);
         }
         await base.OnDisconnectedAsync(exception);
-    }
-
-    public async Task LeaveRoom(string roomId)
-    {
-        var user = Context.ResolveUser(_userService);
-        _roomService.LeaveRoom(roomId, user);
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
-        _logger.LogInformation("User with id={UserId} successfully left room {RoomId}. The ConnectionId={ConnectionId}", user.Id, roomId, Context.ConnectionId);
     }
 
     public async Task UpdateRoomSettings(string roomId, RoomSettingsModel settings)
