@@ -14,20 +14,19 @@ const initialRoomState = {
 
 export default function RoomPage() {
     const lobbyConnection = useContext(LobbyHubContext);
+    const { roomId } = useParams();
     const [isReady, setIsReady] = useState(false);
     const [roomState, setRoomState] = useState(initialRoomState); // state for the room
     const { players, settings } = roomState;
-    
+
     const navigate = useNavigate();
-    
-    const { roomId = "DEMO" } = useParams();   // paims id iš URL, pvz. /room/ABCD
-    
+
     const formatDuration = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
-    
+
     useEffect(() => {
         if (!lobbyConnection) return;
 
@@ -57,15 +56,8 @@ export default function RoomPage() {
     }, [lobbyConnection, roomId]);
 
     const leaveRoom = async () => {
-        try {
-            await lobbyConnection.invoke("LeaveRoom", roomId);
-            console.log("Left room: " + roomId);
-            navigate("/");
-            
-        } catch (err) {
-            console.error("Error leaving room:", err);
-            alert(err.response?.data?.error || "Could not leave room. Please try again.");
-        }
+        console.log("Leaving room: " + roomId);
+        navigate("/");
     };
 
     return (
@@ -73,7 +65,7 @@ export default function RoomPage() {
       <div className="game-room-container">
         <h1 className="game-room-title">{roomState.name}</h1>
         <div className="room-id">Room ID: {roomState.id}</div>
-        
+
         <div className="game-room-content">
           {/* Left Column - Players */}
           <div className="players-section">
@@ -92,10 +84,10 @@ export default function RoomPage() {
               READY
             </Button>
           </div>
-    
+
           {/* Divider */}
           <div className="divider"></div>
-    
+
           {/* Right Column - Game Details */}
           <div className="game-details-section">
             <div className="game-setting">

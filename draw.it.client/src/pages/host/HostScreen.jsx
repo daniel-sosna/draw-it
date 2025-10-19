@@ -177,6 +177,13 @@ function HostScreen() {
         }
     };
 
+    const deleteRoom = async () => {
+        setDeleting(true);
+        console.log("Deleting room: " + roomId);
+        navigate("/");
+        setDeleting(false);
+    };
+
     return (
         <div className="host-screen-container">
             <div className="top-info-bar">
@@ -278,7 +285,7 @@ function HostScreen() {
                 <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
                 </Button>
-                <Button disabled={deleting} className="delete-button">
+                <Button onClick={deleteRoom} disabled={deleting} className="delete-button">
                     {deleting ? 'Deleting...' : 'Delete Room'}
                 </Button>
             </div>

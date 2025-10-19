@@ -41,28 +41,26 @@ public class LobbyHub : Hub
     {
         var user = Context.ResolveUser(_userService);
 
-        _logger.LogInformation("User with id={UserId} disconnected. Exception: {Ex}", user.Id, exception?.Message);
+        _logger.LogInformation("User with id={UserId} disconnecting... Exception: {Ex}", user.Id, exception?.Message);
 
         // Safely validate the user ID
         try
         {
-            if (!string.IsNullOrEmpty(user.RoomId))
+            string? roomId = user.RoomId;
+            if (!string.IsNullOrEmpty(roomId))
             {
-                if (_roomService.IsHost(user.RoomId, user))
+                if (_roomService.IsHost(roomId, user))
                 {
                     // If the user is the host, delete the room
-                    _roomService.DeleteRoom(user.RoomId, user);
-                    _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, user.RoomId);
+                    _roomService.DeleteRoom(roomId, user);
+                    _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
                 }
                 else
                 {
                     // If the user is not the host, just leave the room
-                    _roomService.LeaveRoom(user.RoomId, user);
-                    _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, user.RoomId);
+                    _roomService.LeaveRoom(roomId, user);
+                    _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
                 }
-
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.RoomId);
-                _logger.LogInformation("User with id={UserId} cleaned up from room {RoomId}.", user.Id, user.RoomId);
             }
 
             // Broadcast the change to the remaining users in the room
