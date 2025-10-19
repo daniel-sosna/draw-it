@@ -33,6 +33,14 @@ public class LobbyHub : Hub
         }
 
         await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
+
+        var settings = _roomService.GetRoomSettings(user.RoomId);
+        await Clients.Caller.SendAsync("ReceiveUpdateSettings",
+            settings.CategoryId,
+            settings.DrawingTime,
+            settings.NumberOfRounds,
+            settings.RoomName);
+
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to room {RoomId}", user.Id, user.RoomId);
     }
@@ -75,13 +83,10 @@ public class LobbyHub : Hub
 
     public async Task UpdateRoomSettings(string roomId, RoomSettingsModel settings)
     {
-        _logger.LogInformation("User with ConnectionId={ConnectionId} is updating room settings {settings}", Context.ConnectionId, settings);
-        await Task.Run(() => _roomService.UpdateSettings(roomId, Context.ResolveUser(_userService), settings));
-        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", settings.CategoryId, settings.DrawingTime, settings.NumberOfRounds, settings.RoomName);
-    }
+        var user = Context.ResolveUser(_userService);
 
-    public async Task RequestSettingsUpdate(string roomId)
-    {
-        await Clients.Group(roomId).SendAsync("RequestCurrentSettings");
+        _logger.LogInformation("User with id={UserId} is updating settings for room {RoomId}", user.Id, roomId);
+        await Task.Run(() => _roomService.UpdateSettings(roomId, user, settings));
+        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", settings.CategoryId, settings.DrawingTime, settings.NumberOfRounds, settings.RoomName);
     }
 }

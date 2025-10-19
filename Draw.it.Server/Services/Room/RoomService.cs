@@ -104,7 +104,29 @@ public class RoomService : IRoomService
     }
 
     /// <summary>
-    /// Assigning a player to an existing room
+    /// Get room settings
+    /// </summary>
+    public RoomSettingsModel GetRoomSettings(string roomId)
+    {
+        var room = GetRoom(roomId);
+        return room.Settings;
+    }
+
+    /// <summary>
+    /// Get all players in a room
+    /// </summary>
+    public IEnumerable<UserModel> GetUsersInRoom(string roomId)
+    {
+        if (!_roomRepository.ExistsById(roomId))
+        {
+            throw new EntityNotFoundException($"Room with id={roomId} not found");
+        }
+
+        return _userRepository.FindByRoomId(roomId);
+    }
+
+    /// <summary>
+    /// Assign a player to an existing room
     /// </summary>
     public void JoinRoom(string roomId, UserModel user)
     {
@@ -124,7 +146,7 @@ public class RoomService : IRoomService
     }
 
     /// <summary>
-    /// Removing a player from a room
+    /// Remove a player from a room
     /// </summary>
     public void LeaveRoom(string roomId, UserModel user)
     {
@@ -146,6 +168,9 @@ public class RoomService : IRoomService
         _userService.SetRoom(user.Id, null);
     }
 
+    /// <summary>
+    /// Check if user is host of a room
+    /// </summary>
     public bool IsHost(string roomId, UserModel user)
     {
         if (user.RoomId != roomId)
@@ -159,20 +184,7 @@ public class RoomService : IRoomService
     }
 
     /// <summary>
-    /// Get all players in a room
-    /// </summary>
-    public IEnumerable<UserModel> GetUsersInRoom(string roomId)
-    {
-        if (!_roomRepository.ExistsById(roomId))
-        {
-            throw new EntityNotFoundException($"Room with id={roomId} not found");
-        }
-
-        return _userRepository.FindByRoomId(roomId);
-    }
-
-    /// <summary>
-    /// Start a game for the room (host only)
+    /// Start a game for a room (host only)
     /// </summary>
     public void StartGame(string roomId, UserModel user)
     {
@@ -205,7 +217,7 @@ public class RoomService : IRoomService
     }
 
     /// <summary>
-    /// Updates room settings (host only)
+    /// Update room settings (host only)
     /// </summary>
     public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel settings)
     {

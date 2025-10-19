@@ -3,7 +3,6 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Button from "@/components/button/button.jsx";
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
-import * as signalR from "@microsoft/signalr";
 
 const initialRoomState = {
     id: "",
@@ -32,7 +31,7 @@ export default function RoomPage() {
 
         lobbyConnection.on("ReceiveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
             console.log("Received new settings:", categoryId, drawingTime, numberOfRounds, roomName);
-            
+
             setRoomState(prev => ({
                 ...prev,
                 name: roomName,
@@ -45,13 +44,8 @@ export default function RoomPage() {
             }));
         });
 
-        lobbyConnection.on("RequestCurrentSettings", () => {
-            console.log("Ignoring request. Request for the host only");
-        });
-
         return () => {
             lobbyConnection.off("ReceiveUpdateSettings");
-            lobbyConnection.off("RequestCurrentSettings");
         }
     }, [lobbyConnection, roomId]);
 

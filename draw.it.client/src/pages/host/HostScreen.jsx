@@ -5,7 +5,6 @@ import api from "@/utils/api.js";
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
-import * as signalR from "@microsoft/signalr";
 
 // This debounce utility is for sending real time updates
 // so there is a slight delay
@@ -49,16 +48,19 @@ function HostScreen() {
         { id: 3, name: 'Player 3', isReady: true },
     ]);
 
-    // This is needed for sending users the current setting when the user joins for THE FIRST TIME
-    // Store the LATEST settings state
-    const settingsRef = useRef({ roomName, categoryId, drawingTime, numberOfRounds });
-
-    // Update the ref on every state change
     useEffect(() => {
-        settingsRef.current = { roomName, categoryId, drawingTime, numberOfRounds };
-    }, [roomName, categoryId, drawingTime, numberOfRounds]);
-    
-    const sendSettingsUpdate = async (newCatId, newDrawingTime, newNumberOfRounds, newRoomName) => {
+        if (!lobbyConnection) return;
+
+        lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
+            console.log("Host received settings update broadcast. Ignoring this");
+        });
+
+        return () => {
+            lobbyConnection.off("ReceiveUpdateSettings");
+        }
+    }, [lobbyConnection, roomId]);
+
+    const sendSettingsUpdate = async (roomName, catId, drawingTime, numberOfRounds) => {
         if (!lobbyConnection) {
             console.error("SignalR connection not established.");
             return;
@@ -67,10 +69,10 @@ function HostScreen() {
         setSaving(true);
         try {
             await lobbyConnection.invoke("UpdateRoomSettings", roomId, {
-                categoryId: Number(newCatId),
-                drawingTime: Number(newDrawingTime),
-                numberOfRounds: Number(newNumberOfRounds),
-                roomName: newRoomName,
+                roomName: roomName || `Room-${roomId}`,
+                categoryId: Number(catId),
+                drawingTime: Number(drawingTime),
+                numberOfRounds: Number(numberOfRounds),
             });
         } catch (err) {
             console.error('Error sending real-time settings update:', err);
@@ -82,45 +84,8 @@ function HostScreen() {
     // Waits 500ms after the last change before sending the update
     const debouncedSend = useMemo(() => {
         return debounce((catId, drawTime, rounds, name) => {
-            sendSettingsUpdate(catId, drawTime, rounds, name);
+            sendSettingsUpdate(name, catId, drawTime, rounds);
         }, 500);
-    }, [lobbyConnection, roomId]);
-
-    useEffect(() => {
-        if (!lobbyConnection) return;
-
-        const sendImmediateSettings = async (conn) => {
-            if (conn.state !== signalR.HubConnectionState.Connected) return;
-
-            const currentSettings = settingsRef.current;
-            try {
-                // Use the latest state values captured by the useEffect closure
-                await conn.invoke("UpdateRoomSettings",
-                    roomId,
-                    currentSettings.categoryId,
-                    currentSettings.drawingTime,
-                    currentSettings.numberOfRounds,
-                    currentSettings.roomName,
-                );
-                console.log("Initial settings sent successfully.");
-            } catch (err) {
-                console.error('Error sending initial settings:', err);
-            }
-        };
-
-        lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
-            console.log("Host received settings update broadcast. Ignoring this");
-        });
-
-        lobbyConnection.on("RequestCurrentSettings", () => {
-            console.log("Server requested current settings. Sending state now.");
-            sendImmediateSettings(lobbyConnection);
-        });
-
-        return () => {
-            lobbyConnection.off("ReceiveUpdateSettings");
-            lobbyConnection.off("RequestCurrentSettings");
-        }
     }, [lobbyConnection, roomId]);
 
     const handleRoomNameChange = (event) => {
@@ -151,19 +116,8 @@ function HostScreen() {
     // The settings payload will be obsolete because settings are now automatically saved to backend
     const startGame = async () => {
         setLoading(true);
-
-        const settingsPayload = {
-            roomName: roomName || `Room-${roomId}`, 
-            categories: selectedCategories,
-            customWords: selectedCategories.includes('Custom')
-                ? customWords.split(',').map(word => word.trim()).filter(w => w)
-                : [],
-            drawingTime: drawingTime,
-            numberOfRounds: numberOfRounds,
-        };
-
         try {
-            await api.put(`room/${roomId}/settings`, settingsPayload); // Endpoint is not implemented yet
+            await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
             const response = await api.post(`room/${roomId}/start`); // Endpoint is not implemented yet
 
             if (response.status === 204) {
