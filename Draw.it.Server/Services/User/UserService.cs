@@ -65,9 +65,19 @@ public class UserService : IUserService
     }
 
     /// <summary>
+    /// Set the connection status for a user
+    /// </summary>
+    public void SetConnectedStatus(long userId, bool isConnected)
+    {
+        var user = GetUser(userId);
+        user.IsConnected = isConnected;
+        _userRepository.Save(user);
+    }
+
+    /// <summary>
     /// Set the ready status for a user
     /// </summary>
-    public void SetReady(long userId, bool isReady)
+    public void SetReadyStatus(long userId, bool isReady)
     {
         var user = GetUser(userId);
         user.IsReady = isReady;

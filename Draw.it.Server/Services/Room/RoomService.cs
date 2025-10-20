@@ -65,7 +65,9 @@ public class RoomService : IRoomService
 
         _roomRepository.Save(room);
         _logger.LogInformation("Room with id={roomId} created", roomId);
+
         _userService.SetRoom(user.Id, roomId);
+        _userService.SetReadyStatus(user.Id, true); // Host is always ready
 
         return room;
     }
@@ -143,6 +145,7 @@ public class RoomService : IRoomService
         // TODO: Check on number of players
 
         _userService.SetRoom(user.Id, roomId);
+        _userService.SetReadyStatus(user.Id, false);
     }
 
     /// <summary>
