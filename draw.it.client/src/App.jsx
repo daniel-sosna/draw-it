@@ -22,7 +22,9 @@ function App() {
                 <Route element={<LobbyLayout />}>
                     <Route path="/room/:roomId" element={<RoomPage />} />
                     <Route path="/host/:roomId" element={<HostScreen />} />
-                    <Route path="/gameplay/:roomId" element={<GameplayScreen />} />
+                    <Route element={<GameplayLayout />}>
+                        <Route path="/gameplay/:roomId" element={<GameplayScreen />} />
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>
