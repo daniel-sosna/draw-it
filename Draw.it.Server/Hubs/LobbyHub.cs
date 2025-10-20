@@ -1,4 +1,5 @@
-﻿using Draw.it.Server.Extensions;
+﻿using Draw.it.Server.Exceptions;
+using Draw.it.Server.Extensions;
 using Draw.it.Server.Models.Room;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
@@ -104,5 +105,46 @@ public class LobbyHub : Hub
         }).ToList();
 
         await Clients.Group(roomId).SendAsync("ReceivePlayerList", players);
+    }
+
+    public async Task SetPlayerReady(bool isReady)
+    {
+        var user = Context.ResolveUser(_userService);
+
+        if (string.IsNullOrEmpty(user.RoomId))
+        {
+            return;
+        }
+
+        _userService.SetReady(user.Id, isReady);
+
+        await SendPlayerListUpdate(user.RoomId);
+    }
+
+
+    public async Task StartGame()
+    {
+        var user = Context.ResolveUser(_userService);
+
+        if (string.IsNullOrEmpty(user.RoomId))
+        {
+            return;
+        }
+
+        try
+        {
+            _roomService.StartGame(user.RoomId, user);
+
+            await Clients.Group(user.RoomId).SendAsync("ReceiveGameStart");
+        }
+        catch (AppException ex)
+        {
+            await Clients.Caller.SendAsync("ReceiveError", ex.Message);
+            return;
+        }
+        catch (Exception)
+        {
+            await Clients.Caller.SendAsync("ReceiveError", "An unexpected error occurred while trying to start the game.");
+        }
     }
 }
