@@ -41,13 +41,8 @@ function HostScreen() {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
-
-    const [joinedPlayers] = useState([
-        { id: 1, name: 'Player 1', isReady: true },
-        { id: 2, name: 'Player 2', isReady: false },
-        { id: 3, name: 'Player 3', isReady: true },
-    ]);
-
+    const [joinedPlayers, setJoinedPlayers] = useState([]);
+    
     useEffect(() => {
         if (!lobbyConnection) return;
 
@@ -55,8 +50,14 @@ function HostScreen() {
             console.log("Host received settings update broadcast. Ignoring this");
         });
 
+        lobbyConnection.on("ReceivePlayerList", (newPlayers) => {
+            console.log("Host received new player list:", newPlayers);
+            setJoinedPlayers(newPlayers);
+        });
+
         return () => {
             lobbyConnection.off("ReceiveUpdateSettings");
+            lobbyConnection.off("ReceivePlayerList");
         }
     }, [lobbyConnection, roomId]);
 
@@ -164,8 +165,8 @@ function HostScreen() {
                                 <th>Name</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {joinedPlayers.map((player, index) => (
+                        <tbody>                            
+                        {joinedPlayers.map((player, index) => (
                                 <tr key={player.id}>
                                     <td className={player.isReady ? 'ready' : ''}>{index + 1}</td>
                                     <td className={player.isReady ? 'ready' : ''}>{player.name}</td>

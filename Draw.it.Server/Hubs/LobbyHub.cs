@@ -43,6 +43,8 @@ public class LobbyHub : Hub
 
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to room {RoomId}", user.Id, user.RoomId);
+
+        await SendPlayerListUpdate(user.RoomId);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -69,6 +71,8 @@ public class LobbyHub : Hub
                     // If the user is not the host, just leave the room
                     _roomService.LeaveRoom(roomId, user);
                     _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
+
+                    await SendPlayerListUpdate(roomId);
                 }
             }
 
@@ -89,5 +93,16 @@ public class LobbyHub : Hub
         _logger.LogInformation("User with id={UserId} is updating settings for room {RoomId}", user.Id, roomId);
         await Task.Run(() => _roomService.UpdateSettings(roomId, user, settings));
         await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", settings.CategoryId, settings.DrawingTime, settings.NumberOfRounds, settings.RoomName);
+    }
+
+    private async Task SendPlayerListUpdate(string roomId)
+    {
+        var players = _roomService.GetUsersInRoom(roomId).Select(p => new
+        {
+            p.Name,
+            p.IsReady
+        }).ToList();
+
+        await Clients.Group(roomId).SendAsync("ReceivePlayerList", players);
     }
 }
