@@ -63,6 +63,7 @@ public class RoomService : IRoomService
             HostId = user.Id
         };
 
+        _userService.SetReady(user.Id, isReady: true);
         _roomRepository.Save(room);
         _logger.LogInformation("Room with id={roomId} created", roomId);
         _userService.SetRoom(user.Id, roomId);
