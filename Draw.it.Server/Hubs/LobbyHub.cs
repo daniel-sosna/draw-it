@@ -62,6 +62,7 @@ public class LobbyHub : Hub
                     // If the user is the host, delete the room
                     _roomService.DeleteRoom(roomId, user);
                     _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
+                    await Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
                 }
                 else
                 {
