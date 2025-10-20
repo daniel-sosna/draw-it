@@ -14,7 +14,7 @@ const initialRoomState = {
 export default function RoomPage() {
     const lobbyConnection = useContext(LobbyHubContext);
     const { roomId } = useParams();
-    const [isReady, setIsReady] = useState(false);
+    const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [roomState, setRoomState] = useState(initialRoomState); // state for the room
     const { players, settings } = roomState;
 
@@ -24,6 +24,18 @@ export default function RoomPage() {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleReadyToggle = async () => {
+        if (!lobbyConnection) return;
+        const newState = !isPlayerReady;
+
+        try {
+            await lobbyConnection.invoke("SetPlayerReady", newState);
+            setIsPlayerReady(newState);
+        } catch (error) {
+            console.error("Failed to toggle ready state:", error);
+        }
     };
 
     useEffect(() => {
@@ -58,10 +70,16 @@ export default function RoomPage() {
             }));
         });
 
+        lobbyConnection.on("ReceiveGameStart", () => {
+            console.log("Host started the game, navigating to /gameplay");
+            navigate(`/gameplay/${roomId}`);
+        });
+
         return () => {
             lobbyConnection.off("ReceiveUpdateSettings");
             lobbyConnection.off("ReceiveRoomDeleted");
             lobbyConnection.off("ReceivePlayerList");
+            lobbyConnection.off("ReceiveGameStart");
         }
     }, [lobbyConnection, roomId]);
 
@@ -84,15 +102,21 @@ export default function RoomPage() {
               {players.length} / 4
             </div>
             <ul className="players-list">
-              {players.map((p) => (
-                <li key={p.name} className="player-item">
-                  {p.name} {p.isHost ? "👑" : ""}
-                </li>
-              ))}
+                {players.map((p) => (
+                    <li key={p.name} className={`player-item ${p.isReady ? 'ready' : ''}`}>
+                        {p.name} {p.isHost ? "👑" : ""} {p.isReady ? "✅" : "❌"}
+                    </li>
+                ))}
             </ul>
-            <Button onClick={() => {setIsReady((prev) => !prev);}}>
-              READY
-            </Button>
+
+          <div className="action-buttons ready-action">
+              <Button
+                  onClick={handleReadyToggle} 
+                  className={isPlayerReady ? 'ready-button is-ready' : 'ready-button'}
+              >
+                  {isPlayerReady ? 'UNREADY' : 'READY'}
+              </Button>
+          </div> 
           </div>
 
           {/* Divider */}

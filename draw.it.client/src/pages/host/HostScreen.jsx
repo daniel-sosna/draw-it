@@ -55,9 +55,20 @@ function HostScreen() {
             setJoinedPlayers(newPlayers);
         });
 
+        lobbyConnection.on("ReceiveError", (message) => {
+            alert(`Failed to Start Game: ${message}`);
+        });
+
+        lobbyConnection.on("ReceiveGameStart", () => {
+            console.log("Game is starting, navigating to /gameplay");
+            navigate(`/gameplay/${roomId}`);
+        });
+
         return () => {
             lobbyConnection.off("ReceiveUpdateSettings");
             lobbyConnection.off("ReceivePlayerList");
+            lobbyConnection.off("ReceiveGameStart");
+            lobbyConnection.off("ReceiveError");
         }
     }, [lobbyConnection, roomId]);
 
@@ -114,21 +125,14 @@ function HostScreen() {
         }
     };
 
-    // The settings payload will be obsolete because settings are now automatically saved to backend
-    const startGame = async () => {
-        setLoading(true);
-        try {
-            await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
-            const response = await api.post(`room/${roomId}/start`); // Endpoint is not implemented yet
+    const handleStartGame = async () => {
+        if (!lobbyConnection) return;
 
-            if (response.status === 204) {
-                navigate(`/gameplay/${roomId}`);
-            }
-        } catch (err) {
-            console.error('Error starting game:', err);
-            alert(err.response?.data?.error || 'Could not start game. Please try again.');
-        } finally {
-            setLoading(false);
+        try {
+            await lobbyConnection.invoke("StartGame");
+        } catch (error) {
+            console.error("Failed to invoke StartGame:", error);
+            alert("An unexpected network error occurred.");
         }
     };
 
@@ -238,7 +242,7 @@ function HostScreen() {
             </div>
 
             <div className="button-container action-buttons">
-                <Button onClick={startGame} disabled={loading}>
+                <Button onClick={handleStartGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
                 </Button>
                 <Button onClick={deleteRoom} disabled={deleting} className="delete-button">
