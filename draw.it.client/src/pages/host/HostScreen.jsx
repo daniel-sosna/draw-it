@@ -161,15 +161,19 @@ function HostScreen() {
                     <table className="players-table">
                         <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Name</th>
+                                <th>Ready?</th>
                             </tr>
                         </thead>
                         <tbody>                            
-                        {joinedPlayers.map((player, index) => (
-                                <tr key={player.id}>
-                                    <td className={player.isReady ? 'ready' : ''}>{index + 1}</td>
-                                    <td className={player.isReady ? 'ready' : ''}>{player.name}</td>
+                            {joinedPlayers.map((player) => (
+                                <tr key={player.name}>
+                                    <td className={player.isReady ? 'ready' : ''}>
+                                        {player.name}
+                                    </td>
+                                    <td>
+                                        {player.isReady ? "👍" : "⌛"}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

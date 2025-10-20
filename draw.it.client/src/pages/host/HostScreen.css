@@ -38,25 +38,26 @@
 .main-content {
     width: 100%;
     display: flex;
-    gap: 2rem;
+    gap: 3.5rem;
     flex-wrap: wrap;
     align-items: flex-start;
 }
 
 .players-container {
-    width: 200px;
-    min-width: 200px;
+    width: 300px;
+    min-width: 300px;
     display: flex;
     flex-direction: column;
     text-align: left;
 }
 
 .players-table {
-    width: 100%;
+    width: 110%;
     border-collapse: collapse;
     margin-top: 1rem;
     text-align: left;
     table-layout: fixed;
+    min-width: 250px;
 }
     .players-table thead,
     .players-table tbody tr {
@@ -68,12 +69,13 @@
     .players-table tbody {
         display: block; 
         max-height: 250px;
-        overflow-y: scroll; 
+        overflow-y: scroll;
+        overflow-x: scroll;
         border: none;
     }
 
     .players-table thead {
-        width: calc(100% - 17px);
+        width: 95.5%;
     }
     
 
@@ -85,12 +87,13 @@
     
     .players-table th:first-child,
     .players-table td:first-child {
-        width: 20%;
+        width: 75%;
     }
 
     .players-table th:last-child,
     .players-table td:last-child {
-        width: 80%;
+        width: 25%;
+        text-align: center;
     }
 
     .players-table th {
@@ -100,8 +103,13 @@
 
     .players-table td {
         background-color: #242424;
+        word-wrap: break-word;
     }
 
+    .players-table td:last-child {
+        white-space: normal; 
+        text-overflow: clip; 
+    }
 
         .players-table td.ready {
             background-color: #384d38;
@@ -109,7 +117,7 @@
 
 .settings-container {
     flex: 1;
-    min-width: 300px;
+    min-width: 370px;
     display: flex;
     flex-direction: column;
     text-align: left;
