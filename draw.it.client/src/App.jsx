@@ -14,6 +14,14 @@ function LobbyLayout() {
   );
 }
 
+function GameplayLayout() {
+    return (
+        <GameplayLayout>
+            <Outlet/>
+        </GameplayLayout>
+    );
+}
+
 function App() {
     return (
         <BrowserRouter>
