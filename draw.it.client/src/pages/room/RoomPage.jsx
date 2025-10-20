@@ -50,9 +50,18 @@ export default function RoomPage() {
             navigate("/");
         });
 
+        lobbyConnection.on("ReceivePlayerList", (newPlayers) => {
+            console.log("Received new player list:", newPlayers);
+            setRoomState(prev => ({
+                ...prev,
+                players: newPlayers
+            }));
+        });
+
         return () => {
             lobbyConnection.off("ReceiveUpdateSettings");
             lobbyConnection.off("ReceiveRoomDeleted");
+            lobbyConnection.off("ReceivePlayerList");
         }
     }, [lobbyConnection, roomId]);
 
@@ -76,7 +85,7 @@ export default function RoomPage() {
             </div>
             <ul className="players-list">
               {players.map((p) => (
-                <li key={p.id} className="player-item">
+                <li key={p.name} className="player-item">
                   {p.name} {p.isHost ? "👑" : ""}
                 </li>
               ))}
