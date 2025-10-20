@@ -36,12 +36,18 @@ public class LobbyHub : Hub
         _userService.SetConnectedStatus(user.Id, true);
         await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
 
-        var settings = _roomService.GetRoomSettings(user.RoomId);
-        await Clients.Caller.SendAsync("ReceiveUpdateSettings",
-            settings.CategoryId,
-            settings.DrawingTime,
-            settings.NumberOfRounds,
-            settings.RoomName);
+        // If the user is not the host, send them the current room settings
+        if (!_roomService.IsHost(user.RoomId, user))
+        {
+            var settings = _roomService.GetRoomSettings(user.RoomId);
+            await Clients.Caller.SendAsync("ReceiveUpdateSettings", new
+            {
+                RoomName = settings.RoomName,
+                CategoryName = settings.CategoryId,
+                DrawingTime = settings.DrawingTime,
+                NumberOfRounds = settings.NumberOfRounds
+            });
+        }
 
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to room {RoomId}", user.Id, user.RoomId);
@@ -108,17 +114,26 @@ public class LobbyHub : Hub
     {
         var user = Context.ResolveUser(_userService);
 
-        _logger.LogInformation("User with id={UserId} is updating settings for room {RoomId}", user.Id, roomId);
         await Task.Run(() => _roomService.UpdateSettings(roomId, user, settings));
-        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", settings.CategoryId, settings.DrawingTime, settings.NumberOfRounds, settings.RoomName);
+        _logger.LogInformation("User with id={UserId} is updated settings for room {RoomId}", user.Id, roomId);
+
+        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", new
+        {
+            RoomName = settings.RoomName,
+            CategoryName = settings.CategoryId, // Note: use CategoryId for now, since word pool service is not implemented yet
+            DrawingTime = settings.DrawingTime,
+            NumberOfRounds = settings.NumberOfRounds
+        });
     }
 
-    private async Task SendPlayerListUpdate(string roomId)
+    public async Task SendPlayerListUpdate(string roomId)
     {
         var players = _roomService.GetUsersInRoom(roomId).Select(p => new
         {
-            p.Name,
-            p.IsReady
+            Name = p.Name,
+            IsHost = _roomService.IsHost(roomId, p),
+            IsConnected = p.IsConnected,
+            IsReady = p.IsReady
         }).ToList();
 
         await Clients.Group(roomId).SendAsync("ReceivePlayerList", players);
