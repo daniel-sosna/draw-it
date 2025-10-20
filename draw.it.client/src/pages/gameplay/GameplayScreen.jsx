@@ -15,8 +15,14 @@ export default function GameplayScreen() {
     ]);
 
     useEffect(() => {
-        if(!gameplayConnection) return; // return if connection hasnt started
-    }), [gameplayConnection, roomId];
+        if(!gameplayConnection) {
+            console.log("Gameplay connection not established yet");
+            return;
+        }
+
+        console.log("Gameplay connection established:", gameplayConnection);
+
+    }, [gameplayConnection, roomId]);
     
     
     const handleSendMessage = (text) => {

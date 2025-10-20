@@ -36,7 +36,7 @@ export function GameplayHubProvider({ children }) {
     }, []); // Ensures it runs once
 
     return (
-        <GameplayHubContext.Provider value={lobbyConnection}>
+        <GameplayHubContext.Provider value={gameplayConnection}>
             {children}
         </GameplayHubContext.Provider>
     );
