@@ -238,9 +238,6 @@ function HostScreen() {
             </div>
 
             <div className="button-container action-buttons">
-                <Button disabled={saving}>
-                    {saving ? 'Saving...' : 'Save Settings'}
-                </Button>
                 <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
                 </Button>
