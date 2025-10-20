@@ -2,7 +2,9 @@ using System.Text.Json;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
+using Draw.it.Server.Repositories.User;
 using Draw.it.Server.Services;
+using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 
@@ -33,6 +35,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
+
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
