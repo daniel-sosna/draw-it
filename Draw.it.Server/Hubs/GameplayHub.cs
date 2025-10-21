@@ -30,10 +30,10 @@ public class GameplayHub : Hub
     {
         var user = GetUser();
         
-        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.userName, message);
+        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, message);
     }
 
-    public UserModel GetUser()
+    private UserModel GetUser()
     {
         var user = Context.ResolveUser(_userService);
         

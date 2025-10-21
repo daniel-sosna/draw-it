@@ -29,7 +29,8 @@ export default function GameplayScreen() {
     
     
     const handleSendMessage = async (message) => {
-        setMessages((prevMessages) => [...prevMessages, { user: "You", message }]);
+        console.log("Sending message:", message);
+        setMessages((prevMessages) => [...prevMessages, { user: "You", message: message }]);
         try {
             await gameplayConnection.invoke("SendMessage", message); 
         } catch (error) {
