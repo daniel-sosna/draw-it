@@ -10,8 +10,7 @@ export default function GameplayScreen() {
     const { roomId } = useParams();
     
     const [messages, setMessages] = useState([
-        { user: "Laimis", text: "Bananas" },
-        { user: "Titas", text: "Lol" },
+        
     ]);
 
     useEffect(() => {
@@ -19,15 +18,24 @@ export default function GameplayScreen() {
             console.log("Gameplay connection not established yet");
             return;
         }
+        
+        gameplayConnection.on("ReceiveMessage", (userName, message) => {
+            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message }]);
+        })
 
         console.log("Gameplay connection established:", gameplayConnection);
 
     }, [gameplayConnection, roomId]);
     
     
-    const handleSendMessage = (text) => {
-        setMessages((prevMessages) => [...prevMessages, { user: "You", text }]);
-        // TODO: send message to backend 
+    const handleSendMessage = async (message) => {
+        setMessages((prevMessages) => [...prevMessages, { user: "You", message }]);
+        try {
+            await gameplayConnection.invoke("SendMessage", message); 
+        } catch (error) {
+            console.log(error);
+            console.log("Could not send message:", error);
+        }        
     };
     
     return (

@@ -33,9 +33,10 @@ public class GameplayHub : Hub
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to gameplay room with roomId={RoomId}", user.Id, user.RoomId);
     }
-    public async Task sendMessage(string user, string message)
+    public async Task SendMessage(string message)
     {
-        // send message
+        var userName = "";
+        await Clients.AllExcept(Context.ConnectionId).SendAsync("ReceiveMessage", userName, message);
     }
 
 }
