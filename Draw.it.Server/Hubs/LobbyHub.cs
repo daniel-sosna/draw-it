@@ -159,16 +159,9 @@ public class LobbyHub : Hub
     {
         var user = Context.ResolveUser(_userService);
 
-        if (string.IsNullOrEmpty(user.RoomId))
-        {
-            return;
-        }
-
         try
         {
             _roomService.StartGame(user.RoomId, user);
-
-            await Clients.Group(user.RoomId).SendAsync("ReceiveGameStart");
         }
         catch (AppException ex)
         {
@@ -179,5 +172,7 @@ public class LobbyHub : Hub
         {
             await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", "An unexpected error occurred while trying to start the game.");
         }
+
+        await Clients.Group(user.RoomId).SendAsync("ReceiveGameStart");
     }
 }

@@ -125,14 +125,15 @@ function HostScreen() {
         }
     };
 
-    const handleStartGame = async () => {
-        if (!lobbyConnection) return;
-
+    const startGame = async () => {
+        setLoading(false);
+        
         try {
             await lobbyConnection.invoke("StartGame");
         } catch (error) {
             console.error("Failed to invoke StartGame:", error);
             alert("An unexpected network error occurred.");
+            setLoading(true);
         }
     };
 
@@ -164,22 +165,22 @@ function HostScreen() {
                     <h2>Players</h2>
                     <table className="players-table">
                         <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Ready?</th>
-                            </tr>
+                        <tr>
+                            <th>Name</th>
+                            <th>Ready?</th>
+                        </tr>
                         </thead>
-                        <tbody>                            
-                            {joinedPlayers.map((player) => (
-                                <tr key={player.name}>
-                                    <td className={player.isReady ? 'ready' : ''}>
-                                        {player.name}
-                                    </td>
-                                    <td>
-                                        {player.isReady ? "👍" : "⌛"}
-                                    </td>
-                                </tr>
-                            ))}
+                        <tbody>
+                        {joinedPlayers.map((player) => (
+                            <tr key={player.name}>
+                                <td className={player.isReady ? 'ready' : ''}>
+                                    {player.name}
+                                </td>
+                                <td>
+                                    {player.isReady ? "👍" : "⌛"}
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -242,7 +243,7 @@ function HostScreen() {
             </div>
 
             <div className="button-container action-buttons">
-                <Button onClick={handleStartGame} disabled={loading}>
+                <Button onClick={startGame} disabled={loading}>
                     {loading ? 'Starting...' : 'Start Game'}
                 </Button>
                 <Button onClick={deleteRoom} disabled={deleting} className="delete-button">

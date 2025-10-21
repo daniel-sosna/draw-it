@@ -13,10 +13,10 @@ const initialRoomState = {
 
 export default function RoomPage() {
     const lobbyConnection = useContext(LobbyHubContext);
-    const { roomId } = useParams();
+    const {roomId} = useParams();
     const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [roomState, setRoomState] = useState(initialRoomState); // state for the room
-    const { players, settings } = roomState;
+    const {players, settings} = roomState;
 
     const navigate = useNavigate();
 
@@ -88,65 +88,66 @@ export default function RoomPage() {
     };
 
     return (
-    <div className="game-room">
-      <div className="game-room-container">
-        <h1 className="game-room-title">{roomState.name}</h1>
-        <div className="room-id">Room ID: {roomState.id}</div>
+        <div className="game-room">
+            {/* NAUJAS APVYNIOJIMAS: Kontroliuoja max-width ir padding */}
+            <div className="game-room-inner">
+                <h1 className="game-room-title">{roomState.name}</h1>
+                <div className="room-id">Room ID: {roomId}</div>
 
-        <div className="game-room-content">
-          {/* Left Column - Players */}
-          <div className="players-section">
-            <h2 className="section-title">PLAYERS</h2>
-            <div className="player-count">
-              {players.length} / 4
-            </div>
-            <ul className="players-list">
-                {players.map((p) => (
-                    <li key={p.name} className={`player-item ${p.isReady ? 'ready' : ''}`}>
-                        {p.name} {p.isHost ? "👑" : ""} {p.isReady ? "✅" : "❌"}
-                    </li>
-                ))}
-            </ul>
+                <div className="game-room-content">
+                    {/* Left Column - Players */}
+                    <div className="players-section">
+                        <h2 className="section-title">PLAYERS</h2>
+                        <div className="player-count">
+                            {players.length} / 4
+                        </div>
+                        <ul className="players-list">
+                            {players.map((p) => (
+                                <li key={p.name} className={`player-item ${p.isReady ? 'ready' : ''}`}>
+                                    {p.name} {p.isHost ? "👑" : ""}
+                                </li>
+                            ))}
+                        </ul>
 
-          <div className="action-buttons ready-action">
-              <Button
-                  onClick={handleReadyToggle} 
-                  className={isPlayerReady ? 'ready-button is-ready' : 'ready-button'}
-              >
-                  {isPlayerReady ? 'UNREADY' : 'READY'}
-              </Button>
-          </div> 
-          </div>
+                        <div className="action-buttons ready-action">
+                            <Button
+                                onClick={handleReadyToggle}
+                                className={`ready-button ${isPlayerReady ? 'is-ready' : ''}`}
+                            >
+                                {isPlayerReady ? 'UNREADY' : 'READY'}
+                            </Button>
+                        </div>
+                    </div>
 
-          {/* Divider */}
-          <div className="divider"></div>
+                    {/* Divider */}
+                    <div className="divider"></div>
 
-          {/* Right Column - Game Details */}
-          <div className="game-details-section">
-            <div className="game-setting">
-              <span className="setting-label">COUNT:</span>
-              <span className="setting-value">{players.length}</span>
+                    {/* Right Column - Game Details */}
+                    <div className="game-details-section">
+                        <div className="game-setting">
+                            <span className="setting-label">COUNT:</span>
+                            <span className="setting-value">{players.length}</span>
+                        </div>
+                        <div className="game-setting">
+                            <span className="setting-label">CATEGORY:</span>
+                            <span className="setting-value category-value">{settings.category}</span>
+                        </div>
+                        <div className="game-setting">
+                            <span className="setting-label">DURATION:</span>
+                            <span className="setting-value">{formatDuration(settings.durationSec)}</span>
+                        </div>
+                        <div className="game-setting">
+                            <span className="setting-label">ROUNDS:</span>
+                            <span className="setting-value">{settings.rounds}</span>
+                        </div>
+                        <div className="leave-button-container">
+                            <Button onClick={leaveRoom}>
+                                LEAVE ROOM
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="game-setting">
-              <span className="setting-label">CATEGORY:</span>
-              <span className="setting-value category-value">{settings.category}</span>
-            </div>
-            <div className="game-setting">
-              <span className="setting-label">DURATION:</span>
-              <span className="setting-value">{formatDuration(settings.durationSec)}</span>
-            </div>
-            <div className="game-setting">
-              <span className="setting-label">ROUNDS:</span>
-              <span className="setting-value">{settings.rounds}</span>
-            </div>
-            <div className="leave-button-container">
-              <Button onClick={leaveRoom}>
-                LEAVE ROOM
-              </Button>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
     );
 }

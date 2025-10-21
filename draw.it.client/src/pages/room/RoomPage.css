@@ -7,14 +7,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 20px;
   width: 100%;
 }
 
-.game-room-container {
-  max-width: 800px;
-  width: 100%;
-  background: #1a1a1a;
+.game-room-inner {
+    max-width: 800px;
+    width: 100%;
+    padding: 20px 20px;
 }
 
 .game-room-title {
@@ -37,7 +36,7 @@
 .game-room-content {
   display: flex;
   gap: 1.5rem;
-  align-items: flex-start;
+  align-items: flex-start;  
 }
 
 /* Left Column - Players Section */
