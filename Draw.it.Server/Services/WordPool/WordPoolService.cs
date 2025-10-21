@@ -5,21 +5,21 @@ namespace Draw.it.Server.Services.WordPool
 {
     public class WordPoolService : IWordPoolService
     {
-        private readonly IWordPoolRepository _repo;
+        private readonly IWordPoolRepository _wordPoolRepository;
         private readonly Random _random = new();
 
-        public WordPoolService(IWordPoolRepository repo)
+        public WordPoolService(IWordPoolRepository wordPoolRepository)
         {
-            _repo = repo;
+            _wordPoolRepository = wordPoolRepository;
         }
 
-        public IEnumerable<CategoryModel> GetAllCategories() => _repo.GetAllCategories();
+        public IEnumerable<CategoryModel> GetAllCategories() => _wordPoolRepository.GetAllCategories();
 
-        public IEnumerable<WordModel> GetWords(long categoryId) => _repo.GetWordsByCategoryId(categoryId);
+        public IEnumerable<WordModel> GetWords(long categoryId) => _wordPoolRepository.GetWordsByCategoryId(categoryId);
 
         public WordModel GetRandomWord(long categoryId)
         {
-            var words = _repo.GetWordsByCategoryId(categoryId).ToList();
+            var words = _wordPoolRepository.GetWordsByCategoryId(categoryId).ToList();
             if (words.Count == 0)
             {
                 throw new InvalidOperationException($"No words for category {categoryId}");

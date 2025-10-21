@@ -9,21 +9,21 @@ namespace Draw.it.Server.Controllers.WordPool
     [AllowAnonymous]
     public class WordPoolController : ControllerBase
     {
-        private readonly IWordPoolService _service;
+        private readonly IWordPoolService _wordPoolService;
 
-        public WordPoolController(IWordPoolService service)
+        public WordPoolController(IWordPoolService wordPoolService)
         {
-            _service = service;
+            _wordPoolService = wordPoolService;
         }
 
         [HttpGet("categories")]
-        public IActionResult GetCategories() => Ok(_service.GetAllCategories());
+        public IActionResult GetCategories() => Ok(_wordPoolService.GetAllCategories());
 
         [HttpGet("categories/{categoryId:long}/words")]
-        public IActionResult GetWords(long categoryId) => Ok(_service.GetWords(categoryId));
+        public IActionResult GetWords(long categoryId) => Ok(_wordPoolService.GetWords(categoryId));
 
         [HttpGet("categories/{categoryId:long}/random")]
-        public IActionResult GetRandom(long categoryId) => Ok(_service.GetRandomWord(categoryId));
+        public IActionResult GetRandom(long categoryId) => Ok(_wordPoolService.GetRandomWord(categoryId));
     }
 }
 
