@@ -41,17 +41,16 @@ export default function RoomPage() {
     useEffect(() => {
         if (!lobbyConnection) return;
 
-        lobbyConnection.on("ReceiveUpdateSettings", (categoryId, drawingTime, numberOfRounds, roomName) => {
-            console.log("Received new settings:", categoryId, drawingTime, numberOfRounds, roomName);
+        lobbyConnection.on("ReceiveUpdateSettings", (settings) => {
+            console.log("Received new settings:", settings);
 
             setRoomState(prev => ({
                 ...prev,
-                name: roomName,
+                name: settings.roomName,
                 settings: {
-                    ...prev.settings,
-                    category: categoryId,
-                    durationSec: drawingTime,
-                    rounds: numberOfRounds,
+                    category: settings.categoryName,
+                    durationSec: settings.drawingTime,
+                    rounds: settings.numberOfRounds,
                 }
             }));
         });
@@ -62,11 +61,11 @@ export default function RoomPage() {
             navigate("/");
         });
 
-        lobbyConnection.on("ReceivePlayerList", (newPlayers) => {
-            console.log("Received new player list:", newPlayers);
+        lobbyConnection.on("ReceivePlayerList", (players) => {
+            console.log("Received new player list:", players);
             setRoomState(prev => ({
                 ...prev,
-                players: newPlayers
+                players: players
             }));
         });
 
