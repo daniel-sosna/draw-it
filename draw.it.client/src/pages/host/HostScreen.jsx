@@ -126,15 +126,15 @@ function HostScreen() {
     };
 
     const startGame = async () => {
-        setLoading(false);
+        setLoading(true);
         
         try {
             await lobbyConnection.invoke("StartGame");
         } catch (error) {
             console.error("Failed to invoke StartGame:", error);
             alert("An unexpected network error occurred.");
-            setLoading(true);
         }
+        setLoading(false);
     };
 
     const deleteRoom = async () => {
@@ -165,10 +165,10 @@ function HostScreen() {
                     <h2>Players</h2>
                     <table className="players-table">
                         <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Ready?</th>
-                        </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Ready?</th>
+                            </tr>
                         </thead>
                         <tbody>
                         {joinedPlayers.map((player) => (
