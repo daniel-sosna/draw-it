@@ -67,7 +67,7 @@ public class RoomService : IRoomService
         _logger.LogInformation("Room with id={roomId} created", roomId);
 
         _userService.SetRoom(user.Id, roomId);
-        _userService.SetReadyStatus(user.Id, true); // Host is always ready
+        _userService.SetReadyStatus(user.Id, true);
 
         return room;
     }
