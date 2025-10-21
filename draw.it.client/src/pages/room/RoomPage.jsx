@@ -89,7 +89,6 @@ export default function RoomPage() {
 
     return (
         <div className="game-room">
-            {/* NAUJAS APVYNIOJIMAS: Kontroliuoja max-width ir padding */}
             <div className="game-room-inner">
                 <h1 className="game-room-title">{roomState.name}</h1>
                 <div className="room-id">Room ID: {roomId}</div>
