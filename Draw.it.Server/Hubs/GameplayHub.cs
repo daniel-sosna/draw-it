@@ -19,15 +19,8 @@ public class GameplayHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        var user = Context.ResolveUser(_userService);
-
-        if (string.IsNullOrEmpty(user.RoomId))
-        {
-            _logger.LogWarning("User with id={UserId} has no RoomId on connection.", user.Id);
-            Context.Abort();  // Close the connection
-            return;
-        }
-
+        var user = GetUser();
+        
         // Add player to a group, again
         await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
         await base.OnConnectedAsync();
@@ -35,8 +28,21 @@ public class GameplayHub : Hub
     }
     public async Task SendMessage(string message)
     {
-        var userName = "";
-        await Clients.AllExcept(Context.ConnectionId).SendAsync("ReceiveMessage", userName, message);
+        var user = GetUser();
+        
+        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.userName, message);
     }
 
+    public UserModel GetUser()
+    {
+        var user = Context.ResolveUser(_userService);
+        
+        if (string.IsNullOrEmpty(user.RoomId))
+        {
+            _logger.LogWarning("User with id={UserId} has no RoomId on connection.", user.Id);
+            Context.Abort();  // Close the connection
+        }
+
+        return user;
+    }
 }
