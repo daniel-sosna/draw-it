@@ -1,20 +1,35 @@
-﻿import { useState } from "react";
+﻿import {useContext, useEffect, useState} from "react";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
-
+import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
+import {useParams} from "react-router";
 
 export default function GameplayScreen() {
+    
+    const gameplayConnection = useContext(GameplayHubContext);
+    const { roomId } = useParams();
+    
     const [messages, setMessages] = useState([
         { user: "Laimis", text: "Bananas" },
         { user: "Titas", text: "Lol" },
     ]);
 
+    useEffect(() => {
+        if(!gameplayConnection) {
+            console.log("Gameplay connection not established yet");
+            return;
+        }
+
+        console.log("Gameplay connection established:", gameplayConnection);
+
+    }, [gameplayConnection, roomId]);
     
     
     const handleSendMessage = (text) => {
         setMessages((prevMessages) => [...prevMessages, { user: "You", text }]);
         // TODO: send message to backend 
     };
+    
     return (
         // FIX 1: Use w-screen h-screen and overflow-hidden to contain the layout.
         <div className="flex w-screen h-[90vh] bg-secondary p-4 overflow-hidden">
