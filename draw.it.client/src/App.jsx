@@ -5,6 +5,8 @@ import GameplayScreen from "@/pages/gameplay/GameplayScreen.jsx";
 import HostScreen from "@/pages/host/HostScreen.jsx";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router";
 import { LobbyHubProvider } from "@/utils/LobbyHubProvider.jsx";
+import { GameplayHubProvider } from "@/utils/GameplayHubProvider.jsx";
+
 
 function LobbyLayout() {
   return (
@@ -14,6 +16,13 @@ function LobbyLayout() {
   );
 }
 
+function GameplayLayout() {
+    return (
+        <GameplayHubProvider>
+            <Outlet />
+        </GameplayHubProvider>
+    );
+}
 function App() {
     return (
         <BrowserRouter>
@@ -22,7 +31,9 @@ function App() {
                 <Route element={<LobbyLayout />}>
                     <Route path="/room/:roomId" element={<RoomPage />} />
                     <Route path="/host/:roomId" element={<HostScreen />} />
-                    <Route path="/gameplay/:roomId" element={<GameplayScreen />} />
+                    <Route element={<GameplayLayout />}>
+                        <Route path="/gameplay/:roomId" element={<GameplayScreen />} />
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>
