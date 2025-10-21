@@ -149,7 +149,7 @@ public class LobbyHub : Hub
             return;
         }
 
-        _userService.SetReady(user.Id, isReady);
+        _userService.SetReadyStatus(user.Id, isReady);
 
         await SendPlayerListUpdate(user.RoomId);
     }
@@ -172,12 +172,12 @@ public class LobbyHub : Hub
         }
         catch (AppException ex)
         {
-            await Clients.Caller.SendAsync("ReceiveError", ex.Message);
+            await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", ex.Message);
             return;
         }
         catch (Exception)
         {
-            await Clients.Caller.SendAsync("ReceiveError", "An unexpected error occurred while trying to start the game.");
+            await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", "An unexpected error occurred while trying to start the game.");
         }
     }
 }

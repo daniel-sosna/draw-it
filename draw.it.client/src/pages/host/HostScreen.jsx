@@ -55,7 +55,7 @@ function HostScreen() {
             setJoinedPlayers(newPlayers);
         });
 
-        lobbyConnection.on("ReceiveError", (message) => {
+        lobbyConnection.on("ReceiveErrorOnGameStart", (message) => {
             alert(`Failed to Start Game: ${message}`);
         });
 
@@ -68,7 +68,7 @@ function HostScreen() {
             lobbyConnection.off("ReceiveUpdateSettings");
             lobbyConnection.off("ReceivePlayerList");
             lobbyConnection.off("ReceiveGameStart");
-            lobbyConnection.off("ReceiveError");
+            lobbyConnection.off("ReceiveErrorOnGameStart");
         }
     }, [lobbyConnection, roomId]);
 
