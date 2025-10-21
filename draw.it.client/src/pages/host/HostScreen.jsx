@@ -119,11 +119,14 @@ function HostScreen() {
         setLoading(true);
         try {
             await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
+            /*
             const response = await api.post(`room/${roomId}/start`); // Endpoint is not implemented yet
 
             if (response.status === 204) {
                 navigate(`/gameplay/${roomId}`);
             }
+            */
+            navigate(`/gameplay/${roomId}`); // bypass authetication for now
         } catch (err) {
             console.error('Error starting game:', err);
             alert(err.response?.data?.error || 'Could not start game. Please try again.');

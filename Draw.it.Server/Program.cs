@@ -69,6 +69,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<LobbyHub>("/lobbyHub");
+app.MapHub<GameplayHub>("/gameplayHub");
 
 app.MapFallbackToFile("/index.html");
 
