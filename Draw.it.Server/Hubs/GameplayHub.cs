@@ -20,7 +20,7 @@ public class GameplayHub : Hub
     public override async Task OnConnectedAsync()
     {
         var user = GetUser();
-        
+
         // Add player to a group, again
         await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
         await base.OnConnectedAsync();
@@ -29,18 +29,20 @@ public class GameplayHub : Hub
     public async Task SendMessage(string message)
     {
         var user = GetUser();
-        
+
         await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, message);
+        // Later on maybe implement a saving messages method in some database
     }
 
     private UserModel GetUser()
     {
         var user = Context.ResolveUser(_userService);
-        
+
         if (string.IsNullOrEmpty(user.RoomId))
         {
             _logger.LogWarning("User with id={UserId} has no RoomId on connection.", user.Id);
             Context.Abort();  // Close the connection
+            return null;
         }
 
         return user;

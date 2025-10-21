@@ -9,9 +9,7 @@ export default function GameplayScreen() {
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
     
-    const [messages, setMessages] = useState([
-        
-    ]);
+    const [messages, setMessages] = useState([]);
 
     useEffect(() => {
         if(!gameplayConnection) {
@@ -30,9 +28,9 @@ export default function GameplayScreen() {
     
     const handleSendMessage = async (message) => {
         console.log("Sending message:", message);
-        setMessages((prevMessages) => [...prevMessages, { user: "You", message: message }]);
         try {
-            await gameplayConnection.invoke("SendMessage", message); 
+            await gameplayConnection.invoke("SendMessage", message);
+            setMessages((prevMessages) => [...prevMessages, { user: "You", message: message }]);
         } catch (error) {
             console.log(error);
             console.log("Could not send message:", error);
