@@ -42,7 +42,7 @@ public class GameplayHub : Hub
         {
             _logger.LogWarning("User with id={UserId} has no RoomId on connection.", user.Id);
             Context.Abort();  // Close the connection
-            return null;
+            throw new InvalidOperationException("User has no RoomId.");
         }
 
         return user;
