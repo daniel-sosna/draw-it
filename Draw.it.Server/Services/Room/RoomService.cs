@@ -222,9 +222,15 @@ public class RoomService : IRoomService
     /// <summary>
     /// Update room settings (host only)
     /// </summary>
-    public void UpdateSettings(string roomId, UserModel user, RoomSettingsModel settings)
+    public bool UpdateSettings(string roomId, UserModel user, RoomSettingsModel settings)
     {
         var room = GetRoom(roomId);
+
+        // Skip if settings the same
+        if (room.Settings.Equals(settings))
+        {
+            return false;
+        }
 
         if (room.HostId != user.Id)
         {
@@ -237,7 +243,7 @@ public class RoomService : IRoomService
         }
 
         room.Settings = settings;
-
         _roomRepository.Save(room);
+        return true;
     }
 }
