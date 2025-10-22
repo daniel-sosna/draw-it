@@ -1,7 +1,8 @@
-﻿import React, { useRef, useState, useEffect } from "react";
+﻿import React, {useRef, useState, useEffect, useContext} from "react";
 import {FaEraser} from "react-icons/fa";
 import styles from "@/components/gameplay/DrawingCanvas.module.css";
 import "../../index.css";
+import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
 
 // The main App component
 const App = () => {
@@ -11,6 +12,46 @@ const App = () => {
     const [isEraser, setIsEraser] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [brushSize, setBrushSize] = useState(5);
+    const gameplayConnection = useContext(GameplayHubContext);
+
+    const onReceiveDraw = (drawDto) => {
+        const { point, type, color, size, eraser } = drawDto;
+        
+        const ctx = canvasRef.current.getContext("2d");
+        
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.strokeStyle = eraser ? "white" : color;
+        ctx.lineWidth = size;
+
+        if (type === "start") {
+            ctx.beginPath();
+            ctx.moveTo(point.x, point.y);
+        } else if (type === "move") {
+            ctx.lineTo(point.x, point.y);
+            ctx.stroke();
+        } else if (type === "end") {
+            ctx.closePath();
+        }
+        ctx.restore();
+    };
+
+
+    useEffect(() => {
+        if(!gameplayConnection) {
+            console.log("Gameplay connection not established yet");
+            return;
+        }
+        
+        gameplayConnection.on("ReceiveDraw", onReceiveDraw)
+        gameplayConnection.on("ReceiveClear", clearCanvas)
+        
+        return () => {
+            gameplayConnection.off("ReceiveDraw", onReceiveDraw)
+            gameplayConnection.off("ReceiveClear", clearCanvas)
+        }
+
+    }, [gameplayConnection]);
     
     const clearCanvas = () => {
         if (!canvasRef.current) return;
@@ -54,7 +95,7 @@ const App = () => {
         if (canvasRef.current) {
             const ctx = canvasRef.current.getContext("2d");
             ctx.strokeStyle = isEraser ? "white" : color;
-            ctx.lineWidth = isEraser ? 20 : brushSize; // Thicker line for eraser
+            ctx.lineWidth = brushSize;
         }
     }, [color, isEraser, brushSize]);
 
@@ -73,6 +114,14 @@ const App = () => {
         ctx.beginPath();
         ctx.moveTo(x, y);
         setIsDrawing(true);
+        
+        gameplayConnection.invoke("SendDraw", {
+            point: { x, y },       
+            type: "start",         
+            color: color,     
+            size: brushSize,
+            eraser: isEraser,
+        })
     };
 
     const draw = (e) => {
@@ -81,13 +130,29 @@ const App = () => {
         const ctx = canvasRef.current.getContext("2d");
         ctx.lineTo(x, y);
         ctx.stroke();
+        
+        gameplayConnection.invoke("SendDraw", {
+            point: { x, y },
+            type: "move",
+            color: color,
+            size: brushSize,
+            eraser: isEraser,
+        })
     };
 
     const stopDrawing = () => {
+        if (!isDrawing) return;
         setIsDrawing(false);
+
+        gameplayConnection.invoke("SendDraw", {
+            point: { x: 0, y: 0 },
+            type: "end",
+            color: color,
+            size: brushSize,
+            eraser: isEraser,
+        })
     };
     
-
     return (
         <div className="flex h-full min-w-screen p-4 bg-gray-100 font-sans">
             <div className="w-screen h-[80vh] p-4 bg-gray-100 font-sans flex flex-col mr-4">
@@ -133,7 +198,11 @@ const App = () => {
 
                     {/* Clear Button */}
                     <button
-                        onClick={clearCanvas}
+                        onClick={() => {
+                                gameplayConnection.invoke("SendClear");
+                                clearCanvas();
+                            }
+                        }
                         className={styles.clearButton}>
                         Clear
                     </button>
@@ -149,7 +218,7 @@ const App = () => {
                         min="1"
                         max="50"
                         value={brushSize}
-                        onChange={(e) => setBrushSize(e.target.value)}
+                        onChange={(e) => setBrushSize(e.target.valueAsNumber)}
                         className={styles.brushSlider}
                     />
 
