@@ -6,7 +6,8 @@
 
 /* Input Field */
 .inputField {
-    @apply flex-1 flex-shrink-0 p-1.5 border border-gray-400 rounded-l;
+    @apply flex-1 flex-shrink-0 p-1.5 border border-gray-400 rounded-l
+    bg-white text-black dark:bg-gray-800 dark:text-white;
 }
 
 .inputField:focus {

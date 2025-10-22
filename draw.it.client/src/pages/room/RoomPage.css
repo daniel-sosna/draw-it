@@ -7,14 +7,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 20px;
   width: 100%;
 }
 
-.game-room-container {
-  max-width: 800px;
-  width: 100%;
-  background: #1a1a1a;
+.game-room-inner {
+    max-width: 800px;
+    width: 100%;
+    padding: 20px 20px;
 }
 
 .game-room-title {
@@ -37,7 +36,7 @@
 .game-room-content {
   display: flex;
   gap: 1.5rem;
-  align-items: flex-start;
+  align-items: flex-start;  
 }
 
 /* Left Column - Players Section */
@@ -85,8 +84,55 @@
   gap: 0.5rem;
 }
 
+.player-item.ready {
+    background-color: #384d38; 
+    border-radius: 6px;
+    padding: 0.5rem;
+}
+
+.action-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.ready-action button {
+    width: 100%;
+}
+
 .leave-button-container {
-  justify-content: center;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.action-buttons button,
+.leave-button-container button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #ff6b35;
+    color: white;
+}
+
+.action-buttons button:hover,
+.leave-button-container button:hover {
+    background: #e55a2b; 
+    transform: translateY(-2px);
+}
+
+.ready-button.is-ready {
+    background-color: #4ade80;
+    color: #1a1a1a;
+}
+
+.ready-button.is-ready:hover {
+    background-color: #2fb35e;
 }
 
 /* Divider */
