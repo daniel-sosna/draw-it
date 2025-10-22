@@ -17,7 +17,7 @@ namespace Draw.it.Server.Services.WordPool
 
         public IEnumerable<CategoryModel> GetAllCategories() => _wordPoolRepository.GetAllCategories();
 
-        public IEnumerable<WordModel> GetWords(long categoryId) => _wordPoolRepository.GetWordsByCategoryId(categoryId);
+        public IEnumerable<WordModel> GetAllWordsByCategoryId(long categoryId) => _wordPoolRepository.FindWordsByCategoryId(categoryId);
 
         public CategoryModel GetCategoryById(long categoryId)
         {
@@ -29,7 +29,7 @@ namespace Draw.it.Server.Services.WordPool
             return category;
         }
 
-        public WordModel GetRandomWord(long categoryId)
+        public WordModel GetRandomWordByCategoryId(long categoryId)
         {
             // Ensure category exists
             var category = _wordPoolRepository.FindCategoryById(categoryId);
@@ -38,7 +38,7 @@ namespace Draw.it.Server.Services.WordPool
                 throw new AppException($"Category with id={categoryId} not found", HttpStatusCode.NotFound);
             }
 
-            var words = _wordPoolRepository.GetWordsByCategoryId(categoryId).ToList();
+            var words = _wordPoolRepository.FindWordsByCategoryId(categoryId).ToList();
             if (words.Count == 0)
             {
                 throw new AppException($"No words for category id={categoryId}", HttpStatusCode.NotFound);

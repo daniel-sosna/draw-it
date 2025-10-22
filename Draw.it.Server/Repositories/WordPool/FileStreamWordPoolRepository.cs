@@ -31,7 +31,7 @@ namespace Draw.it.Server.Repositories.WordPool
             return _categories.Value.FirstOrDefault(c => c.Id == categoryId);
         }
 
-        public IEnumerable<WordModel> GetWordsByCategoryId(long categoryId)
+        public IEnumerable<WordModel> FindWordsByCategoryId(long categoryId)
         {
             // Validate category exists (repository returns null if not found)
             if (FindCategoryById(categoryId) is null)
@@ -60,7 +60,7 @@ namespace Draw.it.Server.Repositories.WordPool
         {
             foreach (var cat in _categories.Value)
             {
-                foreach (var w in GetWordsByCategoryId(cat.Id))
+                foreach (var w in FindWordsByCategoryId(cat.Id))
                 {
                     yield return w;
                 }
