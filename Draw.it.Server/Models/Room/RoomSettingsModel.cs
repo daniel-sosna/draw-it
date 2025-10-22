@@ -11,9 +11,9 @@
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            return RoomName == other.RoomName 
-                   && CategoryId == other.CategoryId 
-                   && DrawingTime == other.DrawingTime 
+            return RoomName == other.RoomName
+                   && CategoryId == other.CategoryId
+                   && DrawingTime == other.DrawingTime
                    && NumberOfRounds == other.NumberOfRounds;
         }
 

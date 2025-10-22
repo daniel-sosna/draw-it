@@ -231,7 +231,7 @@ public class RoomService : IRoomService
         {
             return;
         }
-        
+
         if (room.HostId != user.Id)
         {
             throw new AppException("Only the host can update the room.", HttpStatusCode.Forbidden);
