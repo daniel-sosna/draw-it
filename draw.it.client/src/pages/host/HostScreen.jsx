@@ -88,6 +88,7 @@ function HostScreen() {
             });
         } catch (err) {
             console.error('Error sending real-time settings update:', err);
+            alert("Number of rounds should be more than 1 and Drawing time must be between 20 and 300 seconds.");
         } finally {
             setSaving(false);
         }
