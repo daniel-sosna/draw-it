@@ -1,5 +1,7 @@
 using Draw.it.Server.Models.WordPool;
 using Draw.it.Server.Repositories.WordPool;
+using Draw.it.Server.Exceptions;
+using System.Net;
 
 namespace Draw.it.Server.Services.WordPool
 {
@@ -17,12 +19,29 @@ namespace Draw.it.Server.Services.WordPool
 
         public IEnumerable<WordModel> GetWords(long categoryId) => _wordPoolRepository.GetWordsByCategoryId(categoryId);
 
+        public CategoryModel GetCategoryById(long categoryId)
+        {
+            var category = _wordPoolRepository.FindCategoryById(categoryId);
+            if (category is null)
+            {
+                throw new AppException($"Category with id={categoryId} not found", HttpStatusCode.NotFound);
+            }
+            return category;
+        }
+
         public WordModel GetRandomWord(long categoryId)
         {
+            // Ensure category exists
+            var category = _wordPoolRepository.FindCategoryById(categoryId);
+            if (category is null)
+            {
+                throw new AppException($"Category with id={categoryId} not found", HttpStatusCode.NotFound);
+            }
+
             var words = _wordPoolRepository.GetWordsByCategoryId(categoryId).ToList();
             if (words.Count == 0)
             {
-                throw new InvalidOperationException($"No words for category {categoryId}");
+                throw new AppException($"No words for category id={categoryId}", HttpStatusCode.NotFound);
             }
 
             var idx = _random.Next(words.Count);

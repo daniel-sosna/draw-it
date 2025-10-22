@@ -26,21 +26,27 @@ namespace Draw.it.Server.Repositories.WordPool
 
         public IEnumerable<CategoryModel> GetAllCategories() => _categories.Value;
 
-        public CategoryModel GetCategoryById(long categoryId)
+        public CategoryModel? FindCategoryById(long categoryId)
         {
-            return _categories.Value.FirstOrDefault(c => c.Id == categoryId)
-                ?? throw new InvalidOperationException($"Category {categoryId} not found");
+            return _categories.Value.FirstOrDefault(c => c.Id == categoryId);
         }
 
         public IEnumerable<WordModel> GetWordsByCategoryId(long categoryId)
         {
-            // Validate category exists
-            GetCategoryById(categoryId);
+            // Validate category exists (repository returns null if not found)
+            if (FindCategoryById(categoryId) is null)
+            {
+                yield break;
+            }
 
             var path = Path.Combine(_dataDir, $"words-{categoryId}.txt");
             if (!File.Exists(path)) yield break;
 
-            foreach (var line in File.ReadLines(path))
+            // Read file via stream explicitly (meaningful stream usage)
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new StreamReader(stream);
+            string? line;
+            while ((line = reader.ReadLine()) != null)
             {
                 var value = line.Trim();
                 if (!string.IsNullOrEmpty(value))
