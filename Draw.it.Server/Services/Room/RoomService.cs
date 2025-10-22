@@ -226,6 +226,12 @@ public class RoomService : IRoomService
     {
         var room = GetRoom(roomId);
 
+        // Skip if settings the same
+        if (room.Settings.Equals(settings))
+        {
+            return;
+        }
+        
         if (room.HostId != user.Id)
         {
             throw new AppException("Only the host can update the room.", HttpStatusCode.Forbidden);
@@ -237,7 +243,6 @@ public class RoomService : IRoomService
         }
 
         room.Settings = settings;
-
         _roomRepository.Save(room);
     }
 }
