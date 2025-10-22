@@ -10,7 +10,7 @@ public class GameplayHub : Hub
 {
     private readonly IUserService _userService;
     private readonly ILogger<GameplayHub> _logger;
-    
+
     public GameplayHub(IUserService userService, ILogger<GameplayHub> logger)
     {
         _userService = userService;
@@ -39,13 +39,13 @@ public class GameplayHub : Hub
         var user = GetUser();
         await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
     }
-    
+
     public async Task SendClear()
     {
         var user = GetUser();
         await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveClear");
     }
-    
+
     private UserModel GetUser()
     {
         var user = Context.ResolveUser(_userService);
