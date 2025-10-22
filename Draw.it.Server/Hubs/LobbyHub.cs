@@ -114,9 +114,15 @@ public class LobbyHub : Hub
     public async Task UpdateRoomSettings(string roomId, RoomSettingsModel settings)
     {
         var user = Context.ResolveUser(_userService);
+        var updated = false;
 
-        await Task.Run(() => _roomService.UpdateSettings(roomId, user, settings));
+        await Task.Run(() => updated = _roomService.UpdateSettings(roomId, user, settings));
         _logger.LogInformation("User with id={UserId} is updated settings for room {RoomId}", user.Id, roomId);
+
+        if (!updated)
+        {
+            return;
+        }
 
         await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", new
         {
