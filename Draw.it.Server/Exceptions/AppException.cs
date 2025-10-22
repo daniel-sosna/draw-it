@@ -6,7 +6,7 @@ public class AppException : Exception
 {
     public HttpStatusCode Status { get; }
 
-    public AppException(string message, HttpStatusCode status) : base(message)
+    public AppException(string message, HttpStatusCode status = HttpStatusCode.InternalServerError) : base(message)
     {
         Status = status;
     }
