@@ -4,5 +4,5 @@ namespace Draw.it.Server.Exceptions;
 
 public class UnauthorizedUserException : AppException
 {
-    public UnauthorizedUserException(string message = "User ID claim missing.") : base(message, HttpStatusCode.Unauthorized) { }
+    public UnauthorizedUserException(string message = "User ID claim missing or invalid.") : base(message, HttpStatusCode.Unauthorized) { }
 }
