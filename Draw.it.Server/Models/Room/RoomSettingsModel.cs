@@ -31,7 +31,7 @@ namespace Draw.it.Server.Models.Room
                 _rounds = value;
             }
         }
-        
+
         public bool Equals(RoomSettingsModel? other)
         {
             if (other is null) return false;
