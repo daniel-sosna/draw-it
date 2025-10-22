@@ -30,20 +30,20 @@ public class GameplayHub : Hub
     {
         var user = GetUser();
 
-        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, message);
+        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: message);
         // Later on maybe implement a saving messages method in some database
     }
 
     public async Task SendDraw(DrawDto drawDto)
     {
         var user = GetUser();
-        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
+        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync(method: "ReceiveDraw", arg1: drawDto);
     }
 
     public async Task SendClear()
     {
         var user = GetUser();
-        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync("ReceiveClear");
+        await Clients.GroupExcept(user.RoomId, Context.ConnectionId).SendAsync(method: "ReceiveClear");
     }
 
     private UserModel GetUser()
