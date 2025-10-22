@@ -31,12 +31,7 @@ namespace Draw.it.Server.Services.WordPool
 
         public WordModel GetRandomWordByCategoryId(long categoryId)
         {
-            // Ensure category exists
-            var category = _wordPoolRepository.FindCategoryById(categoryId);
-            if (category is null)
-            {
-                throw new AppException($"Category with id={categoryId} not found", HttpStatusCode.NotFound);
-            }
+            var category = GetCategoryById(categoryId);
 
             var words = _wordPoolRepository.FindWordsByCategoryId(categoryId).ToList();
             if (words.Count == 0)
