@@ -14,6 +14,6 @@ namespace Draw.it.Server.Services.Room
         public void LeaveRoom(string roomId, UserModel user);
         bool IsHost(string roomId, UserModel user);
         void StartGame(string roomId, UserModel user);
-        void UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings);
+        bool UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings);
     }
 }
