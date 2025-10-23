@@ -20,7 +20,7 @@ namespace Draw.it.Server.Controllers.WordPool
         public IActionResult GetCategories() => Ok(_wordPoolService.GetAllCategories());
 
         [HttpGet("categories/{categoryId:long}/words")]
-        public IActionResult GetWords(long categoryId) => Ok(_wordPoolService.GetAllWordsByCategoryId(categoryId));
+        public IActionResult GetWords(long categoryId) => Ok(_wordPoolService.GetWordsByCategoryId(categoryId));
 
         [HttpGet("categories/{categoryId:long}/random")]
         public IActionResult GetRandom(long categoryId) => Ok(_wordPoolService.GetRandomWordByCategoryId(categoryId));

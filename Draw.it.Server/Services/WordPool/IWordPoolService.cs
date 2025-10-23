@@ -6,7 +6,7 @@ namespace Draw.it.Server.Services.WordPool
     {
         CategoryModel GetCategoryById(long categoryId);
         IEnumerable<CategoryModel> GetAllCategories();
-        IEnumerable<WordModel> GetAllWordsByCategoryId(long categoryId);
+        IEnumerable<WordModel> GetWordsByCategoryId(long categoryId);
         WordModel GetRandomWordByCategoryId(long categoryId);
     }
 }

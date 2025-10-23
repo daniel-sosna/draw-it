@@ -15,12 +15,24 @@ namespace Draw.it.Server.Repositories.WordPool
             _categories = new Lazy<List<CategoryModel>>(() =>
             {
                 var path = Path.Combine(_dataDir, "categories.json");
-                using var fs = File.OpenRead(path);
-                var categories = JsonSerializer.Deserialize<List<CategoryModel>>(fs, new JsonSerializerOptions
+
+                if (!File.Exists(path))
                 {
-                    PropertyNameCaseInsensitive = true
-                }) ?? new List<CategoryModel>();
-                return categories;
+                    throw new InvalidOperationException($"Categories file not found: {path}");
+                }
+
+                try
+                {
+                    using var fs = File.OpenRead(path);
+                    return JsonSerializer.Deserialize<List<CategoryModel>>(fs, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? throw new InvalidOperationException("Categories file is empty or invalid");
+                }
+                catch (JsonException ex)
+                {
+                    throw new InvalidOperationException($"Invalid JSON in categories file: {path}", ex);
+                }
             });
         }
 

@@ -17,7 +17,7 @@ namespace Draw.it.Server.Services.WordPool
 
         public IEnumerable<CategoryModel> GetAllCategories() => _wordPoolRepository.GetAllCategories();
 
-        public IEnumerable<WordModel> GetAllWordsByCategoryId(long categoryId) => _wordPoolRepository.FindWordsByCategoryId(categoryId);
+        public IEnumerable<WordModel> GetWordsByCategoryId(long categoryId) => _wordPoolRepository.FindWordsByCategoryId(categoryId);
 
         public CategoryModel GetCategoryById(long categoryId)
         {
