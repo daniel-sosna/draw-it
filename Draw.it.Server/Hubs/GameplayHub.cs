@@ -1,13 +1,18 @@
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Services.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Draw.it.Server.Hubs;
 
+/// <summary>
+/// Hub for gameplay-related real-time communication.
+/// </summary>
+[Authorize]
 public class GameplayHub : BaseHub<GameplayHub>
 {
     public GameplayHub(ILogger<GameplayHub> logger, IUserService userService)
-    : base(logger, userService)
+        : base(logger, userService)
     {
     }
 

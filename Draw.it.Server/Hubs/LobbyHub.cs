@@ -1,7 +1,7 @@
 ﻿using Draw.it.Server.Exceptions;
 using Draw.it.Server.Extensions;
+using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.Room;
-using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.Authorization;
@@ -9,13 +9,16 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Draw.it.Server.Hubs;
 
+/// <summary>
+/// Hub for connecting players to rooms and lobby-related real-time updates.
+/// </summary>
 [Authorize]
 public class LobbyHub : BaseHub<LobbyHub>
 {
     private readonly IRoomService _roomService;
 
     public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService) 
-    : base(logger, userService)
+        : base(logger, userService)
     {
         _roomService = roomService;
     }
@@ -61,45 +64,10 @@ public class LobbyHub : BaseHub<LobbyHub>
         {
             await Task.Delay(8000);
             if (!user.IsConnected)
-                await HandleUserDisconnection(user, exception);
+                await _roomService.HandleUserDisconnectionAsync(user.Id, exception);
         });
 
         await base.OnDisconnectedAsync(exception);
-    }
-
-    private async Task HandleUserDisconnection(UserModel user, Exception? exception)
-    {
-        _logger.LogInformation("User with id={UserId} disconnecting... Exception:\n{Ex}", user.Id, exception?.Message);
-
-        try
-        {
-            string? roomId = user.RoomId;
-            if (string.IsNullOrEmpty(roomId))
-            {
-                return;
-            }
-
-            if (_roomService.IsHost(roomId, user))
-            {
-                // If the user is the host, delete the room
-                _roomService.DeleteRoom(roomId, user);
-                _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
-
-                await Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
-            }
-            else
-            {
-                // If the user is not the host, just leave the room
-                _roomService.LeaveRoom(roomId, user);
-                _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
-
-                await SendPlayerListUpdate(roomId);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during HandleUserDisconnection for user with id={UserId}.", user.Id);
-        }
     }
 
     public async Task UpdateRoomSettings(RoomSettingsModel settings)
@@ -127,13 +95,7 @@ public class LobbyHub : BaseHub<LobbyHub>
 
     public async Task SendPlayerListUpdate(string roomId)
     {
-        var players = _roomService.GetUsersInRoom(roomId).Select(p => new
-        {
-            Name = p.Name,
-            IsHost = _roomService.IsHost(roomId, p),
-            IsConnected = p.IsConnected,
-            IsReady = p.IsReady
-        }).ToList();
+        var players = _roomService.GetUsersInRoom(roomId).Select(p => new PlayerDto(p, _roomService.IsHost(roomId, p))).ToList();
 
         await Clients.Group(roomId).SendAsync("ReceivePlayerList", players);
     }

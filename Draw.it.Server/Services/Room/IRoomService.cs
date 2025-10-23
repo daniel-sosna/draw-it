@@ -15,5 +15,6 @@ namespace Draw.it.Server.Services.Room
         bool IsHost(string roomId, UserModel user);
         void StartGame(string roomId, UserModel user);
         bool UpdateSettings(string roomId, UserModel user, RoomSettingsModel newSettings);
+        Task HandleUserDisconnectionAsync(long userId, Exception? exception);
     }
 }

@@ -41,6 +41,9 @@ public abstract class BaseHub<T> : Hub where T : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId!);
     }
 
+    /// <summary>
+    /// Check if the user has a RoomId; if not, abort the connection and notify the client.
+    /// </summary>
     protected async Task CheckUserInRoomAsync(UserModel user)
     {
         if (string.IsNullOrEmpty(user.RoomId))
