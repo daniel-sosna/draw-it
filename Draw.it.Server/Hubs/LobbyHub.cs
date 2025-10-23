@@ -17,7 +17,7 @@ public class LobbyHub : BaseHub<LobbyHub>
 {
     private readonly IRoomService _roomService;
 
-    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService) 
+    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService)
         : base(logger, userService)
     {
         _roomService = roomService;
@@ -35,13 +35,7 @@ public class LobbyHub : BaseHub<LobbyHub>
         if (!_roomService.IsHost(roomId, user))
         {
             var settings = _roomService.GetRoomSettings(roomId);
-            await Clients.Caller.SendAsync("ReceiveUpdateSettings", new
-            {
-                RoomName = settings.RoomName,
-                CategoryName = settings.CategoryId,
-                DrawingTime = settings.DrawingTime,
-                NumberOfRounds = settings.NumberOfRounds
-            });
+            await Clients.Caller.SendAsync("ReceiveUpdateSettings", new SettingsDto(settings));
         }
 
         await base.OnConnectedAsync();
@@ -84,13 +78,7 @@ public class LobbyHub : BaseHub<LobbyHub>
             return;
         }
 
-        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", new
-        {
-            RoomName = settings.RoomName,
-            CategoryName = settings.CategoryId, // Note: use CategoryId for now, since word pool service is not implemented yet
-            DrawingTime = settings.DrawingTime,
-            NumberOfRounds = settings.NumberOfRounds
-        });
+        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", new SettingsDto(settings));
     }
 
     public async Task SendPlayerListUpdate(string roomId)
