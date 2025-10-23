@@ -1,10 +1,12 @@
 import { createContext, useEffect, useState } from "react";
+import { useNavigate } from 'react-router';
 import * as signalR from "@microsoft/signalr";
 
 export const LobbyHubContext = createContext(null);
 
 export function LobbyHubProvider({ children }) {
     const [lobbyConnection, setLobbyConnection] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const connection = new signalR.HubConnectionBuilder()
@@ -26,6 +28,13 @@ export function LobbyHubProvider({ children }) {
 
         connection.onreconnected(connectionId => {
             console.log("Reconnected successfully!");
+        });
+
+        connection.on("ReceiveConnectionAborted", (message) => {
+            console.error("Connection aborted by server:", message);
+            connection.stop();
+            alert(`Connection aborted: ${message}`);
+            navigate("/"); // Redirect to home page
         });
 
         start();

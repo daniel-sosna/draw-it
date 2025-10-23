@@ -80,7 +80,7 @@ function HostScreen() {
 
         setSaving(true);
         try {
-            await lobbyConnection.invoke("UpdateRoomSettings", roomId, {
+            await lobbyConnection.invoke("UpdateRoomSettings", {
                 roomName: roomName || `Room-${roomId}`,
                 categoryId: Number(catId),
                 drawingTime: Number(drawingTime),

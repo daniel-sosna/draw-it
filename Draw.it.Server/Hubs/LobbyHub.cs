@@ -84,6 +84,7 @@ public class LobbyHub : BaseHub<LobbyHub>
                 // If the user is the host, delete the room
                 _roomService.DeleteRoom(roomId, user);
                 _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
+
                 await Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
             }
             else
@@ -101,9 +102,10 @@ public class LobbyHub : BaseHub<LobbyHub>
         }
     }
 
-    public async Task UpdateRoomSettings(string roomId, RoomSettingsModel settings)
+    public async Task UpdateRoomSettings(RoomSettingsModel settings)
     {
         var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
         var updated = false;
 
         await Task.Run(() => updated = _roomService.UpdateSettings(roomId, user, settings));
@@ -144,7 +146,6 @@ public class LobbyHub : BaseHub<LobbyHub>
 
         await SendPlayerListUpdate(user.RoomId!);
     }
-
 
     public async Task StartGame()
     {

@@ -46,7 +46,7 @@ public abstract class BaseHub<T> : Hub where T : Hub
         if (string.IsNullOrEmpty(user.RoomId))
         {
             _logger.LogWarning("User with id={UserId} has no RoomId.", user.Id);
-            await Clients.Caller.SendAsync("ReceiveError", "You are not in a room.");
+            await Clients.Caller.SendAsync("ReceiveConnectionAborted", "You are not in a room.");
             Context.Abort();
             throw new HubException("User has no RoomId.");
         }
