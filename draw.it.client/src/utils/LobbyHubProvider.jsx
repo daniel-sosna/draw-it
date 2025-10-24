@@ -1,5 +1,6 @@
 import { createHubProvider } from "./HubFactory.jsx";
+import serverBaseUrl from '@/constants/urls.js';
 
-const { HubContext: LobbyHubContext, HubProvider: LobbyHubProvider } = createHubProvider("https://localhost:7200/lobbyHub");
+const { HubContext: LobbyHubContext, HubProvider: LobbyHubProvider } = createHubProvider(`${serverBaseUrl}/lobbyHub`);
 
 export { LobbyHubContext, LobbyHubProvider };
