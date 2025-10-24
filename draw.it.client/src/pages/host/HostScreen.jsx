@@ -149,6 +149,7 @@ function HostScreen() {
     const deleteRoom = async () => {
         setDeleting(true);
         console.log("Deleting room: " + roomId);
+        await lobbyConnection.invoke("LeaveRoom");
         navigate("/");
         setDeleting(false);
     };

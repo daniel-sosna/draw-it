@@ -48,20 +48,63 @@ public class LobbyHub : BaseHub<LobbyHub>
     {
         var user = Context.ResolveUser(_userService);
 
+        _logger.LogInformation("User with id={UserId} disconnecting... Exception:\n{Ex}", user.Id, exception?.Message);
         _userService.SetConnectedStatus(user.Id, false);
 
         // Broadcast the change to other users in the room
         // await Clients.Group(user.RoomId).SendAsync("ReceivePlayerDisconnected", user.Name);
 
-        // Wait a bit for reconnection
-        _ = Task.Run(async () =>
+        // If user is still in a room (unintended disconnection) wait a bit for reconnection
+        if (!string.IsNullOrEmpty(user.RoomId))
         {
-            await Task.Delay(8000);
-            if (!user.IsConnected)
-                await _roomService.HandleUserDisconnectionAsync(user.Id, exception);
-        });
+            await Task.Run(async () =>
+            {
+                await Task.Delay(8000);
+                if (!user.IsConnected)
+                    await LeaveRoom();
+            });
+        }
 
         await base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task LeaveRoom()
+    {
+        var user = await ResolveUserAsync();
+        string? roomId = user.RoomId;
+
+        if (string.IsNullOrEmpty(roomId))
+        {
+            return;
+        }
+
+        try
+        {
+            if (_roomService.IsHost(roomId, user))
+            {
+                // If the user is the host, delete the room
+                _roomService.DeleteRoom(roomId, user);
+                _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
+
+                await Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
+            }
+            else
+            {
+                // If the user is not the host, just leave the room
+                _roomService.LeaveRoom(roomId, user);
+                _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
+
+                await SendPlayerListUpdate(roomId);
+            }
+        }
+        catch (AppException ex)
+        {
+            throw new HubException(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during HandleUserDisconnection for user with id={UserId}.", user.Id);
+        }
     }
 
     public async Task UpdateRoomSettings(RoomSettingsModel settings)

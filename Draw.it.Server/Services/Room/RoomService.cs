@@ -252,45 +252,4 @@ public class RoomService : IRoomService
         _roomRepository.Save(room);
         return true;
     }
-
-    /// <summary>
-    /// Handle user disconnection from a room
-    /// </summary>
-    public async Task HandleUserDisconnectionAsync(long userID, Exception? exception)
-    {
-        _logger.LogInformation("User with id={UserId} disconnecting... Exception:\n{Ex}", userID, exception?.Message);
-        var user = _userService.GetUser(userID);
-
-        try
-        {
-            string? roomId = user.RoomId;
-            if (string.IsNullOrEmpty(roomId))
-            {
-                return;
-            }
-
-            if (IsHost(roomId, user))
-            {
-                // If the user is the host, delete the room
-                DeleteRoom(roomId, user);
-                _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
-
-                await _lobbyContext.Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
-            }
-            else
-            {
-                // If the user is not the host, just leave the room
-                LeaveRoom(roomId, user);
-                _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
-
-                var players = GetUsersInRoom(roomId).Select(p => new PlayerDto(p, IsHost(roomId, p))).ToList();
-
-                await _lobbyContext.Clients.Group(roomId).SendAsync("ReceivePlayerList", players);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during HandleUserDisconnection for user with id={UserId}.", user.Id);
-        }
-    }
 }

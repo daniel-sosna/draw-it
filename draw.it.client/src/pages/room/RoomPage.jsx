@@ -84,6 +84,7 @@ export default function RoomPage() {
 
     const leaveRoom = async () => {
         console.log("Leaving room: " + roomId);
+        await lobbyConnection.invoke("LeaveRoom");
         navigate("/");
     };
 
