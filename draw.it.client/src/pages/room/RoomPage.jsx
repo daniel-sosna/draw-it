@@ -58,6 +58,7 @@ export default function RoomPage() {
         lobbyConnection.on("ReceiveRoomDeleted", () => {
             console.warn("Room was deleted by host. Navigating to index.");
             alert("The room was deleted by the host.");
+            lobbyConnection.invoke("LeaveRoom");
             navigate("/");
         });
 

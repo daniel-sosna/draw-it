@@ -1,43 +1,5 @@
-﻿import { createContext, useEffect, useState } from "react";
-import * as signalR from "@microsoft/signalr";
+﻿import { createHubProvider } from "./HubFactory.jsx";
 
-export const GameplayHubContext = createContext(null);
+const { HubContext: GameplayHubContext, HubProvider: GameplayHubProvider } = createHubProvider("https://localhost:7200/gameplayHub");
 
-export function GameplayHubProvider({ children }) {
-    const [gameplayConnection, setGameplayConnection] = useState(null);
-
-    useEffect(() => {
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7200/gameplayHub")
-            .configureLogging(signalR.LogLevel.Information)
-            .withAutomaticReconnect()
-            .build();
-
-        setGameplayConnection(connection);
-
-        async function start() {
-            try {
-                await connection.start();
-                console.log("SignalR Connected to gameplayHub.");
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
-        connection.onreconnected(connectionId => {
-            console.log("Reconnected successfully!");
-        });
-
-        start();
-
-        return () => {
-            connection.stop(); // Cleanup on unmount
-        };
-    }, []); // Ensures it runs once
-
-    return (
-        <GameplayHubContext.Provider value={gameplayConnection}>
-            {children}
-        </GameplayHubContext.Provider>
-    );
-}
+export { GameplayHubContext, GameplayHubProvider };

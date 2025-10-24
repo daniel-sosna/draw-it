@@ -9,11 +9,11 @@ import { GameplayHubProvider } from "@/utils/GameplayHubProvider.jsx";
 
 
 function LobbyLayout() {
-  return (
-    <LobbyHubProvider>
-      <Outlet /> {/* nested routes render here */}
-    </LobbyHubProvider>
-  );
+    return (
+        <LobbyHubProvider>
+            <Outlet /> {/* nested routes render here */}
+        </LobbyHubProvider>
+    );
 }
 
 function GameplayLayout() {
@@ -23,6 +23,7 @@ function GameplayLayout() {
         </GameplayHubProvider>
     );
 }
+
 function App() {
     return (
         <BrowserRouter>

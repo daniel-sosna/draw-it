@@ -1,5 +1,5 @@
 import './HostScreen.css';
-import { useContext, useEffect, useState, useMemo, useRef } from 'react';
+import { useContext, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import * as signalR from '@microsoft/signalr';
 import Button from "@/components/button/button.jsx";
