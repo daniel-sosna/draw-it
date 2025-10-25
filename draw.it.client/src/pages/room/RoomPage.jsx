@@ -58,6 +58,7 @@ export default function RoomPage() {
         lobbyConnection.on("ReceiveRoomDeleted", () => {
             console.warn("Room was deleted by host. Navigating to index.");
             alert("The room was deleted by the host.");
+            lobbyConnection.invoke("LeaveRoom");
             navigate("/");
         });
 
@@ -84,6 +85,7 @@ export default function RoomPage() {
 
     const leaveRoom = async () => {
         console.log("Leaving room: " + roomId);
+        await lobbyConnection.invoke("LeaveRoom");
         navigate("/");
     };
 

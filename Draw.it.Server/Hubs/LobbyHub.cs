@@ -1,7 +1,7 @@
 ﻿using Draw.it.Server.Exceptions;
 using Draw.it.Server.Extensions;
+using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.Room;
-using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.Authorization;
@@ -9,176 +9,158 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Draw.it.Server.Hubs;
 
+/// <summary>
+/// Hub for connecting players to rooms and lobby-related real-time updates.
+/// </summary>
 [Authorize]
-public class LobbyHub : Hub
+public class LobbyHub : BaseHub<LobbyHub>
 {
     private readonly IRoomService _roomService;
-    private readonly IUserService _userService;
-    private readonly ILogger<LobbyHub> _logger;
 
-    public LobbyHub(IRoomService roomService, IUserService userService, ILogger<LobbyHub> logger)
+    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService)
+        : base(logger, userService)
     {
         _roomService = roomService;
-        _userService = userService;
-        _logger = logger;
     }
 
     public override async Task OnConnectedAsync()
     {
-        var user = Context.ResolveUser(_userService);
+        var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
 
-        if (string.IsNullOrEmpty(user.RoomId))
-        {
-            _logger.LogWarning("User with id={UserId} has no RoomId on connection.", user.Id);
-            Context.Abort();  // Immediately close the connection
-            return;
-        }
-
+        await AddConnectionToRoomGroupAsync(user);
         _userService.SetConnectedStatus(user.Id, true);
-        await Groups.AddToGroupAsync(Context.ConnectionId, user.RoomId);
 
         // If the user is not the host, send them the current room settings
-        if (!_roomService.IsHost(user.RoomId, user))
+        if (!_roomService.IsHost(roomId, user))
         {
-            var settings = _roomService.GetRoomSettings(user.RoomId);
-            await Clients.Caller.SendAsync("ReceiveUpdateSettings", new
-            {
-                RoomName = settings.RoomName,
-                CategoryName = settings.CategoryId,
-                DrawingTime = settings.DrawingTime,
-                NumberOfRounds = settings.NumberOfRounds
-            });
+            var settings = _roomService.GetRoomSettings(roomId);
+            await Clients.Caller.SendAsync("ReceiveUpdateSettings", new SettingsDto(settings));
         }
 
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to room {RoomId}", user.Id, user.RoomId);
 
-        await SendPlayerListUpdate(user.RoomId);
+        await SendPlayerListUpdate(roomId);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var user = Context.ResolveUser(_userService);
 
+        _logger.LogInformation("User with id={UserId} disconnecting... Exception:\n{Ex}", user.Id, exception?.Message);
         _userService.SetConnectedStatus(user.Id, false);
 
         // Broadcast the change to other users in the room
         // await Clients.Group(user.RoomId).SendAsync("ReceivePlayerDisconnected", user.Name);
 
-        // Wait a bit for reconnection
-        _ = Task.Run(async () =>
+        // If user is still in a room (unintended disconnection) wait a bit for reconnection
+        if (!string.IsNullOrEmpty(user.RoomId))
         {
-            await Task.Delay(8000);
-            if (!user.IsConnected)
-                await HandleUserDisconnection(user, exception);
-        });
+            await Task.Run(async () =>
+            {
+                await Task.Delay(8000);
+                if (!user.IsConnected)
+                    await LeaveRoom();
+            });
+        }
 
         await base.OnDisconnectedAsync(exception);
     }
 
-    private async Task HandleUserDisconnection(UserModel user, Exception? exception)
+    public async Task LeaveRoom()
     {
-        _logger.LogInformation("User with id={UserId} disconnecting... Exception:\n{Ex}", user.Id, exception?.Message);
+        var user = await ResolveUserAsync();
+        string? roomId = user.RoomId;
+
+        if (string.IsNullOrEmpty(roomId))
+        {
+            return;
+        }
 
         try
         {
-            string? roomId = user.RoomId;
-            if (!string.IsNullOrEmpty(roomId))
+            if (_roomService.IsHost(roomId, user))
             {
-                if (_roomService.IsHost(roomId, user))
-                {
-                    // If the user is the host, delete the room
-                    _roomService.DeleteRoom(roomId, user);
-                    _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
-                    await Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
-                }
-                else
-                {
-                    // If the user is not the host, just leave the room
-                    _roomService.LeaveRoom(roomId, user);
-                    _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
+                // If the user is the host, delete the room
+                _roomService.DeleteRoom(roomId, user);
+                _logger.LogInformation("Disconnected: host with id={UserId}. Room {RoomId} deleted.", user.Id, roomId);
 
-                    await SendPlayerListUpdate(roomId);
-                }
+                await Clients.Group(roomId).SendAsync("ReceiveRoomDeleted");
             }
+            else
+            {
+                // If the user is not the host, just leave the room
+                _roomService.LeaveRoom(roomId, user);
+                _logger.LogInformation("Disconnected: user with id={UserId} left room {RoomId}.", user.Id, roomId);
 
-            // Broadcast the change to the remaining users in the room
-            // await Clients.Group(user.RoomId).SendAsync("ReceivePlayerLeft", user.Name);
+                await SendPlayerListUpdate(roomId);
+            }
+        }
+        catch (AppException ex)
+        {
+            throw new HubException(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during HandleUserDisconnection for user with id={UserId}.", user.Id);
+            _logger.LogError("Error during HandleUserDisconnection for user with id={UserId}:\n{Ex}", user.Id, ex);
+            throw new HubException("An unexpected error occurred while trying to leave the room.");
         }
     }
 
-    public async Task UpdateRoomSettings(string roomId, RoomSettingsModel settings)
+    public async Task UpdateRoomSettings(RoomSettingsModel settings)
     {
-        var user = Context.ResolveUser(_userService);
+        var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
         var updated = false;
 
         await Task.Run(() => updated = _roomService.UpdateSettings(roomId, user, settings));
-        _logger.LogInformation("User with id={UserId} is updated settings for room {RoomId}", user.Id, roomId);
+        _logger.LogInformation("User with id={UserId} updated settings for room {RoomId}", user.Id, roomId);
 
         if (!updated)
         {
             return;
         }
 
-        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", new
-        {
-            RoomName = settings.RoomName,
-            CategoryName = settings.CategoryId, // Note: use CategoryId for now, since word pool service is not implemented yet
-            DrawingTime = settings.DrawingTime,
-            NumberOfRounds = settings.NumberOfRounds
-        });
+        await Clients.Group(roomId).SendAsync("ReceiveUpdateSettings", new SettingsDto(settings));
     }
 
     public async Task SendPlayerListUpdate(string roomId)
     {
-        var players = _roomService.GetUsersInRoom(roomId).Select(p => new
-        {
-            Name = p.Name,
-            IsHost = _roomService.IsHost(roomId, p),
-            IsConnected = p.IsConnected,
-            IsReady = p.IsReady
-        }).ToList();
+        var players = _roomService.GetUsersInRoom(roomId).Select(p => new PlayerDto(p, _roomService.IsHost(roomId, p))).ToList();
 
         await Clients.Group(roomId).SendAsync("ReceivePlayerList", players);
     }
 
     public async Task SetPlayerReady(bool isReady)
     {
-        var user = Context.ResolveUser(_userService);
-
-        if (string.IsNullOrEmpty(user.RoomId))
-        {
-            return;
-        }
+        var user = await ResolveUserAsync();
 
         _userService.SetReadyStatus(user.Id, isReady);
 
-        await SendPlayerListUpdate(user.RoomId);
+        await SendPlayerListUpdate(user.RoomId!);
     }
-
 
     public async Task StartGame()
     {
-        var user = Context.ResolveUser(_userService);
+        var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
 
         try
         {
-            _roomService.StartGame(user.RoomId, user);
+            _roomService.StartGame(roomId, user);
         }
         catch (AppException ex)
         {
             await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", ex.Message);
             return;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError("Error occurred while trying to start the game:\n{Ex}", ex);
             await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", "An unexpected error occurred while trying to start the game.");
         }
 
-        await Clients.Group(user.RoomId).SendAsync("ReceiveGameStart");
+        await Clients.Group(roomId).SendAsync("ReceiveGameStart");
     }
 }
