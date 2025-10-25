@@ -4,7 +4,6 @@ import styles from "@/components/gameplay/DrawingCanvas.module.css";
 import "../../index.css";
 import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
 
-// The main App component
 const App = () => {
     const canvasRef = useRef(null);
     const strokesRef = useRef([]); // [{ points:[{x,y}], color, size, eraser, canvasW, canvasH }]
@@ -24,17 +23,6 @@ const App = () => {
     const fromNorm = ({x,y}) => {
         const r = canvasRef.current.getBoundingClientRect();
         return { x: x * r.width, y: y * r.height };
-    };
-
-    const clearCanvas = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        ctx.save();
-        ctx.setTransform(1,0,0,1,0,0); // draw fill in CSS space
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
     };
 
     // Redraw all strokes at current canvas size
@@ -125,6 +113,17 @@ const App = () => {
         };
     }, [gameplayConnection]);
 
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.save();
+        ctx.setTransform(1,0,0,1,0,0); // draw fill in CSS space
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    };
+      
     // Initial canvas setup with DPI scaling
     useEffect(() => {
         const canvas = canvasRef.current;
