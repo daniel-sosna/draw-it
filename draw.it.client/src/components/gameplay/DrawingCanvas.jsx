@@ -24,11 +24,13 @@ const App = () => {
         ctx.strokeStyle = eraser ? "white" : color;
         ctx.lineWidth = size;
 
+        const {x: drawX, y: drawY} = fromNorm({x: point.x, y: point.y})
+        
         if (type === "start") {
             ctx.beginPath();
-            ctx.moveTo(point.x, point.y);
+            ctx.moveTo(drawX, drawY);
         } else if (type === "move") {
-            ctx.lineTo(point.x, point.y);
+            ctx.lineTo(drawX, drawY);
             ctx.stroke();
         } else if (type === "end") {
             ctx.closePath();
@@ -115,7 +117,7 @@ const App = () => {
         setIsDrawing(true);
         
         gameplayConnection.invoke("SendDraw", {
-            point: { x, y },       
+            point: toNorm({x, y}),       
             type: "start",         
             color: color,     
             size: brushSize,
@@ -131,7 +133,7 @@ const App = () => {
         ctx.stroke();
         
         gameplayConnection.invoke("SendDraw", {
-            point: { x, y },
+            point: toNorm({x, y}),
             type: "move",
             color: color,
             size: brushSize,
@@ -144,7 +146,7 @@ const App = () => {
         setIsDrawing(false);
 
         gameplayConnection.invoke("SendDraw", {
-            point: { x: 0, y: 0 },
+            point: {x: 0, y: 0},
             type: "end",
             color: color,
             size: brushSize,
@@ -213,6 +215,16 @@ const App = () => {
 
         return () => ro.disconnect();
     }, [brushSize, color, isEraser]);
+
+    const toNorm = ({x,y}) => {
+        const r = canvasRef.current.getBoundingClientRect();
+        return { x: x / r.width, y: y / r.height };
+    };
+    
+    const fromNorm = ({x,y}) => {
+        const r = canvasRef.current.getBoundingClientRect();
+        return { x: x * r.width, y: y * r.height };
+    };
     
     return (
         <div className="flex h-full min-w-screen p-4 bg-gray-100 font-sans">
