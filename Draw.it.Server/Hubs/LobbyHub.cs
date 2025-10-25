@@ -103,7 +103,8 @@ public class LobbyHub : BaseHub<LobbyHub>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during HandleUserDisconnection for user with id={UserId}.", user.Id);
+            _logger.LogError("Error during HandleUserDisconnection for user with id={UserId}:\n{Ex}", user.Id, ex);
+            throw new HubException("An unexpected error occurred while trying to leave the room.");
         }
     }
 
@@ -154,8 +155,9 @@ public class LobbyHub : BaseHub<LobbyHub>
             await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", ex.Message);
             return;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError("Error occurred while trying to start the game:\n{Ex}", ex);
             await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", "An unexpected error occurred while trying to start the game.");
         }
 

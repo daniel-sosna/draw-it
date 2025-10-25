@@ -29,10 +29,8 @@ public class GameplayHub : BaseHub<GameplayHub>
     public async Task SendMessage(string message)
     {
         var user = await ResolveUserAsync();
-        var roomId = user.RoomId!;
 
-        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: message);
-        // Later on maybe implement a saving messages method in some database
+        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: message);
     }
 
     public async Task SendDraw(DrawDto drawDto)
