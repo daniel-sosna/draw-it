@@ -23,7 +23,7 @@ public class UserController : ControllerBase
 
     // Additional user-related endpoints can be added here
     // For example, fetching user details, updating user info, customizing user settings, etc.
-    
+
     /// <summary>
     /// Updates username and reissues the authentication cookie to refresh session.
     /// </summary>
@@ -34,11 +34,11 @@ public class UserController : ControllerBase
         {
             return BadRequest("New name is required.");
         }
-        
+
         var user = HttpContext.ResolveUser(_userService);
-        
+
         _userService.UpdateName(user.Id, newName);
-        
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         var claims = new List<Claim>
@@ -47,7 +47,7 @@ public class UserController : ControllerBase
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
-    
+
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal,
@@ -57,6 +57,6 @@ public class UserController : ControllerBase
             }
         );
 
-        return NoContent(); 
+        return NoContent();
     }
 }
