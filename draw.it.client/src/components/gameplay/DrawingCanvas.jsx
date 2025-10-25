@@ -54,13 +54,12 @@ const App = () => {
     }, [gameplayConnection]);
     
     const clearCanvas = () => {
-        if (!canvasRef.current) return;
         const canvas = canvasRef.current;
+        if (!canvas) return;
         const ctx = canvas.getContext("2d");
-        const displayWidth = canvas.clientWidth;
-        const displayHeight = canvas.clientHeight;
+        const rect = canvas.getBoundingClientRect();
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, displayWidth, displayHeight);
+        ctx.fillRect(0, 0, rect.width, rect.height);
     };
 
     // Set up canvas when the component mounts
