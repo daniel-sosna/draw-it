@@ -99,4 +99,12 @@ public class UserService : IUserService
             _userRepository.Save(user);
         }
     }
+
+    public void UpdateName(long userId, string newName)
+    {
+        var user = GetUser(userId);
+        user.Name = newName;
+        _userRepository.Save(user);
+        _logger.LogInformation("User {} name changed to {}", userId, newName);
+    }
 }
