@@ -152,6 +152,68 @@ const App = () => {
             eraser: isEraser,
         })
     };
+
+    // Effect to keep canvas normal on resize
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d", { alpha: false });
+        let prevDpi = window.devicePixelRatio || 1;
+
+        const resizeToElement = () => {
+            const rect = canvas.getBoundingClientRect();
+            const dpi = window.devicePixelRatio || 1;
+
+            const snap = document.createElement("canvas");
+            snap.width = canvas.width;
+            snap.height = canvas.height;
+            if (snap.width && snap.height) {
+                snap.getContext("2d").drawImage(canvas, 0, 0);
+            }
+
+            const newW = Math.max(1, Math.round(rect.width * dpi));
+            const newH = Math.max(1, Math.round(rect.height * dpi));
+
+            if (canvas.width !== newW || canvas.height !== newH) {
+                canvas.width = newW;
+                canvas.height = newH;
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpi, dpi);
+
+                // Fill background so no black shows through
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, rect.width, rect.height);
+                ctx.restore();
+
+                // Restore previous drawing (convert old device px → CSS px)
+                if (snap.width && snap.height) {
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.drawImage(snap, 0, 0, snap.width / prevDpi, snap.height / prevDpi);
+                }
+
+                // Re-apply current drawing styles
+                ctx.lineCap = "round";
+                ctx.lineWidth = brushSize;
+                ctx.strokeStyle = isEraser ? "white" : color;
+
+                prevDpi = dpi;
+            }
+        };
+
+        const ro = new ResizeObserver(() => {
+            // Use rAF to avoid resize loops in some browsers
+            requestAnimationFrame(resizeToElement);
+        });
+
+        ro.observe(canvas);     // observe the element itself
+        resizeToElement();      // run once now
+
+        return () => ro.disconnect();
+    }, [brushSize, color, isEraser]);
     
     return (
         <div className="flex h-full min-w-screen p-4 bg-gray-100 font-sans">
@@ -228,7 +290,7 @@ const App = () => {
                 {/* Canvas */}
                 <canvas
                     ref={canvasRef}
-                    className="w-full h-4/5 border-2 border-gray-500 cursor-crosshair rounded-lg bg-black"
+                    className="w-full h-4/5 border-2 border-gray-500 cursor-crosshair rounded-lg bg-white"
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
