@@ -1,7 +1,7 @@
 import './HostScreen.css';
-import { useContext, useEffect, useState, useMemo, useRef } from 'react';
+import { useContext, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import api from "@/utils/api.js";
+import * as signalR from '@microsoft/signalr';
 import Button from "@/components/button/button.jsx";
 import Input from "@/components/input/Input.jsx"
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
@@ -33,18 +33,29 @@ function HostScreen() {
     const { roomId } = useParams();
     const [roomName, setRoomName] = useState('');
     const [categoryId, setCategoryId] = useState(CATEGORIES[0].id.toString());
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [customWords, setCustomWords] = useState('');
     const [drawingTime, setDrawingTime] = useState(60);
     const [numberOfRounds, setNumberOfRounds] = useState(2);
     const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    const navigate = useNavigate();
     const [joinedPlayers, setJoinedPlayers] = useState([]);
+
+    const navigate = useNavigate();
     
     useEffect(() => {
         if (!lobbyConnection) return;
+
+        (async () => {
+            // Ensure the connection is in Connected state before sending initial settings
+            const start = Date.now();
+            while (lobbyConnection.state !== signalR.HubConnectionState.Connected) {
+                if (Date.now() - start > 10000) {
+                    throw new Error('Timed out waiting for SignalR connection to become Connected');
+                }
+                // small pause
+                await new Promise(r => setTimeout(r, 300));
+            }
+            await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
+        })();
 
         lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
             console.log("Host received settings update broadcast. Ignoring this");
@@ -78,9 +89,8 @@ function HostScreen() {
             return;
         }
 
-        setSaving(true);
         try {
-            await lobbyConnection.invoke("UpdateRoomSettings", roomId, {
+            await lobbyConnection.invoke("UpdateRoomSettings", {
                 roomName: roomName || `Room-${roomId}`,
                 categoryId: Number(catId),
                 drawingTime: Number(drawingTime),
@@ -89,8 +99,6 @@ function HostScreen() {
         } catch (err) {
             console.error('Error sending real-time settings update:', err);
             alert("Number of rounds should be more than 1 and Drawing time must be between 20 and 300 seconds.");
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -141,6 +149,7 @@ function HostScreen() {
     const deleteRoom = async () => {
         setDeleting(true);
         console.log("Deleting room: " + roomId);
+        await lobbyConnection.invoke("LeaveRoom");
         navigate("/");
         setDeleting(false);
     };
