@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Draw.it.Server.Controllers.User.DTO;
 using Draw.it.Server.Extensions;
 using Draw.it.Server.Models.User;
 using Microsoft.AspNetCore.Authorization;
@@ -27,35 +28,12 @@ public class UserController : ControllerBase
     /// <summary>
     /// Updates username and reissues the authentication cookie to refresh session.
     /// </summary>
-    [HttpPut("newName")]
-    public async Task<IActionResult> UpdateName([FromBody] Dictionary<string, string> request)
+    [HttpPost("new-name")]
+    public IActionResult UpdateName([FromBody] UpdateNameRequestDto request)
     {
-        if (!request.TryGetValue("name", out var newName) || string.IsNullOrWhiteSpace(newName))
-        {
-            return BadRequest("New name is required.");
-        }
+        var userId = HttpContext.ResolveUserId();
 
-        var user = HttpContext.ResolveUser(_userService);
-
-        _userService.UpdateName(user.Id, newName);
-
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        };
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            new AuthenticationProperties
-            {
-                IsPersistent = true,
-            }
-        );
+        _userService.UpdateName(userId, request.name);
 
         return NoContent();
     }
