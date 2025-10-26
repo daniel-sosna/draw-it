@@ -132,16 +132,9 @@ public class RoomService : IRoomService
     /// </summary>
     public void JoinRoom(string roomId, UserModel user)
     {
-
         if (user.RoomId != null)
         {
             throw new AppException($"You are already in the room with id={user.RoomId}. Leave the current room before joining another one.", HttpStatusCode.Conflict);
-        }
-
-        var players = GetUsersInRoom(roomId).ToList();
-        if (players.Any(p => p.Name == user.Name))
-        {
-            throw new AppException($"User with username {user.Name} is already in the room. Please create other username.", HttpStatusCode.Conflict);
         }
 
         var room = GetRoom(roomId);
@@ -149,6 +142,13 @@ public class RoomService : IRoomService
         {
             throw new AppException("Cannot join room: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
+        
+        var players = GetUsersInRoom(roomId).ToList();
+        if (players.Any(p => p.Name == user.Name))
+        {
+            throw new AppException($"User with username {user.Name} is already in the room. Please create other username.", HttpStatusCode.Conflict);
+        }
+        
         // TODO: Check on number of players
 
         _userService.SetRoom(user.Id, roomId);
