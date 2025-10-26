@@ -103,12 +103,12 @@ public class UserService : IUserService
     public void UpdateName(long userId, string name)
     {
         name = name.Trim();
-        
+
         if (string.IsNullOrEmpty(name))
         {
             throw new AppException("User name cannot be empty", System.Net.HttpStatusCode.BadRequest);
         }
-        
+
         var user = GetUser(userId);
         user.Name = name;
         _userRepository.Save(user);
