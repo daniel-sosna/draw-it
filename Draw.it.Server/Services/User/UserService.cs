@@ -100,11 +100,18 @@ public class UserService : IUserService
         }
     }
 
-    public void UpdateName(long userId, string newName)
+    public void UpdateName(long userId, string name)
     {
+        name = name.Trim();
+        
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new AppException("User name cannot be empty", System.Net.HttpStatusCode.BadRequest);
+        }
+        
         var user = GetUser(userId);
-        user.Name = newName;
+        user.Name = name;
         _userRepository.Save(user);
-        _logger.LogInformation("User {} name changed to {}", userId, newName);
+        _logger.LogInformation("User with id={Id} name changed to {Name}", userId, name);
     }
 }
