@@ -28,7 +28,7 @@ function Index() {
 
         if (userData) {
             try {
-                await api.put("user/newName", { name: name });
+                await api.post("user/new-name", { name: name });
 
                 return userData;
             } catch (err) {
