@@ -10,9 +10,9 @@ We are developing **Draw\.it** in three main stages:
 
 ### 🥚 Alpha (Initial Prototype)
 
-- [ ] **Word list** – basic pool of words for the game
+- [x] **Word list** – basic pool of words for the game
 - [x] **Room creation & joining** – players can create rooms and invite others
-- [ ] **Chat system** – real-time messaging between players
+- [x] **Chat system** – real-time messaging between players
 - [x] **Drawing board** – canvas where players can draw
 
 ### 🐣 Beta (Core Gameplay)
