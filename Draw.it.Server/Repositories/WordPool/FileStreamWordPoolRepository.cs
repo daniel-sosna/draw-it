@@ -45,16 +45,10 @@ namespace Draw.it.Server.Repositories.WordPool
 
         public IEnumerable<WordModel> FindWordsByCategoryId(long categoryId)
         {
-            // Validate category exists (repository returns null if not found)
-            if (FindCategoryById(categoryId) is null)
-            {
-                yield break;
-            }
-
+            // Repository: just access storage; no domain validation here
             var path = Path.Combine(_dataDir, $"words-{categoryId}.txt");
             if (!File.Exists(path)) yield break;
 
-            // Read file via stream explicitly (meaningful stream usage)
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var reader = new StreamReader(stream);
             string? line;
@@ -70,7 +64,7 @@ namespace Draw.it.Server.Repositories.WordPool
 
         public IEnumerable<WordModel> GetAllWords()
         {
-            foreach (var cat in _categories.Value)
+            foreach (var cat in GetAllCategories())
             {
                 foreach (var w in FindWordsByCategoryId(cat.Id))
                 {
