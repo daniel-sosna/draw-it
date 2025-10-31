@@ -25,4 +25,10 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="data\words\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
