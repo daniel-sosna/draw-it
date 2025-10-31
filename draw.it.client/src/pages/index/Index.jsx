@@ -16,22 +16,33 @@ function Index() {
 
     // Try to get current user. If not authenticated (401) then create a new user by calling join
     const createUserIfNotSignedIn = async (name) => {
+        let userData = null;
+
         // Check if user exists
         try {
             const meResponse = await api.get("auth/me");
-
             if (meResponse.status === 200) {
-                // Already signed in
-                return meResponse.data;
+                userData = meResponse.data;
             }
         } catch (err) {}
+
+        if (userData) {
+            try {
+                await api.post("user/new-name", { name: name });
+
+                return userData;
+            } catch (err) {
+                console.error("Error updating user name:", err);
+                throw err;
+            }
+        }
 
         // Create user
         try {
             const joinResponse = await api.post("auth/join", {
                 name: name
             });
-
+            
             if (joinResponse.status === 201) {
                 return joinResponse.data;
             }

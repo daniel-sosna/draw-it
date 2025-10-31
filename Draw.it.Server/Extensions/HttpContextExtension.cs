@@ -14,7 +14,7 @@ public static class HttpContextExtension
 
         if (!long.TryParse(stringUserId, out long userId))
         {
-            throw new UnauthorizedUserException("User ID claim is not a valid number.");
+            throw new UnauthorizedUserException();
         }
 
         return userId;
