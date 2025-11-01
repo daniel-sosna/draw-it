@@ -1,15 +1,19 @@
 ﻿import {useContext, useEffect, useState} from "react";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
+import PlayerList from "@/components/gameplay/PlayerList.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
+import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 import {useParams} from "react-router";
 
 export default function GameplayScreen() {
     
     const gameplayConnection = useContext(GameplayHubContext);
+    const lobbyConnection = useContext(LobbyHubContext);
     const { roomId } = useParams();
     
     const [messages, setMessages] = useState([]);
+    const [players, setPlayers] = useState([]);
 
     useEffect(() => {
         if(!gameplayConnection) {
@@ -24,6 +28,25 @@ export default function GameplayScreen() {
         console.log("Gameplay connection established:", gameplayConnection);
 
     }, [gameplayConnection, roomId]);
+
+    // Subscribe to lobby player list updates and fetch initial list
+    useEffect(() => {
+        if (!lobbyConnection) return;
+
+        const onReceivePlayers = (players) => setPlayers(players);
+        lobbyConnection.on("ReceivePlayerList", onReceivePlayers);
+
+        // Ask server to send current list for this room
+        try {
+            lobbyConnection.invoke("SendPlayerListUpdate", roomId);
+        } catch (err) {
+            console.warn("Failed to request player list:", err);
+        }
+
+        return () => {
+            lobbyConnection.off("ReceivePlayerList", onReceivePlayers);
+        };
+    }, [lobbyConnection, roomId]);
     
     
     const handleSendMessage = async (message) => {
@@ -46,14 +69,18 @@ export default function GameplayScreen() {
                 <DrawingCanvas />
             </div>
 
-            {/* FIX 2: Explicitly wrap ChatComponent to control its w-1/4 and h-full layout */}
-            <div className="w-1/4 h-[90vh]">
-                <ChatComponent
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    // Pass classes to ChatComponent to handle its internal styling (like h-full)
-                    className="h-full bg-gray-800 rounded-xl shadow-lg"
-                />
+            {/* Sidebar: players (top) + chat (bottom) */}
+            <div className="w-1/4 h-[90vh] flex flex-col">
+                <div className="flex-none h-[30vh] mb-4">
+                    <PlayerList players={players} />
+                </div>
+                <div className="flex-1 min-h-0">
+                    <ChatComponent
+                        messages={messages}
+                        onSendMessage={handleSendMessage}
+                        className="h-full"
+                    />
+                </div>
             </div>
         </div>
     );
