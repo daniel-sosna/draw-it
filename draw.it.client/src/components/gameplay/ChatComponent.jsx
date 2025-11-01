@@ -1,6 +1,6 @@
 ﻿import React, { useState } from "react";
 import styles from "@/components/gameplay/ChatComponent.module.css";
-export default function ChatComponent({ messages, onSendMessage }) {
+export default function ChatComponent({ messages, onSendMessage, className = "" }) {
     const [input, setInput] = useState("");
 
     const sendMessage = () => {
@@ -10,7 +10,7 @@ export default function ChatComponent({ messages, onSendMessage }) {
     };
 
     return (
-        <div className="flex-1 flex flex-col border border-gray-300 rounded bg-white mt-5 p-1.5 h-[85%]">
+        <div className={`flex-1 flex flex-col border border-gray-300 rounded bg-white p-1.5 ${className}`}>
 
             <div className="flex-1 overflow-y-auto mb-1 text-black">
                 {messages.map((m, i) => (
