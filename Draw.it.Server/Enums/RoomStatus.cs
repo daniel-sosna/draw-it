@@ -4,5 +4,6 @@ public enum RoomStatus
 {
     InLobby,
     InGame,
+    GameEnded,
     Archived
 }
