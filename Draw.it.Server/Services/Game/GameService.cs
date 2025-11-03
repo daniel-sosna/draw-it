@@ -59,14 +59,8 @@ public class GameService : IGameService
         var gameSession = new GameModel
         {
             RoomId = roomId,
-            Status = RoomStatus.InGame,
-            TotalRounds = room.Settings.NumberOfRounds,
-            TurnDuration = room.Settings.DrawingTime,
             CurrentRound = 1,
-            TurnOrder = turnOrderIds,
             CurrentDrawerId = turnOrderIds[0],
-            CurrentTurnIndex = 0,
-            RemainingSeconds = room.Settings.DrawingTime,
             WordToDraw = firstWord
         };
 
@@ -74,24 +68,14 @@ public class GameService : IGameService
         _logger.LogInformation("Game session for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, gameSession.CurrentDrawerId, firstWord);
     }
 
-    public long GetCurrentDrawerId(string roomId)
+    public long GetDrawerId(string roomId)
     {
         return GetGame(roomId).CurrentDrawerId;
     }
-
-
-    public void SetNextDrawer(GameModel session)
+    
+    public void SetDrawerId(GameModel session, long newDrawerId)
     {
-        session.CurrentTurnIndex++;
-
-        if (session.CurrentTurnIndex >= session.TurnOrder.Count)
-        {
-            session.CurrentRound++;
-            session.CurrentTurnIndex = 0;
-        }
-
-        session.CurrentDrawerId = session.TurnOrder[session.CurrentTurnIndex];
-
-        _logger.LogInformation("Room {roomId}: Next drawer is set to {drawerId}", session.RoomId, session.CurrentDrawerId);
+        session.CurrentDrawerId = newDrawerId;
+        _logger.LogInformation("Room {roomId}: Drawer ID manually set to {drawerId}", session.RoomId, newDrawerId);
     }
 }
