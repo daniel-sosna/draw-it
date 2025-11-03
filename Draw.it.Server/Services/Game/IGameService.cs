@@ -8,5 +8,5 @@ public interface IGameService
     void DeleteGame(string roomId);
     GameModel GetGame(string roomId);
     long GetDrawerId(string roomId);
-    void SetDrawerId(GameModel session, long newDrawerId);
+    void SetDrawerId(string roomId, long newDrawerId);
 }

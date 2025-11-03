@@ -16,7 +16,6 @@ public class GameService : IGameService
     private readonly IGameRepository _gameRepository;
     private readonly IRoomService _roomService;
     private readonly IWordPoolService _wordPoolService;
-    private readonly Random _random = new();
 
     public GameService(ILogger<GameService> logger, IGameRepository gameRepository, IRoomService roomService, IWordPoolService wordPoolService)
     {
@@ -73,9 +72,13 @@ public class GameService : IGameService
         return GetGame(roomId).CurrentDrawerId;
     }
 
-    public void SetDrawerId(GameModel session, long newDrawerId)
+    public void SetDrawerId(string roomId, long newDrawerId)
     {
+        var session = GetGame(roomId);
+
         session.CurrentDrawerId = newDrawerId;
+
+        _gameRepository.Save(session);
         _logger.LogInformation("Room {roomId}: Drawer ID manually set to {drawerId}", session.RoomId, newDrawerId);
     }
 }
