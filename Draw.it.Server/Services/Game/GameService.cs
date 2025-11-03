@@ -15,7 +15,7 @@ public class GameService : IGameService
     private readonly ILogger<GameService> _logger;
     private readonly IGameRepository _gameRepository;
     private readonly IRoomService _roomService;
-    private readonly IWordPoolService _wordPoolService; 
+    private readonly IWordPoolService _wordPoolService;
     private readonly Random _random = new();
 
     public GameService(ILogger<GameService> logger, IGameRepository gameRepository, IRoomService roomService, IWordPoolService wordPoolService)
