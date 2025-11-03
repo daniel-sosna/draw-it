@@ -72,7 +72,7 @@ public class GameService : IGameService
     {
         return GetGame(roomId).CurrentDrawerId;
     }
-    
+
     public void SetDrawerId(GameModel session, long newDrawerId)
     {
         session.CurrentDrawerId = newDrawerId;
