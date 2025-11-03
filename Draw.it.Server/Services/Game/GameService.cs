@@ -30,17 +30,17 @@ public class GameService : IGameService
     {
         return _gameRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Game for room id={roomId} not found");
     }
-    
+
     public void DeleteGame(string roomId)
     {
         if (!_gameRepository.DeleteById(roomId))
         {
             _logger.LogWarning("Attempted to delete non-existent game session for room id={roomId}", roomId);
         }
-        
+
         _gameRepository.DeleteById(roomId);
     }
-    
+
     public void CreateGame(string roomId)
     {
         var room = _roomService.GetRoom(roomId);
@@ -50,26 +50,26 @@ public class GameService : IGameService
         {
             throw new AppException($"Cannot start game session: Room {roomId} status is invalid.", HttpStatusCode.Conflict);
         }
-    
+
         var turnOrderIds = players.Select(p => p.Id).ToList();
-        
+
         var randomWord = _wordPoolService.GetRandomWordByCategoryId(room.Settings.CategoryId);
         string firstWord = randomWord.ToString();
-    
+
         var gameSession = new GameModel
         {
             RoomId = roomId,
             Status = RoomStatus.InGame,
-            TotalRounds = room.Settings.NumberOfRounds, 
-            TurnDuration = room.Settings.DrawingTime, 
+            TotalRounds = room.Settings.NumberOfRounds,
+            TurnDuration = room.Settings.DrawingTime,
             CurrentRound = 1,
             TurnOrder = turnOrderIds,
-            CurrentDrawerId = turnOrderIds[0], 
+            CurrentDrawerId = turnOrderIds[0],
             CurrentTurnIndex = 0,
             RemainingSeconds = room.Settings.DrawingTime,
             WordToDraw = firstWord
         };
-    
+
         _gameRepository.Save(gameSession);
         _logger.LogInformation("Game session for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, gameSession.CurrentDrawerId, firstWord);
     }
@@ -78,8 +78,8 @@ public class GameService : IGameService
     {
         return GetGame(roomId).CurrentDrawerId;
     }
-    
-    
+
+
     public void SetNextDrawer(GameModel session)
     {
         session.CurrentTurnIndex++;
@@ -89,9 +89,9 @@ public class GameService : IGameService
             session.CurrentRound++;
             session.CurrentTurnIndex = 0;
         }
-        
+
         session.CurrentDrawerId = session.TurnOrder[session.CurrentTurnIndex];
-        
+
         _logger.LogInformation("Room {roomId}: Next drawer is set to {drawerId}", session.RoomId, session.CurrentDrawerId);
     }
 }

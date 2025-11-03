@@ -227,7 +227,7 @@ public class RoomService : IRoomService
         room.Status = RoomStatus.InGame;
 
         _roomRepository.Save(room);
-        
+
         _gameService.CreateGame(roomId);
     }
 
