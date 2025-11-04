@@ -21,6 +21,7 @@ public class ApplicationDbContext : DbContext
 
         // Global sequence for user ids (keeps parity with GetNextId semantics)
         modelBuilder.HasSequence<long>("user_id_seq")
+            .HasMin(0)
             .StartsAt(0)
             .IncrementsBy(1);
 
