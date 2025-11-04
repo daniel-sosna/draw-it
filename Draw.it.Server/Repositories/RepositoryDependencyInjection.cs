@@ -20,7 +20,9 @@ public static class RepositoryDependencyInjection
         }
         else
         {
-            // add dependencies with db implementation here
+            services.AddScoped<IUserRepository, EfUserRepository>();
+            services.AddScoped<IRoomRepository, EfRoomRepository>();
+            services.AddSingleton<IWordPoolRepository, FileStreamWordPoolRepository>();
         }
 
         return services;
