@@ -15,6 +15,7 @@ const App = () => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [brushSize, setBrushSize] = useState(5);
     const gameplayConnection = useContext(GameplayHubContext);
+    const [canvasText, setCanvasText] = useState("");
     
     const toNorm = ({x,y}) => {
         const r = canvasRef.current.getBoundingClientRect();
@@ -279,8 +280,17 @@ const App = () => {
     }, []);
 
     return (
-        <div className="flex h-full min-w-screen p-4 bg-gray-100 font-sans">
+        <div className="flex h-full min-w-screen p-1 bg-gray-100 font-sans">
             <div className="w-screen h-[80vh] p-4 bg-gray-100 font-sans flex flex-col mr-4">
+                
+                <div className="flex items-center justify-center mb-2">
+                    <div className="text-center">
+                        <div className="text-2xl font-bold text-gray-800 bg-white px-4 py-0 rounded-lg border-2 border-orange-400 shadow-sm">
+                            {canvasText || "Waiting for word..."}
+                        </div>
+                    </div>
+                </div>
+                
                 {/* Color Palette and Tools */}
                 <div className="flex flex-wrap items-center justify-center space-x-2 mb-4">
                     <button
