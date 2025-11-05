@@ -51,20 +51,23 @@ public class GameService : IGameService
         }
 
         var turnOrderIds = players.Select(p => p.Id).ToList();
-
-        var randomWord = _wordPoolService.GetRandomWordByCategoryId(room.Settings.CategoryId);
-        string firstWord = randomWord.ToString();
-
+        
         var gameSession = new GameModel
         {
             RoomId = roomId,
             CurrentRound = 1,
             CurrentDrawerId = turnOrderIds[0],
-            WordToDraw = firstWord
+            WordToDraw = GetRandomWord(room.Settings.CategoryId)
         };
 
         _gameRepository.Save(gameSession);
-        _logger.LogInformation("Game session for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, gameSession.CurrentDrawerId, firstWord);
+        _logger.LogInformation("Game session for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, gameSession.CurrentDrawerId, gameSession.WordToDraw);
+    }
+
+    public string GetRandomWord(long categoryId)
+    { 
+        var randomWord = _wordPoolService.GetRandomWordByCategoryId(categoryId);
+        return randomWord.Value;
     }
 
     public long GetDrawerId(string roomId)
