@@ -1,4 +1,5 @@
 using Draw.it.Server.Hubs.DTO;
+using Draw.it.Server.Services.Game;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -11,9 +12,11 @@ namespace Draw.it.Server.Hubs;
 [Authorize]
 public class GameplayHub : BaseHub<GameplayHub>
 {
-    public GameplayHub(ILogger<GameplayHub> logger, IUserService userService)
+    private readonly GameService _gameService;
+    public GameplayHub(ILogger<GameplayHub> logger, IUserService userService, IGameService gameService)
         : base(logger, userService)
     {
+        IGameService _gameService = gameService;
     }
 
     public override async Task OnConnectedAsync()
@@ -21,7 +24,9 @@ public class GameplayHub : BaseHub<GameplayHub>
         var user = await ResolveUserAsync();
 
         await AddConnectionToRoomGroupAsync(user);
-
+        await SendWord(); // send the initial word to the player
+        // Later the words will be sent after each round
+        
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to gameplay room with roomId={RoomId}", user.Id, user.RoomId);
     }
@@ -43,5 +48,14 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveClear");
+    }
+
+    public async Task SendWord()
+    {
+        var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
+        var userId = _gameService.GetGame(roomId).CurrentDrawerId.ToString();
+        
+        await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
     }
 }

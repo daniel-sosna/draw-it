@@ -18,15 +18,13 @@ public class RoomService : IRoomService
     private readonly IRoomRepository _roomRepository;
     private readonly IUserService _userService;
     private readonly IUserRepository _userRepository;
-    private readonly IGameService _gameService;
-
-    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, IUserRepository userRepository, IGameService gameService)
+    
+    public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, IUserRepository userRepository)
     {
         _logger = logger;
         _roomRepository = roomRepository;
         _userRepository = userRepository;
         _userService = userService;
-        _gameService = gameService;
     }
 
     private string GenerateRandomRoomId()
@@ -228,7 +226,6 @@ public class RoomService : IRoomService
 
         _roomRepository.Save(room);
 
-        _gameService.CreateGame(roomId);
     }
 
     /// <summary>
