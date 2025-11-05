@@ -51,7 +51,7 @@ public class GameService : IGameService
         }
 
         var turnOrderIds = players.Select(p => p.Id).ToList();
-        
+
         var gameSession = new GameModel
         {
             RoomId = roomId,
@@ -65,7 +65,7 @@ public class GameService : IGameService
     }
 
     public string GetRandomWord(long categoryId)
-    { 
+    {
         var randomWord = _wordPoolService.GetRandomWordByCategoryId(categoryId);
         return randomWord.Value;
     }

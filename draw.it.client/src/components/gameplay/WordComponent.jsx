@@ -13,14 +13,8 @@ export default function WordComponent() {
         gameplayConnection.on("ReceiveWordToDraw", (word) => {
             setWord(word);
         });
-        /*
-        gameplayConnection.on("RoundStarted", () => {
-            setWord(""); // clear word for guesser
-        });
-        */
         return () => {
             gameplayConnection.off("ReceiveWordToDraw");
-            // gameplayConnection.off("RoundStarted");
         };
     }, [gameplayConnection]);
     

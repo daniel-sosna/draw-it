@@ -18,7 +18,7 @@ public class RoomService : IRoomService
     private readonly IRoomRepository _roomRepository;
     private readonly IUserService _userService;
     private readonly IUserRepository _userRepository;
-    
+
     public RoomService(ILogger<RoomService> logger, IRoomRepository roomRepository, IUserService userService, IUserRepository userRepository)
     {
         _logger = logger;

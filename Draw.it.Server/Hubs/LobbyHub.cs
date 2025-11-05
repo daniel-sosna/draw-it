@@ -19,7 +19,7 @@ public class LobbyHub : BaseHub<LobbyHub>
     private readonly IRoomService _roomService;
     private readonly IGameService _gameService;
 
-    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService,  IGameService gameService)
+    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService, IGameService gameService)
         : base(logger, userService)
     {
         _roomService = roomService;
@@ -151,9 +151,9 @@ public class LobbyHub : BaseHub<LobbyHub>
 
         try
         {
-            _roomService.StartGame(roomId, user);
-            
-            _gameService.CreateGame(roomId);
+            await Task.Run(() => _roomService.StartGame(roomId, user));
+
+            await Task.Run(() => _gameService.CreateGame(roomId));
         }
         catch (AppException ex)
         {

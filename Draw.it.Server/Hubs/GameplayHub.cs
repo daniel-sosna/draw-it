@@ -25,8 +25,8 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         await AddConnectionToRoomGroupAsync(user);
         await SendWord(); // send the initial word to the player
-        // Later the words will be sent after each round
-        
+                          // Later the words will be sent after each round
+
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to gameplay room with roomId={RoomId}", user.Id, user.RoomId);
     }
@@ -55,7 +55,8 @@ public class GameplayHub : BaseHub<GameplayHub>
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
         var userId = _gameService.GetGame(roomId).CurrentDrawerId.ToString();
-        
+
+        // Only send to the current drawer
         await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
         _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
