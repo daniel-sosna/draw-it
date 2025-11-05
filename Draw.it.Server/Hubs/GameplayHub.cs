@@ -12,11 +12,11 @@ namespace Draw.it.Server.Hubs;
 [Authorize]
 public class GameplayHub : BaseHub<GameplayHub>
 {
-    private readonly GameService _gameService;
+    private readonly IGameService _gameService;
     public GameplayHub(ILogger<GameplayHub> logger, IUserService userService, IGameService gameService)
         : base(logger, userService)
     {
-        IGameService _gameService = gameService;
+        _gameService = gameService;
     }
 
     public override async Task OnConnectedAsync()
@@ -57,5 +57,6 @@ public class GameplayHub : BaseHub<GameplayHub>
         var userId = _gameService.GetGame(roomId).CurrentDrawerId.ToString();
         
         await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
+        _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
 }
