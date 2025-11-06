@@ -9,4 +9,5 @@ public interface IGameService
     GameModel GetGame(string roomId);
     long GetDrawerId(string roomId);
     void SetDrawerId(string roomId, long newDrawerId);
+    string GetRandomWord(long categoryId);
 }
