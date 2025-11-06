@@ -34,6 +34,13 @@ public class ApplicationDbContext : DbContext
         users.Property(u => u.RoomId).HasMaxLength(64);
         users.HasIndex(u => u.RoomId);
 
+        // Make RoomId a real FK to rooms(Id); when a room is deleted, null-out RoomId
+        users
+            .HasOne<RoomModel>()
+            .WithMany()
+            .HasForeignKey(u => u.RoomId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         // Rooms
         var rooms = modelBuilder.Entity<RoomModel>();
         rooms.ToTable("rooms");
