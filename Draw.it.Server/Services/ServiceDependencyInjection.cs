@@ -12,7 +12,7 @@ public static class ServiceDependencyInjection
         services.AddSingleton<IUserService, UserService>();
         services.AddSingleton<IRoomService, RoomService>();
         services.AddSingleton<IWordPoolService, WordPoolService>();
-        services.AddScoped<IGameService, GameService>();
+        services.AddSingleton<IGameService, GameService>();
         return services;
     }
 }
