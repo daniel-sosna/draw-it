@@ -48,18 +48,13 @@ public class ApplicationDbContext : DbContext
         rooms.Property(r => r.Id).HasMaxLength(64);
         rooms.Property(r => r.HostId).IsRequired();
 
-        // Store RoomSettingsModel as jsonb
-        var jsonOptions = new JsonSerializerOptions
+        // Map RoomSettingsModel into flat columns as an owned type
+        rooms.OwnsOne(r => r.Settings, s =>
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-        var settingsConverter = new ValueConverter<RoomSettingsModel, string>(
-            v => JsonSerializer.Serialize(v, jsonOptions),
-            v => JsonSerializer.Deserialize<RoomSettingsModel>(v, jsonOptions)!);
-
-        rooms.Property(r => r.Settings)
-            .HasConversion(settingsConverter)
-            .HasColumnType("jsonb")
-            .IsRequired();
+            s.Property(x => x.RoomName).HasColumnName("RoomName");
+            s.Property(x => x.CategoryId).HasColumnName("CategoryId");
+            s.Property(x => x.DrawingTime).HasColumnName("DrawingTime");
+            s.Property(x => x.NumberOfRounds).HasColumnName("NumberOfRounds");
+        });
     }
 }
