@@ -42,7 +42,7 @@ export default function GameplayScreen() {
         <div className="flex w-screen h-[90vh] bg-secondary p-4 overflow-hidden">
 
             {/* Canvas Wrapper: w-3/4 and h-full remains correct */}
-            <div className="w-3/4 h-full bg-white p-6 rounded-xl shadow-lg flex flex-col mr-4">
+            <div className="w-3/4 h-full bg-gray-100 p-6 rounded-xl shadow-lg flex flex-col mr-4">
                 <DrawingCanvas />
             </div>
 

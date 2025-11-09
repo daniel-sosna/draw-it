@@ -5,6 +5,7 @@ using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Repositories.User;
+using Draw.it.Server.Services.Game;
 using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Services.Room;
@@ -224,6 +225,7 @@ public class RoomService : IRoomService
         room.Status = RoomStatus.InGame;
 
         _roomRepository.Save(room);
+
     }
 
     /// <summary>

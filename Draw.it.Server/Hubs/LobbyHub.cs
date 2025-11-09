@@ -2,6 +2,7 @@
 using Draw.it.Server.Extensions;
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.Room;
+using Draw.it.Server.Services.Game;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.Authorization;
@@ -16,11 +17,13 @@ namespace Draw.it.Server.Hubs;
 public class LobbyHub : BaseHub<LobbyHub>
 {
     private readonly IRoomService _roomService;
+    private readonly IGameService _gameService;
 
-    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService)
+    public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService, IGameService gameService)
         : base(logger, userService)
     {
         _roomService = roomService;
+        _gameService = gameService;
     }
 
     public override async Task OnConnectedAsync()
@@ -148,7 +151,9 @@ public class LobbyHub : BaseHub<LobbyHub>
 
         try
         {
-            _roomService.StartGame(roomId, user);
+            await Task.Run(() => _roomService.StartGame(roomId, user));
+
+            await Task.Run(() => _gameService.CreateGame(roomId));
         }
         catch (AppException ex)
         {

@@ -1,4 +1,5 @@
-﻿using Draw.it.Server.Services.Room;
+﻿using Draw.it.Server.Services.Game;
+using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Draw.it.Server.Services.WordPool;
 

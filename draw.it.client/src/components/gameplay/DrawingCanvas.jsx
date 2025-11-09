@@ -3,6 +3,7 @@ import {FaEraser} from "react-icons/fa";
 import styles from "@/components/gameplay/DrawingCanvas.module.css";
 import "../../index.css";
 import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
+import WordComponent from "@/components/gameplay/WordComponent.jsx";
 
 const App = () => {
     const canvasRef = useRef(null);
@@ -279,8 +280,12 @@ const App = () => {
     }, []);
 
     return (
-        <div className="flex h-full min-w-screen p-4 bg-gray-100 font-sans">
+        <div className="flex h-full min-w-screen p-1 bg-gray-100 font-sans">
             <div className="w-screen h-[80vh] p-4 bg-gray-100 font-sans flex flex-col mr-4">
+
+                {/* Guess the word prompt */}
+                <WordComponent />
+                
                 {/* Color Palette and Tools */}
                 <div className="flex flex-wrap items-center justify-center space-x-2 mb-4">
                     <button

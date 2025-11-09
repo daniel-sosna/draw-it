@@ -1,4 +1,5 @@
 ﻿using Draw.it.Server.Enums;
+using Draw.it.Server.Repositories.Game;
 using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Repositories.WordPool;
 using Draw.it.Server.Repositories.User;
@@ -17,6 +18,7 @@ public static class RepositoryDependencyInjection
             services.AddSingleton<IUserRepository, InMemUserRepository>();
             services.AddSingleton<IRoomRepository, InMemRoomRepository>();
             services.AddSingleton<IWordPoolRepository, FileStreamWordPoolRepository>();
+            services.AddSingleton<IGameRepository, InMemGameRepository>();
         }
         else
         {
