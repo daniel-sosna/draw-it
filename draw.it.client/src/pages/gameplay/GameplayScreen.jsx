@@ -30,7 +30,6 @@ export default function GameplayScreen() {
         console.log("Sending message:", message);
         try {
             await gameplayConnection.invoke("SendMessage", message);
-            setMessages((prevMessages) => [...prevMessages, { user: "You", message: message, isCorrect: false }]);
         } catch (error) {
             console.log(error);
             console.log("Could not send message:", error);
