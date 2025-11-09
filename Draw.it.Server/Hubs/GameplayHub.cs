@@ -22,8 +22,7 @@ public class GameplayHub : BaseHub<GameplayHub>
     public override async Task OnConnectedAsync()
     {
         var user = await ResolveUserAsync();
-
-
+        
         await AddConnectionToRoomGroupAsync(user);
         await SendWord(); // send the initial word to the player
                           // Later the words will be sent after each round
@@ -80,6 +79,4 @@ public class GameplayHub : BaseHub<GameplayHub>
         }
         _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
-
-
 }
