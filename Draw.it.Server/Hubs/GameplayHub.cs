@@ -39,14 +39,15 @@ public class GameplayHub : BaseHub<GameplayHub>
         var drawerId = _gameService.GetGame(roomId).CurrentDrawerId;
 
         string messageToSend = message;
-
+        bool isCorrectGuess = false;
+        
         if (drawerId != user.Id)
         {
-            bool isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
-                StringComparison.OrdinalIgnoreCase); // check if it is the correct word
+            isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
+                StringComparison.OrdinalIgnoreCase); // check if the word is the word to guess
             messageToSend = isCorrectGuess ? "Guessed The Word!" : message;
         }
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: messageToSend);
+        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: messageToSend, arg3: isCorrectGuess);
     }
 
     public async Task SendDraw(DrawDto drawDto)

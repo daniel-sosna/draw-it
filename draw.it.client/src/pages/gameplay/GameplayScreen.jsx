@@ -17,8 +17,8 @@ export default function GameplayScreen() {
             return;
         }
         
-        gameplayConnection.on("ReceiveMessage", (userName, message) => {
-            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message }]);
+        gameplayConnection.on("ReceiveMessage", (userName, message, isCorrectGuess) => {
+            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess }]);
         })
 
         console.log("Gameplay connection established:", gameplayConnection);
@@ -30,7 +30,7 @@ export default function GameplayScreen() {
         console.log("Sending message:", message);
         try {
             await gameplayConnection.invoke("SendMessage", message);
-            setMessages((prevMessages) => [...prevMessages, { user: "You", message: message }]);
+            setMessages((prevMessages) => [...prevMessages, { user: "You", message: message, isCorrect: false }]);
         } catch (error) {
             console.log(error);
             console.log("Could not send message:", error);
