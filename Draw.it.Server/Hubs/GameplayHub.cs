@@ -46,6 +46,7 @@ public class GameplayHub : BaseHub<GameplayHub>
             isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
                 StringComparison.OrdinalIgnoreCase); // check if the word is the word to guess
             messageToSend = isCorrectGuess ? "Guessed The Word!" : message;
+            if (isCorrectGuess) await SendWord(correctGuess: true); // unhide the word
         }
         await Clients.Group(user.RoomId!).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: messageToSend, arg3: isCorrectGuess);
     }
@@ -62,14 +63,21 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveClear");
     }
 
-    public async Task SendWord()
+    public async Task SendWord(bool correctGuess = false)
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
         var userId = _gameService.GetGame(roomId).CurrentDrawerId.ToString();
 
-        // Only send to the current drawer
-        await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
+        // Only send to the current drawer or to someone who guessed it
+        if (correctGuess)
+        {
+            await Clients.Caller.SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
+        }
+        else
+        {
+            await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
+        }
         _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
 
