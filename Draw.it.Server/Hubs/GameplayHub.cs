@@ -22,6 +22,7 @@ public class GameplayHub : BaseHub<GameplayHub>
     public override async Task OnConnectedAsync()
     {
         var user = await ResolveUserAsync();
+        
 
         await AddConnectionToRoomGroupAsync(user);
         await SendWord(); // send the initial word to the player
@@ -34,8 +35,18 @@ public class GameplayHub : BaseHub<GameplayHub>
     public async Task SendMessage(string message)
     {
         var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
+        var drawerId = _gameService.GetGame(roomId).CurrentDrawerId;
 
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: message);
+        string messageToSend = message;
+
+        if (drawerId != user.Id)
+        {
+            bool isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
+                StringComparison.OrdinalIgnoreCase); // check if it is the correct word
+            messageToSend = isCorrectGuess ? "Guessed The Word!" : message;
+        }
+        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: messageToSend);
     }
 
     public async Task SendDraw(DrawDto drawDto)
@@ -60,4 +71,6 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
         _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
+
+    
 }
