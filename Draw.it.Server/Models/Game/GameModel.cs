@@ -8,4 +8,8 @@ public class GameModel
     public int CurrentRound { get; set; } = 0;
     public long CurrentDrawerId { get; set; }
     public string WordToDraw { get; set; } = string.Empty;
+    public int TotalRounds { get; set; }
+    public List<long> TurnOrderIds { get; set; } = new List<long>();
+    public int CurrentTurnIndex { get; set; } = 0;
+    public List<long> GuessedPlayersIds { get; set; } = new List<long>();
 }
