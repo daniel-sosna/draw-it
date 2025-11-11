@@ -14,7 +14,14 @@ export default function ChatComponent({ messages, onSendMessage }) {
 
             <div className="flex-1 overflow-y-auto mb-1 text-black">
                 {messages.map((m, i) => (
-                    <p key={i} className="text-sm p-0.5">
+                    <p         
+                        key={i}
+                        className={`text-sm p-2 mb-1 rounded ${
+                               m.isCorrect === true
+                                   ? 'text-green-600 font-bold bg-green-50'
+                                   : 'text-black'
+                           }`}
+                    >
                         <b className="font-semibold">{m.user}:</b> {m.message}
                     </p>
                 ))}
