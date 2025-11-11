@@ -57,7 +57,7 @@ public class RoomServiceTest
             .Setup(r => r.Save(It.IsAny<RoomModel>()))
             .Callback<RoomModel>(room => savedRoom = room);
 
-        RoomModel room = _roomService.CreateRoom(user);
+        var room = _roomService.CreateRoom(user);
 
         Assert.That(savedRoom, Is.Not.Null);
         Assert.That(savedRoom!.HostId, Is.EqualTo(user.Id));
@@ -357,7 +357,7 @@ public class RoomServiceTest
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService.IsHost(RoomId, user);
+        var result = _roomService.IsHost(RoomId, user);
 
         Assert.That(result, Is.True);
     }
@@ -372,7 +372,7 @@ public class RoomServiceTest
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService.IsHost(RoomId, user);
+        var result = _roomService.IsHost(RoomId, user);
 
         Assert.That(result, Is.False);
     }
@@ -501,7 +501,7 @@ public class RoomServiceTest
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService.UpdateSettings(RoomId, user, existingSettings);
+        var result = _roomService.UpdateSettings(RoomId, user, existingSettings);
 
         Assert.That(result, Is.False);
         _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
@@ -553,14 +553,14 @@ public class RoomServiceTest
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService.UpdateSettings(RoomId, user, newSettings);
+        var result = _roomService.UpdateSettings(RoomId, user, newSettings);
 
         Assert.That(result, Is.True);
         Assert.That(room.Settings, Is.EqualTo(newSettings));
         _roomRepository.Verify(r => r.Save(room), Times.Once);
     }
 
-    private UserModel CreateUser(long id, string name, string? roomId = null, bool isReady = false)
+    private static UserModel CreateUser(long id, string name, string? roomId = null, bool isReady = false)
     {
         return new UserModel
         {
@@ -572,7 +572,7 @@ public class RoomServiceTest
         };
     }
 
-    private RoomModel CreateRoom(
+    private static RoomModel CreateRoom(
         string roomId,
         long hostId,
         RoomStatus status = RoomStatus.InLobby,
