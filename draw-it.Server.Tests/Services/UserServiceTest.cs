@@ -149,8 +149,8 @@ public class UserServiceTest
     {
         var users = new List<UserModel>
         {
-            new UserModel { Id = Id, Name = Name, RoomId = RoomId },
-            new UserModel { Id = Id, Name = Name, RoomId = RoomId }
+            new() { Id = Id, Name = Name, RoomId = RoomId },
+            new() { Id = Id, Name = Name, RoomId = RoomId }
         };
 
         _userRepository
