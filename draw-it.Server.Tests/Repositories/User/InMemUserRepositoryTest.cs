@@ -21,9 +21,9 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenGetNextIdCalledMultipleTimes_thenIdsAreSequential()
     {
-        long id1 = _repository.GetNextId();
-        long id2 = _repository.GetNextId();
-        long id3 = _repository.GetNextId();
+        var id1 = _repository.GetNextId();
+        var id2 = _repository.GetNextId();
+        var id3 = _repository.GetNextId();
 
         Assert.That(id1, Is.EqualTo(0));
         Assert.That(id2, Is.EqualTo(1));
@@ -33,12 +33,12 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenSaveUserCreatedWithGetNextId_thenUserCanBeFoundById()
     {
-        long id = _repository.GetNextId();
-        UserModel user = CreateUser(id, Name);
+        var id = _repository.GetNextId();
+        var user = CreateUser(id, Name);
 
         _repository.Save(user);
 
-        UserModel? result = _repository.FindById(id);
+        var result = _repository.FindById(id);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(id));
@@ -49,7 +49,7 @@ public class InMemUserRepositoryTest
     public void whenSaveUserWithoutUsingGetNextId_thenThrowInvalidOperationException()
     {
         // _nextId is still 0 at this point
-        UserModel user = new UserModel
+        var user = new UserModel
         {
             Id = 0,
             Name = Name
@@ -64,12 +64,12 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenDeleteExistingUser_thenReturnsTrueAndRemovesUser()
     {
-        long id = _repository.GetNextId();
-        UserModel user = CreateUser(id, Name);
+        var id = _repository.GetNextId();
+        var user = CreateUser(id, Name);
 
         _repository.Save(user);
 
-        bool deleted = _repository.DeleteById(id);
+        var deleted = _repository.DeleteById(id);
 
         Assert.That(deleted, Is.True);
         Assert.That(_repository.FindById(id), Is.Null);
@@ -78,7 +78,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenDeleteNonExistingUser_thenReturnsFalse()
     {
-        bool deleted = _repository.DeleteById(999);
+        var deleted = _repository.DeleteById(999);
 
         Assert.That(deleted, Is.False);
     }
@@ -86,7 +86,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenFindById_andUserDoesNotExist_thenReturnsNull()
     {
-        UserModel? result = _repository.FindById(123);
+        var result = _repository.FindById(123);
 
         Assert.That(result, Is.Null);
     }
@@ -94,11 +94,11 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenGetAllUsers_thenReturnAllSavedUsers()
     {
-        long id1 = _repository.GetNextId();
-        long id2 = _repository.GetNextId();
+        var id1 = _repository.GetNextId();
+        var id2 = _repository.GetNextId();
 
-        UserModel user1 = CreateUser(id1, Name);
-        UserModel user2 = CreateUser(id2, AnotherName);
+        var user1 = CreateUser(id1, Name);
+        var user2 = CreateUser(id2, AnotherName);
 
         _repository.Save(user1);
         _repository.Save(user2);
@@ -113,13 +113,13 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenFindByRoomId_thenReturnOnlyUsersInThatRoom()
     {
-        long id1 = _repository.GetNextId();
-        long id2 = _repository.GetNextId();
-        long id3 = _repository.GetNextId();
+        var id1 = _repository.GetNextId();
+        var id2 = _repository.GetNextId();
+        var id3 = _repository.GetNextId();
 
-        UserModel userInRoom1 = CreateUser(id1, Name, RoomId);
-        UserModel userInRoom1Second = CreateUser(id2, AnotherName, RoomId);
-        UserModel userInAnotherRoom = CreateUser(id3, "THIRD", AnotherRoomId);
+        var userInRoom1 = CreateUser(id1, Name, RoomId);
+        var userInRoom1Second = CreateUser(id2, AnotherName, RoomId);
+        var userInAnotherRoom = CreateUser(id3, "THIRD", AnotherRoomId);
 
         _repository.Save(userInRoom1);
         _repository.Save(userInRoom1Second);
@@ -133,7 +133,7 @@ public class InMemUserRepositoryTest
         Assert.That(result, Does.Not.Contain(userInAnotherRoom));
     }
 
-    private UserModel CreateUser(long id, string name, string? roomId = null)
+    private static UserModel CreateUser(long id, string name, string? roomId = null)
     {
         return new UserModel
         {
