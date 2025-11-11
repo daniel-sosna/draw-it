@@ -24,12 +24,12 @@ public class GameplayHub : BaseHub<GameplayHub>
         var user = await ResolveUserAsync();
 
         await AddConnectionToRoomGroupAsync(user);
-        
+
         var game = _gameService.GetGame(user.RoomId);
-        
+
         if (game.CurrentDrawerId == user.Id)
         {
-            await SendWord(); 
+            await SendWord();
         }
         else
         {
@@ -49,7 +49,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         string messageToSend = message;
         bool isCorrectGuess = false;
         bool turnAdvance = false;
-        
+
         if (drawerId != user.Id)
         {
             isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
@@ -58,32 +58,32 @@ public class GameplayHub : BaseHub<GameplayHub>
             if (isCorrectGuess)
             {
                 turnAdvance = _gameService.AddGuessedPlayer(roomId, user.Id);
-            
-                await SendWord(correctGuess: true); 
+
+                await SendWord(correctGuess: true);
             }
         }
         await Clients.Group(user.RoomId!).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: messageToSend, arg3: isCorrectGuess);
-        
+
         if (turnAdvance)
         {
             bool gameEnded = _gameService.AdvanceTurn(roomId);
-            
+
             var newGame = _gameService.GetGame(roomId);
-        
+
             if (!gameEnded)
             {
                 await Clients.Group(roomId).SendAsync("TurnUpdate", newGame);
-                
+
                 string maskedWord = _gameService.GetMaskedWord(newGame.WordToDraw);
-    
+
                 await Clients.Group(roomId).SendAsync(
-                    method: "ReceiveWordToDraw", 
+                    method: "ReceiveWordToDraw",
                     arg1: maskedWord);
-                
+
                 await Clients.User(newGame.CurrentDrawerId.ToString()).SendAsync(
                     method: "ReceiveWordToDraw",
                     arg1: newGame.WordToDraw);
-                
+
                 if (newGame.CurrentTurnIndex == 0 && newGame.CurrentRound > 1)
                 {
                     string roundMessage = $"New round started: {newGame.CurrentRound}/{newGame.TotalRounds}";
@@ -130,12 +130,12 @@ public class GameplayHub : BaseHub<GameplayHub>
         }
         _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
-    
+
     private async Task SendMaskedWord(string roomId)
     {
         var game = _gameService.GetGame(roomId);
         string maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
-    
+
         await Clients.Caller.SendAsync(method: "ReceiveWordToDraw", arg1: maskedWord);
     }
 }

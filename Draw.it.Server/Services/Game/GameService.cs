@@ -57,7 +57,7 @@ public class GameService : IGameService
             RoomId = roomId,
             CurrentRound = 1,
             TotalRounds = room.Settings.NumberOfRounds,
-            TurnOrderIds = turnOrderIds, 
+            TurnOrderIds = turnOrderIds,
             CurrentTurnIndex = 0,
             CurrentDrawerId = turnOrderIds[0],
             WordToDraw = GetRandomWord(room.Settings.CategoryId)
@@ -87,18 +87,18 @@ public class GameService : IGameService
         _gameRepository.Save(session);
         _logger.LogInformation("Room {roomId}: Drawer ID manually set to {drawerId}", session.RoomId, newDrawerId);
     }
-    
+
     private long GetNextDrawerId(GameModel session)
     {
         int nextTurnIndex = (session.CurrentTurnIndex + 1) % session.TurnOrderIds.Count;
-        
-        if (nextTurnIndex == 0) 
+
+        if (nextTurnIndex == 0)
         {
-            int newRoundValue = session.CurrentRound + 1; 
+            int newRoundValue = session.CurrentRound + 1;
 
             if (newRoundValue > session.TotalRounds)
             {
-                return -1; 
+                return -1;
             }
 
             session.CurrentRound = newRoundValue;
@@ -113,15 +113,15 @@ public class GameService : IGameService
     public bool AddGuessedPlayer(string roomId, long userId)
     {
         var session = GetGame(roomId);
-    
+
         if (session.GuessedPlayersIds.Contains(userId))
         {
-            return false; 
+            return false;
         }
 
         session.GuessedPlayersIds.Add(userId);
         _gameRepository.Save(session);
-        
+
         var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
         var requiredGuessers = allPlayersCount - 1;
 
@@ -133,14 +133,14 @@ public class GameService : IGameService
     {
         var session = GetGame(roomId);
         var room = _roomService.GetRoom(roomId);
-    
+
         long nextDrawerId = GetNextDrawerId(session);
-    
-        if (nextDrawerId == -1) 
+
+        if (nextDrawerId == -1)
         {
-            _gameRepository.Save(session); 
-            _logger.LogInformation("Room {roomId}: Game ended after round {round}.", roomId, session.TotalRounds); 
-            return true; 
+            _gameRepository.Save(session);
+            _logger.LogInformation("Room {roomId}: Game ended after round {round}.", roomId, session.TotalRounds);
+            return true;
         }
 
         session.CurrentDrawerId = nextDrawerId;
@@ -148,11 +148,11 @@ public class GameService : IGameService
         session.GuessedPlayersIds.Clear();
 
         _gameRepository.Save(session);
-        _logger.LogInformation("Room {roomId}: New turn started. Round {round} of {total}. Drawer: {drawerId}, Word: {word}", 
+        _logger.LogInformation("Room {roomId}: New turn started. Round {round} of {total}. Drawer: {drawerId}, Word: {word}",
             roomId, session.CurrentRound, session.TotalRounds, session.CurrentDrawerId, session.WordToDraw);
-        return false; 
+        return false;
     }
-    
+
     public string GetMaskedWord(string word)
     {
         if (string.IsNullOrEmpty(word)) return string.Empty;
