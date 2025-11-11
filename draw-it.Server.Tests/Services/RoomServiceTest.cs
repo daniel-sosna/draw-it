@@ -21,12 +21,12 @@ public class RoomServiceTest
     private const string OtherUserName = "OTHER_USER";
     private const string NewRoomName = "NewName";
 
-    private IRoomService? _roomService;
-    private Mock<IRoomRepository>? _roomRepository;
-    private Mock<IUserService>? _userService;
-    private Mock<IUserRepository>? _userRepository;
-    private Mock<ILogger<RoomService>>? _logger;
-
+    private IRoomService _roomService;
+    private Mock<IRoomRepository> _roomRepository = new();
+    private Mock<IUserService> _userService = new();
+    private Mock<IUserRepository> _userRepository = new();
+    private Mock<ILogger<RoomService>> _logger = new();
+    
     [SetUp]
     public void Setup()
     {
@@ -48,7 +48,7 @@ public class RoomServiceTest
     {
         var user = CreateUser(UserId, UserName);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.ExistsById(It.IsAny<string>()))
             .Returns(false);
 
@@ -57,13 +57,13 @@ public class RoomServiceTest
             .Setup(r => r.Save(It.IsAny<RoomModel>()))
             .Callback<RoomModel>(room => savedRoom = room);
 
-        RoomModel room = _roomService!.CreateRoom(user);
+        RoomModel room = _roomService.CreateRoom(user);
 
         Assert.That(savedRoom, Is.Not.Null);
         Assert.That(savedRoom!.HostId, Is.EqualTo(user.Id));
         Assert.That(room, Is.EqualTo(savedRoom));
 
-        _userService!.Verify(s => s.SetRoom(user.Id, savedRoom.Id), Times.Once);
+        _userService.Verify(s => s.SetRoom(user.Id, savedRoom.Id), Times.Once);
         _userService.Verify(s => s.SetReadyStatus(user.Id, true), Times.Once);
     }
 
@@ -72,10 +72,10 @@ public class RoomServiceTest
     {
         var user = CreateUser(UserId, UserName, RoomId);
 
-        Assert.Throws<AppException>(() => _roomService!.CreateRoom(user));
+        Assert.Throws<AppException>(() => _roomService.CreateRoom(user));
 
-        _roomRepository!.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
-        _userService!.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
+        _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
+        _userService.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -83,24 +83,24 @@ public class RoomServiceTest
     {
         var user = CreateUser(UserId, UserName, OtherRoomId);
 
-        Assert.Throws<AppException>(() => _roomService!.DeleteRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.DeleteRoom(RoomId, user));
 
-        _roomRepository!.Verify(r => r.FindById(It.IsAny<string>()), Times.Never);
+        _roomRepository.Verify(r => r.FindById(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
     public void whenDeleteRoom_andUserNotHost_thenThrowAppException()
     {
         var user = CreateUser(UserId, UserName, RoomId);
-        var room = CreateRoom(RoomId, OtherUserId, RoomStatus.InLobby);
+        var room = CreateRoom(RoomId, OtherUserId);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.DeleteRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.DeleteRoom(RoomId, user));
 
-        _userService!.Verify(s => s.RemoveRoomFromAllUsers(It.IsAny<string>()), Times.Never);
+        _userService.Verify(s => s.RemoveRoomFromAllUsers(It.IsAny<string>()), Times.Never);
         _roomRepository.Verify(r => r.DeleteById(It.IsAny<string>()), Times.Never);
     }
 
@@ -110,13 +110,13 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, RoomId);
         var room = CreateRoom(RoomId, UserId, RoomStatus.InGame);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.DeleteRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.DeleteRoom(RoomId, user));
 
-        _userService!.Verify(s => s.RemoveRoomFromAllUsers(It.IsAny<string>()), Times.Never);
+        _userService.Verify(s => s.RemoveRoomFromAllUsers(It.IsAny<string>()), Times.Never);
         _roomRepository.Verify(r => r.DeleteById(It.IsAny<string>()), Times.Never);
     }
 
@@ -126,7 +126,7 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
@@ -134,9 +134,9 @@ public class RoomServiceTest
             .Setup(r => r.DeleteById(RoomId))
             .Returns(true);
 
-        _roomService!.DeleteRoom(RoomId, user);
+        _roomService.DeleteRoom(RoomId, user);
 
-        _userService!.Verify(s => s.RemoveRoomFromAllUsers(RoomId), Times.Once);
+        _userService.Verify(s => s.RemoveRoomFromAllUsers(RoomId), Times.Once);
         _roomRepository.Verify(r => r.DeleteById(RoomId), Times.Once);
     }
 
@@ -144,11 +144,11 @@ public class RoomServiceTest
     public void whenGetRoom_andRoomExists_thenReturnRoom()
     {
         var room = CreateRoom(RoomId, hostId: UserId);
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        var result = _roomService!.GetRoom(RoomId);
+        var result = _roomService.GetRoom(RoomId);
 
         Assert.That(result, Is.EqualTo(room));
     }
@@ -156,11 +156,11 @@ public class RoomServiceTest
     [Test]
     public void whenGetRoom_andRoomNotFound_thenThrowEntityNotFoundException()
     {
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns((RoomModel?)null);
 
-        Assert.Throws<EntityNotFoundException>(() => _roomService!.GetRoom(RoomId));
+        Assert.Throws<EntityNotFoundException>(() => _roomService.GetRoom(RoomId));
     }
 
     [Test]
@@ -169,11 +169,11 @@ public class RoomServiceTest
         var settings = new RoomSettingsModel();
         var room = CreateRoom(RoomId, UserId, settings: settings);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        var result = _roomService!.GetRoomSettings(RoomId);
+        var result = _roomService.GetRoomSettings(RoomId);
 
         Assert.That(result, Is.EqualTo(settings));
     }
@@ -181,13 +181,13 @@ public class RoomServiceTest
     [Test]
     public void whenGetUsersInRoom_andRoomNotFound_thenThrowEntityNotFoundException()
     {
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.ExistsById(RoomId))
             .Returns(false);
 
-        Assert.Throws<EntityNotFoundException>(() => _roomService!.GetUsersInRoom(RoomId));
+        Assert.Throws<EntityNotFoundException>(() => _roomService.GetUsersInRoom(RoomId));
 
-        _userRepository!.Verify(r => r.FindByRoomId(It.IsAny<string>()), Times.Never);
+        _userRepository.Verify(r => r.FindByRoomId(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -199,15 +199,15 @@ public class RoomServiceTest
             CreateUser(OtherUserId, OtherUserName, roomId: RoomId)
         };
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.ExistsById(RoomId))
             .Returns(true);
 
-        _userRepository!
+        _userRepository
             .Setup(r => r.FindByRoomId(RoomId))
             .Returns(users);
 
-        var result = _roomService!.GetUsersInRoom(RoomId).ToList();
+        var result = _roomService.GetUsersInRoom(RoomId).ToList();
 
         Assert.That(result.Count, Is.EqualTo(2));
         Assert.That(result, Does.Contain(users[0]));
@@ -219,9 +219,9 @@ public class RoomServiceTest
     {
         var user = CreateUser(UserId, UserName, roomId: OtherRoomId);
 
-        Assert.Throws<AppException>(() => _roomService!.JoinRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.JoinRoom(RoomId, user));
 
-        _roomRepository!.Verify(r => r.FindById(It.IsAny<string>()), Times.Never);
+        _roomRepository.Verify(r => r.FindById(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -230,11 +230,11 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: null);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InGame);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.JoinRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.JoinRoom(RoomId, user));
     }
 
     [Test]
@@ -243,7 +243,7 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: null);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
@@ -252,13 +252,13 @@ public class RoomServiceTest
             .Returns(true);
 
         var existingPlayer = CreateUser(OtherUserId, UserName, roomId: RoomId);
-        _userRepository!
+        _userRepository
             .Setup(r => r.FindByRoomId(RoomId))
             .Returns(new List<UserModel> { existingPlayer });
 
-        Assert.Throws<AppException>(() => _roomService!.JoinRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.JoinRoom(RoomId, user));
 
-        _userService!.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
+        _userService.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -267,7 +267,7 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: null);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
@@ -275,13 +275,13 @@ public class RoomServiceTest
             .Setup(r => r.ExistsById(RoomId))
             .Returns(true);
 
-        _userRepository!
+        _userRepository
             .Setup(r => r.FindByRoomId(RoomId))
             .Returns(new List<UserModel>());
 
-        _roomService!.JoinRoom(RoomId, user);
+        _roomService.JoinRoom(RoomId, user);
 
-        _userService!.Verify(s => s.SetRoom(UserId, RoomId), Times.Once);
+        _userService.Verify(s => s.SetRoom(UserId, RoomId), Times.Once);
         _userService.Verify(s => s.SetReadyStatus(UserId, false), Times.Once);
     }
     
@@ -290,7 +290,7 @@ public class RoomServiceTest
     {
         var user = CreateUser(UserId, UserName, roomId: OtherRoomId);
 
-        Assert.Throws<AppException>(() => _roomService!.LeaveRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.LeaveRoom(RoomId, user));
     }
 
     [Test]
@@ -299,13 +299,13 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.LeaveRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.LeaveRoom(RoomId, user));
 
-        _userService!.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
+        _userService.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -314,13 +314,13 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InGame);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.LeaveRoom(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.LeaveRoom(RoomId, user));
 
-        _userService!.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
+        _userService.Verify(s => s.SetRoom(It.IsAny<long>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
@@ -329,13 +329,13 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        _roomService!.LeaveRoom(RoomId, user);
+        _roomService.LeaveRoom(RoomId, user);
 
-        _userService!.Verify(s => s.SetRoom(UserId, null), Times.Once);
+        _userService.Verify(s => s.SetRoom(UserId, null), Times.Once);
     }
     
 
@@ -344,7 +344,7 @@ public class RoomServiceTest
     {
         var user = CreateUser(UserId, UserName, roomId: OtherRoomId);
 
-        Assert.Throws<AppException>(() => _roomService!.IsHost(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.IsHost(RoomId, user));
     }
 
     [Test]
@@ -353,11 +353,11 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService!.IsHost(RoomId, user);
+        bool result = _roomService.IsHost(RoomId, user);
 
         Assert.That(result, Is.True);
     }
@@ -368,11 +368,11 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService!.IsHost(RoomId, user);
+        bool result = _roomService.IsHost(RoomId, user);
 
         Assert.That(result, Is.False);
     }
@@ -383,11 +383,11 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.StartGame(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.StartGame(RoomId, user));
     }
 
     [Test]
@@ -396,11 +396,11 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InGame);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.StartGame(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.StartGame(RoomId, user));
     }
 
     [Test]
@@ -409,7 +409,7 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
@@ -422,11 +422,11 @@ public class RoomServiceTest
             CreateUser(UserId, UserName, roomId: RoomId, isReady: true)
         };
 
-        _userRepository!
+        _userRepository
             .Setup(r => r.FindByRoomId(RoomId))
             .Returns(players);
 
-        Assert.Throws<AppException>(() => _roomService!.StartGame(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.StartGame(RoomId, user));
 
         _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
     }
@@ -437,7 +437,7 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
@@ -451,11 +451,11 @@ public class RoomServiceTest
             CreateUser(OtherUserId, OtherUserName, roomId: RoomId, isReady: false)
         };
 
-        _userRepository!
+        _userRepository
             .Setup(r => r.FindByRoomId(RoomId))
             .Returns(players);
 
-        Assert.Throws<AppException>(() => _roomService!.StartGame(RoomId, user));
+        Assert.Throws<AppException>(() => _roomService.StartGame(RoomId, user));
 
         _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
     }
@@ -466,7 +466,7 @@ public class RoomServiceTest
         var user = CreateUser(UserId, UserName, roomId: RoomId);
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
@@ -480,11 +480,11 @@ public class RoomServiceTest
             CreateUser(OtherUserId, OtherUserName, roomId: RoomId, isReady: true)
         };
 
-        _userRepository!
+        _userRepository
             .Setup(r => r.FindByRoomId(RoomId))
             .Returns(players);
 
-        _roomService!.StartGame(RoomId, user);
+        _roomService.StartGame(RoomId, user);
 
         Assert.That(room.Status, Is.EqualTo(RoomStatus.InGame));
         _roomRepository.Verify(r => r.Save(room), Times.Once);
@@ -497,11 +497,11 @@ public class RoomServiceTest
         var existingSettings = new RoomSettingsModel();
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby, settings: existingSettings);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService!.UpdateSettings(RoomId, user, existingSettings);
+        bool result = _roomService.UpdateSettings(RoomId, user, existingSettings);
 
         Assert.That(result, Is.False);
         _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
@@ -515,11 +515,11 @@ public class RoomServiceTest
         var newSettings = new RoomSettingsModel { RoomName = NewRoomName };
         var room = CreateRoom(RoomId, hostId: OtherUserId, status: RoomStatus.InLobby, settings: existingSettings);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.UpdateSettings(RoomId, user, newSettings));
+        Assert.Throws<AppException>(() => _roomService.UpdateSettings(RoomId, user, newSettings));
 
         _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
     }
@@ -532,11 +532,11 @@ public class RoomServiceTest
         var newSettings = new RoomSettingsModel { RoomName = NewRoomName };
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InGame, settings: existingSettings);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        Assert.Throws<AppException>(() => _roomService!.UpdateSettings(RoomId, user, newSettings));
+        Assert.Throws<AppException>(() => _roomService.UpdateSettings(RoomId, user, newSettings));
 
         _roomRepository.Verify(r => r.Save(It.IsAny<RoomModel>()), Times.Never);
     }
@@ -549,11 +549,11 @@ public class RoomServiceTest
         var newSettings = new RoomSettingsModel { RoomName = NewRoomName };
         var room = CreateRoom(RoomId, hostId: UserId, status: RoomStatus.InLobby, settings: existingSettings);
 
-        _roomRepository!
+        _roomRepository
             .Setup(r => r.FindById(RoomId))
             .Returns(room);
 
-        bool result = _roomService!.UpdateSettings(RoomId, user, newSettings);
+        bool result = _roomService.UpdateSettings(RoomId, user, newSettings);
 
         Assert.That(result, Is.True);
         Assert.That(room.Settings, Is.EqualTo(newSettings));

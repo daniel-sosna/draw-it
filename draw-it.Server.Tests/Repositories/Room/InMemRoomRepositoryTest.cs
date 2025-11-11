@@ -8,7 +8,7 @@ public class InMemRoomRepositoryTest
     private const long HostId = 1;
     private const string AnotherRoomId = "ANOTHER_ROOM_ID";
 
-    private InMemRoomRepository? _repository;
+    private InMemRoomRepository _repository;
 
     [SetUp]
     public void Setup()
@@ -21,7 +21,7 @@ public class InMemRoomRepositoryTest
     {
         RoomModel room = new RoomModel{ Id = RoomId, HostId = HostId };
 
-        _repository!.Save(room);
+        _repository.Save(room);
         RoomModel? result = _repository.FindById(RoomId);
 
         Assert.That(result, Is.Not.Null);
@@ -33,7 +33,7 @@ public class InMemRoomRepositoryTest
     {
         RoomModel room = new RoomModel{ Id = RoomId, HostId = HostId };
 
-        _repository!.Save(room);
+        _repository.Save(room);
 
         bool exists = _repository.ExistsById(RoomId);
 
@@ -43,7 +43,7 @@ public class InMemRoomRepositoryTest
     [Test]
     public void whenRoomNotSaved_thenExistsByIdReturnsFalse()
     {
-        bool exists = _repository!.ExistsById(RoomId);
+        bool exists = _repository.ExistsById(RoomId);
 
         Assert.That(exists, Is.False);
     }
@@ -52,7 +52,7 @@ public class InMemRoomRepositoryTest
     public void whenDeleteExistingRoom_thenReturnsTrueAndRoomIsRemoved()
     {
         RoomModel room = new RoomModel{ Id = RoomId, HostId = HostId };
-        _repository!.Save(room);
+        _repository.Save(room);
 
         bool deleted = _repository.DeleteById(RoomId);
 
@@ -64,7 +64,7 @@ public class InMemRoomRepositoryTest
     [Test]
     public void whenDeleteNonExistingRoom_thenReturnsFalse()
     {
-        bool deleted = _repository!.DeleteById(RoomId);
+        bool deleted = _repository.DeleteById(RoomId);
 
         Assert.That(deleted, Is.False);
     }
@@ -75,7 +75,7 @@ public class InMemRoomRepositoryTest
         RoomModel room1 = new RoomModel{ Id = RoomId, HostId = HostId };
         RoomModel room2 = new RoomModel { Id = AnotherRoomId, HostId = HostId };
 
-        _repository!.Save(room1);
+        _repository.Save(room1);
         _repository.Save(room2);
 
         var rooms = _repository.GetAll().ToList();

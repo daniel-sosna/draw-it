@@ -10,7 +10,7 @@ public class InMemUserRepositoryTest
     private const string RoomId = "TEST_ROOM_ID";
     private const string AnotherRoomId = "ANOTHER_ROOM_ID";
 
-    private InMemUserRepository? _repository;
+    private InMemUserRepository _repository;
 
     [SetUp]
     public void Setup()
@@ -21,7 +21,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenGetNextIdCalledMultipleTimes_thenIdsAreSequential()
     {
-        long id1 = _repository!.GetNextId();
+        long id1 = _repository.GetNextId();
         long id2 = _repository.GetNextId();
         long id3 = _repository.GetNextId();
 
@@ -33,7 +33,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenSaveUserCreatedWithGetNextId_thenUserCanBeFoundById()
     {
-        long id = _repository!.GetNextId();
+        long id = _repository.GetNextId();
         UserModel user = CreateUser(id, Name);
 
         _repository.Save(user);
@@ -55,7 +55,7 @@ public class InMemUserRepositoryTest
             Name = Name
         };
 
-        Assert.Throws<InvalidOperationException>(() => _repository!.Save(user));
+        Assert.Throws<InvalidOperationException>(() => _repository.Save(user));
 
         // nothing should be stored
         Assert.That(_repository.FindById(0), Is.Null);
@@ -64,7 +64,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenDeleteExistingUser_thenReturnsTrueAndRemovesUser()
     {
-        long id = _repository!.GetNextId();
+        long id = _repository.GetNextId();
         UserModel user = CreateUser(id, Name);
 
         _repository.Save(user);
@@ -78,7 +78,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenDeleteNonExistingUser_thenReturnsFalse()
     {
-        bool deleted = _repository!.DeleteById(999);
+        bool deleted = _repository.DeleteById(999);
 
         Assert.That(deleted, Is.False);
     }
@@ -86,7 +86,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenFindById_andUserDoesNotExist_thenReturnsNull()
     {
-        UserModel? result = _repository!.FindById(123);
+        UserModel? result = _repository.FindById(123);
 
         Assert.That(result, Is.Null);
     }
@@ -94,7 +94,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenGetAllUsers_thenReturnAllSavedUsers()
     {
-        long id1 = _repository!.GetNextId();
+        long id1 = _repository.GetNextId();
         long id2 = _repository.GetNextId();
 
         UserModel user1 = CreateUser(id1, Name);
@@ -113,7 +113,7 @@ public class InMemUserRepositoryTest
     [Test]
     public void whenFindByRoomId_thenReturnOnlyUsersInThatRoom()
     {
-        long id1 = _repository!.GetNextId();
+        long id1 = _repository.GetNextId();
         long id2 = _repository.GetNextId();
         long id3 = _repository.GetNextId();
 

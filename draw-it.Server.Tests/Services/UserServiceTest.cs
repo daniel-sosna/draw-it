@@ -13,9 +13,9 @@ public class UserServiceTest
     private const long Id = 1;
     private const string RoomId = "TEST_ROOM_ID";
     
-    private IUserService? _userService;
-    private Mock<IUserRepository>? _userRepository;
-    private Mock<ILogger<UserService>>? _logger;
+    private IUserService _userService;
+    private Mock<IUserRepository> _userRepository = new();
+    private Mock<ILogger<UserService>> _logger = new();
     
     [SetUp]
     public void Setup()
@@ -33,7 +33,7 @@ public class UserServiceTest
         _userRepository.Verify(r => r.GetNextId(), Times.Once);
         _userRepository.Verify(r => r.Save(It.IsAny<UserModel>()), Times.Once);
         
-        Assert.That(Name, Is.EqualTo(user.Name));
+        Assert.That(user.Name, Is.EqualTo(Name));
     }
     
     [Test]
@@ -191,16 +191,5 @@ public class UserServiceTest
 
         _userRepository.Verify(r => r.FindById(It.IsAny<long>()), Times.Never);
         _userRepository.Verify(r => r.Save(It.IsAny<UserModel>()), Times.Never);
-    }
-
-    private UserModel GetUser(long id, string name, string roomId)
-    {
-        UserModel user = new UserModel
-        {
-            Id = id,
-            Name = name
-        };
-
-        return user;
     }
 }
