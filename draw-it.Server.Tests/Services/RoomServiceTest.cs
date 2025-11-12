@@ -60,7 +60,7 @@ public class RoomServiceTest
         var room = _roomService.CreateRoom(user);
 
         Assert.That(savedRoom, Is.Not.Null);
-        Assert.That(savedRoom!.HostId, Is.EqualTo(user.Id));
+        Assert.That(savedRoom.HostId, Is.EqualTo(user.Id));
         Assert.That(room, Is.EqualTo(savedRoom));
 
         _userService.Verify(s => s.SetRoom(user.Id, savedRoom.Id), Times.Once);

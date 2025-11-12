@@ -41,7 +41,7 @@ public class InMemUserRepositoryTest
         var result = _repository.FindById(id);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Id, Is.EqualTo(id));
+        Assert.That(result.Id, Is.EqualTo(id));
         Assert.That(result.Name, Is.EqualTo(Name));
     }
 
