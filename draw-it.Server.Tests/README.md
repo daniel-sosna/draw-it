@@ -96,7 +96,7 @@ TODO when writing integration tests
 
 From the `draw-it.Server.Tests` directory run the following command:
 ```cmd
-dotnet run
+dotnet test
 ```
 
 To run tests with code coverage you have run this command:
