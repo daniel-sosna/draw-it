@@ -39,9 +39,6 @@ export default function GameplayScreen() {
 
         console.log("Gameplay connection established:", gameplayConnection);
         
-        return () => {
-            gameplayConnection.off("GameEnded"); 
-        };
     }, [gameplayConnection, roomId]);
     
     
