@@ -21,7 +21,7 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         _gameService = gameService;
         _roomService = roomService;
-        
+
     }
 
     public override async Task OnConnectedAsync()
@@ -126,20 +126,20 @@ public class GameplayHub : BaseHub<GameplayHub>
     private async Task StartTurn(GameModel session, string roomId)
     {
         await Clients.Group(roomId).SendAsync("TurnUpdate", session);
-    
+
         var room = _roomService.GetRoom(roomId);
         int totalRounds = room.Settings.NumberOfRounds;
-        
+
         string maskedWord = _gameService.GetMaskedWord(session.WordToDraw);
 
         await Clients.Group(roomId).SendAsync(
-            method: "ReceiveWordToDraw", 
+            method: "ReceiveWordToDraw",
             arg1: maskedWord);
-    
+
         await Clients.User(session.CurrentDrawerId.ToString()).SendAsync(
             method: "ReceiveWordToDraw",
             arg1: session.WordToDraw);
-    
+
         if (session.CurrentTurnIndex == 0 && session.CurrentRound > 1)
         {
             string roundMessage = $"New round started: {session.CurrentRound}/{totalRounds}";

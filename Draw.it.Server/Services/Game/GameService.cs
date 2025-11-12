@@ -89,9 +89,9 @@ public class GameService : IGameService
     private long GetNextDrawerId(GameModel session)
     {
         int totalRounds = _roomService.GetRoom(session.RoomId).Settings.NumberOfRounds;
-        
+
         var turnOrderIds = _roomService.GetUsersInRoom(session.RoomId).Select(p => p.Id).ToList();
-    
+
         int nextTurnIndex = (session.CurrentTurnIndex + 1) % turnOrderIds.Count;
 
         if (nextTurnIndex == 0)
@@ -109,7 +109,7 @@ public class GameService : IGameService
         session.CurrentTurnIndex = nextTurnIndex;
 
         return turnOrderIds[session.CurrentTurnIndex];
-        
+
     }
 
 
@@ -121,18 +121,18 @@ public class GameService : IGameService
             .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(long.Parse)
             .ToList();
-        
+
         if (guessedIds.Contains(userId))
         {
-            return false; 
+            return false;
         }
 
         guessedIds.Add(userId);
-    
+
         session.GuessedPlayersString = string.Join(",", guessedIds);
-    
+
         _gameRepository.Save(session);
-    
+
         var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
         var requiredGuessers = allPlayersCount - 1;
 
@@ -156,7 +156,7 @@ public class GameService : IGameService
         session.CurrentDrawerId = nextDrawerId;
         session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
         session.GuessedPlayersString = string.Empty;
-        
+
         _gameRepository.Save(session);
         return false;
     }
