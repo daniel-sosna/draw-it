@@ -56,8 +56,6 @@ public class GameService : IGameService
         {
             RoomId = roomId,
             CurrentRound = 1,
-            TotalRounds = room.Settings.NumberOfRounds,
-            TurnOrderIds = turnOrderIds,
             CurrentTurnIndex = 0,
             CurrentDrawerId = turnOrderIds[0],
             WordToDraw = GetRandomWord(room.Settings.CategoryId)
@@ -90,13 +88,17 @@ public class GameService : IGameService
 
     private long GetNextDrawerId(GameModel session)
     {
-        int nextTurnIndex = (session.CurrentTurnIndex + 1) % session.TurnOrderIds.Count;
+        int totalRounds = _roomService.GetRoom(session.RoomId).Settings.NumberOfRounds;
+        
+        var turnOrderIds = _roomService.GetUsersInRoom(session.RoomId).Select(p => p.Id).ToList();
+    
+        int nextTurnIndex = (session.CurrentTurnIndex + 1) % turnOrderIds.Count;
 
         if (nextTurnIndex == 0)
         {
             int newRoundValue = session.CurrentRound + 1;
 
-            if (newRoundValue > session.TotalRounds)
+            if (newRoundValue > totalRounds)
             {
                 return -1;
             }
@@ -106,7 +108,8 @@ public class GameService : IGameService
 
         session.CurrentTurnIndex = nextTurnIndex;
 
-        return session.TurnOrderIds[session.CurrentTurnIndex];
+        return turnOrderIds[session.CurrentTurnIndex];
+        
     }
 
 
@@ -114,18 +117,26 @@ public class GameService : IGameService
     {
         var session = GetGame(roomId);
 
-        if (session.GuessedPlayersIds.Contains(userId))
+        var guessedIds = session.GuessedPlayersString
+            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(long.Parse)
+            .ToList();
+        
+        if (guessedIds.Contains(userId))
         {
-            return false;
+            return false; 
         }
 
-        session.GuessedPlayersIds.Add(userId);
+        guessedIds.Add(userId);
+    
+        session.GuessedPlayersString = string.Join(",", guessedIds);
+    
         _gameRepository.Save(session);
-
+    
         var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
         var requiredGuessers = allPlayersCount - 1;
 
-        return session.GuessedPlayersIds.Count >= requiredGuessers;
+        return guessedIds.Count >= requiredGuessers;
     }
 
 
@@ -139,17 +150,14 @@ public class GameService : IGameService
         if (nextDrawerId == -1)
         {
             _gameRepository.Save(session);
-            _logger.LogInformation("Room {roomId}: Game ended after round {round}.", roomId, session.TotalRounds);
             return true;
         }
 
         session.CurrentDrawerId = nextDrawerId;
         session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
-        session.GuessedPlayersIds.Clear();
-
+        session.GuessedPlayersString = string.Empty;
+        
         _gameRepository.Save(session);
-        _logger.LogInformation("Room {roomId}: New turn started. Round {round} of {total}. Drawer: {drawerId}, Word: {word}",
-            roomId, session.CurrentRound, session.TotalRounds, session.CurrentDrawerId, session.WordToDraw);
         return false;
     }
 
