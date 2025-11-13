@@ -19,8 +19,8 @@ public class RoomControllerTest
     private const string UserName = "TEST_USER";
     private const string RoomId = "ROOM_1";
 
-    private RoomController _roomController = null!;
-    private DefaultHttpContext _httpContext = null!;
+    private RoomController _roomController;
+    private DefaultHttpContext _httpContext;
     private Mock<IRoomService> _roomService = new();
     private Mock<IUserService> _userService = new();
 

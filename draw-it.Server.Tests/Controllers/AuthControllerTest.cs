@@ -20,8 +20,8 @@ public class AuthControllerTest
     private const string RoomId = "TEST_ROOM_ID";
     private const string UserName = "TEST_NAME";
 
-    private AuthController _authController = null!;
-    private DefaultHttpContext _httpContext = null!;
+    private AuthController _authController;
+    private DefaultHttpContext _httpContext;
     private Mock<IUserService> _userService = new();
     private Mock<IAuthenticationService> _authService = new();
 
@@ -31,9 +31,8 @@ public class AuthControllerTest
         _userService = new Mock<IUserService>();
         _authService = new Mock<IAuthenticationService>();
 
-        // Build DI container with IAuthenticationService
         var services = new ServiceCollection();
-        services.AddSingleton<IAuthenticationService>(_authService.Object);
+        services.AddSingleton(_authService.Object);
         var provider = services.BuildServiceProvider();
 
         _httpContext = new DefaultHttpContext
