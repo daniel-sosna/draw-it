@@ -16,13 +16,11 @@ namespace Draw.it.Server.Hubs;
 [Authorize]
 public class LobbyHub : BaseHub<LobbyHub>
 {
-    private readonly IRoomService _roomService;
     private readonly IGameService _gameService;
 
     public LobbyHub(ILogger<LobbyHub> logger, IRoomService roomService, IUserService userService, IGameService gameService)
-        : base(logger, userService)
+        : base(logger, userService, roomService)
     {
-        _roomService = roomService;
         _gameService = gameService;
     }
 
