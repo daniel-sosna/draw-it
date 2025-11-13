@@ -121,7 +121,7 @@ public class GameService : IGameService
         {
             return false;
         }
-        
+
         session.GuessedPlayersIds.Add(userId);
 
         _gameRepository.Save(session);
@@ -131,15 +131,15 @@ public class GameService : IGameService
 
         return session.GuessedPlayersIds.Count >= requiredGuessers;
     }
-    
+
     public void ClearGuessedPlayers(string roomId)
     {
         var session = GetGame(roomId);
-    
+
         session.GuessedPlayersIds.Clear();
-        
+
         _gameRepository.Save(session);
-        
+
         _logger.LogInformation("Room {roomId}: Guessed players list cleared.", roomId);
     }
 
@@ -160,9 +160,9 @@ public class GameService : IGameService
         session.CurrentDrawerId = nextDrawerId;
         session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
         ClearGuessedPlayers(roomId);
-        
+
         _gameRepository.Save(session);
-        
+
         return false;
     }
 
