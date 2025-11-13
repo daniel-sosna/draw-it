@@ -1,4 +1,5 @@
-﻿using Draw.it.Server.Enums;
+﻿using System.Collections.Concurrent;
+using Draw.it.Server.Enums;
 
 namespace Draw.it.Server.Models.Game;
 
@@ -9,5 +10,5 @@ public class GameModel
     public long CurrentDrawerId { get; set; }
     public string WordToDraw { get; set; } = string.Empty;
     public int CurrentTurnIndex { get; set; } = 0;
-    public string GuessedPlayersString { get; set; } = string.Empty;
+    public ConcurrentDictionary<long, bool> GuessedPlayers { get; set; } = new ConcurrentDictionary<long, bool>();
 }
