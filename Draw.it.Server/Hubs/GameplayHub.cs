@@ -15,13 +15,10 @@ namespace Draw.it.Server.Hubs;
 public class GameplayHub : BaseHub<GameplayHub>
 {
     private readonly IGameService _gameService;
-    private readonly IRoomService _roomService;
     public GameplayHub(ILogger<GameplayHub> logger, IUserService userService, IGameService gameService, IRoomService roomService)
-        : base(logger, userService)
+        : base(logger, userService, roomService)
     {
         _gameService = gameService;
-        _roomService = roomService;
-
     }
 
     public override async Task OnConnectedAsync()
@@ -74,11 +71,11 @@ public class GameplayHub : BaseHub<GameplayHub>
         {
             bool gameEnded = _gameService.AdvanceTurn(roomId);
 
-            var updatedSession = _gameService.GetGame(roomId);
+            var game = _gameService.GetGame(roomId);
 
             if (!gameEnded)
             {
-                await StartTurn(updatedSession, roomId);
+                await StartTurn(game, roomId);
             }
             else
             {
@@ -88,7 +85,7 @@ public class GameplayHub : BaseHub<GameplayHub>
                 await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: endMessage, arg3: false);
                 _userService.RemoveRoomFromAllUsers(roomId);
                 _gameService.DeleteGame(roomId);
-                await Clients.Group(roomId).SendAsync("GameEnded", updatedSession);
+                await Clients.Group(roomId).SendAsync("GameEnded", game);
             }
         }
     }
@@ -123,26 +120,28 @@ public class GameplayHub : BaseHub<GameplayHub>
         _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
 
-    private async Task StartTurn(GameModel session, string roomId)
+    private async Task StartTurn(GameModel game, string roomId)
     {
-        await Clients.Group(roomId).SendAsync("TurnUpdate", session);
+        await Clients.Group(roomId).SendAsync("TurnUpdate", game);
 
         var room = _roomService.GetRoom(roomId);
         int totalRounds = room.Settings.NumberOfRounds;
 
-        string maskedWord = _gameService.GetMaskedWord(session.WordToDraw);
+        string maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
 
-        await Clients.Group(roomId).SendAsync(
+        var currentDrawer = game.CurrentDrawerId.ToString();
+
+        await Clients.GroupExcept(roomId, currentDrawer).SendAsync(
             method: "ReceiveWordToDraw",
             arg1: maskedWord);
 
-        await Clients.User(session.CurrentDrawerId.ToString()).SendAsync(
+        await Clients.User(currentDrawer).SendAsync(
             method: "ReceiveWordToDraw",
-            arg1: session.WordToDraw);
+            arg1: game.WordToDraw);
 
-        if (session.CurrentTurnIndex == 0 && session.CurrentRound > 1)
+        if (game.CurrentTurnIndex == 0 && game.CurrentRound > 1)
         {
-            string roundMessage = $"New round started: {session.CurrentRound}/{totalRounds}";
+            string roundMessage = $"New round started: {game.CurrentRound}/{totalRounds}";
             await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: roundMessage, arg3: false);
         }
     }
