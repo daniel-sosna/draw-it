@@ -1,5 +1,6 @@
 using Draw.it.Server.Extensions;
 using Draw.it.Server.Models.User;
+using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
 using Microsoft.AspNetCore.SignalR;
 
@@ -12,11 +13,14 @@ public abstract class BaseHub<T> : Hub where T : Hub
 {
     protected readonly ILogger<T> _logger;
     protected readonly IUserService _userService;
+    protected readonly IRoomService _roomService;
 
-    protected BaseHub(ILogger<T> logger, IUserService userService)
+    protected BaseHub(ILogger<T> logger, IUserService userService, IRoomService roomService)
     {
         _logger = logger;
         _userService = userService;
+        _roomService = roomService;
+
     }
 
     /// <summary>

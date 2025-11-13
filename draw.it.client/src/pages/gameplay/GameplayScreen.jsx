@@ -2,13 +2,13 @@
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
-import {useParams} from "react-router";
+import {useParams, useNavigate} from "react-router";
 
 export default function GameplayScreen() {
     
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
-    
+    const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
 
     useEffect(() => {
@@ -21,8 +21,21 @@ export default function GameplayScreen() {
             setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess }]);
         })
 
-        console.log("Gameplay connection established:", gameplayConnection);
+        gameplayConnection.on("TurnUpdate", () => {
+            console.log("Game Turn Updated");
+            setMessages([]);
+        });
 
+        gameplayConnection.on("GameEnded", () => {
+            console.log("Game Ended");
+            const REDIRECT_DELAY_MS = 4000;
+            setTimeout(() => {
+                navigate('/'); 
+            }, REDIRECT_DELAY_MS);
+        });
+
+        console.log("Gameplay connection established:", gameplayConnection);
+        
     }, [gameplayConnection, roomId]);
     
     

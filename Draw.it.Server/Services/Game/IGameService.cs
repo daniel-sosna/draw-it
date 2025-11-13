@@ -10,4 +10,8 @@ public interface IGameService
     long GetDrawerId(string roomId);
     void SetDrawerId(string roomId, long newDrawerId);
     string GetRandomWord(long categoryId);
+    bool AddGuessedPlayer(string roomId, long userId);
+    void ClearGuessedPlayers(string roomId);
+    bool AdvanceTurn(string roomId);
+    string GetMaskedWord(string word);
 }

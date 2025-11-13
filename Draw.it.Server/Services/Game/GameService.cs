@@ -56,6 +56,7 @@ public class GameService : IGameService
         {
             RoomId = roomId,
             CurrentRound = 1,
+            CurrentTurnIndex = 0,
             CurrentDrawerId = turnOrderIds[0],
             WordToDraw = GetRandomWord(room.Settings.CategoryId)
         };
@@ -83,5 +84,94 @@ public class GameService : IGameService
 
         _gameRepository.Save(session);
         _logger.LogInformation("Room {roomId}: Drawer ID manually set to {drawerId}", session.RoomId, newDrawerId);
+    }
+
+    private long GetNextDrawerId(GameModel session)
+    {
+        int totalRounds = _roomService.GetRoom(session.RoomId).Settings.NumberOfRounds;
+
+        var turnOrderIds = _roomService.GetUsersInRoom(session.RoomId).Select(p => p.Id).ToList();
+
+        int nextTurnIndex = (session.CurrentTurnIndex + 1) % turnOrderIds.Count;
+
+        if (nextTurnIndex == 0)
+        {
+            int newRoundValue = session.CurrentRound + 1;
+
+            if (newRoundValue > totalRounds)
+            {
+                return -1;
+            }
+
+            session.CurrentRound = newRoundValue;
+        }
+
+        session.CurrentTurnIndex = nextTurnIndex;
+
+        _gameRepository.Save(session);
+
+        return turnOrderIds[session.CurrentTurnIndex];
+
+    }
+
+
+    public bool AddGuessedPlayer(string roomId, long userId)
+    {
+        var session = GetGame(roomId);
+
+        if (session.GuessedPlayersIds.Contains(userId))
+        {
+            return false;
+        }
+
+        session.GuessedPlayersIds.Add(userId);
+
+        _gameRepository.Save(session);
+
+        var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
+        var requiredGuessers = allPlayersCount - 1;
+
+        return session.GuessedPlayersIds.Count >= requiredGuessers;
+    }
+
+    public void ClearGuessedPlayers(string roomId)
+    {
+        var session = GetGame(roomId);
+
+        session.GuessedPlayersIds.Clear();
+
+        _gameRepository.Save(session);
+
+        _logger.LogInformation("Room {roomId}: Guessed players list cleared.", roomId);
+    }
+
+
+    public bool AdvanceTurn(string roomId)
+    {
+        var session = GetGame(roomId);
+        var room = _roomService.GetRoom(roomId);
+
+        long nextDrawerId = GetNextDrawerId(session);
+
+        if (nextDrawerId == -1)
+        {
+            _gameRepository.Save(session);
+            return true;
+        }
+
+        session.CurrentDrawerId = nextDrawerId;
+        session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
+        ClearGuessedPlayers(roomId);
+
+        _gameRepository.Save(session);
+
+        return false;
+    }
+
+    public string GetMaskedWord(string word)
+    {
+        if (string.IsNullOrEmpty(word)) return string.Empty;
+
+        return new string(word.Select(c => char.IsWhiteSpace(c) ? ' ' : '*').ToArray());
     }
 }
