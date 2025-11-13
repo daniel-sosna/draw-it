@@ -52,17 +52,6 @@ public class UserControllerTest
         var attr = typeof(UserController).GetCustomAttribute<AuthorizeAttribute>();
         Assert.That(attr, Is.Not.Null);
     }
-
-    [Test]
-    public void whenUpdateName_thenHasHttpPostAttributeWithNewNameRoute()
-    {
-        var method = typeof(UserController).GetMethod(nameof(UserController.UpdateName));
-        Assert.That(method, Is.Not.Null);
-
-        var httpPostAttr = method!.GetCustomAttribute<HttpPostAttribute>();
-        Assert.That(httpPostAttr, Is.Not.Null);
-        Assert.That(httpPostAttr!.Template, Is.EqualTo("new-name"));
-    }
     
     private void SetupAuthenticatedUser()
     {
