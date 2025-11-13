@@ -15,6 +15,8 @@ namespace Draw.it.Server.Hubs;
 public class GameplayHub : BaseHub<GameplayHub>
 {
     private readonly IGameService _gameService;
+
+    private const int TurnDelayMs = 3000;
     public GameplayHub(ILogger<GameplayHub> logger, IUserService userService, IGameService gameService, IRoomService roomService)
         : base(logger, userService, roomService)
     {
@@ -122,13 +124,30 @@ public class GameplayHub : BaseHub<GameplayHub>
 
     private async Task StartTurn(GameModel game, string roomId)
     {
-        await Clients.Group(roomId).SendAsync("TurnUpdate");
-
         var room = _roomService.GetRoom(roomId);
         int totalRounds = room.Settings.NumberOfRounds;
 
-        string maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
+        var nextDrawerName = _userService.GetUser(game.CurrentDrawerId).Name;
 
+        string systemMessage;
+        if (game.CurrentTurnIndex == 0 && game.CurrentRound > 1)
+        {
+            systemMessage = $"New round started: {game.CurrentRound}/{totalRounds}. Next drawer is {nextDrawerName}!";
+        }
+        else
+        {
+            systemMessage = $"Turn is advancing. Next drawer is {nextDrawerName}!";
+        }
+
+        await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: systemMessage, arg3: false);
+
+        await Task.Delay(TurnDelayMs);
+
+        await Clients.Group(roomId).SendAsync(method: "ReceiveClear");
+
+        await Clients.Group(roomId).SendAsync("TurnUpdate");
+
+        string maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
         var currentDrawer = game.CurrentDrawerId.ToString();
 
         await Clients.GroupExcept(roomId, currentDrawer).SendAsync(
@@ -138,11 +157,5 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.User(currentDrawer).SendAsync(
             method: "ReceiveWordToDraw",
             arg1: game.WordToDraw);
-
-        if (game.CurrentTurnIndex == 0 && game.CurrentRound > 1)
-        {
-            string roundMessage = $"New round started: {game.CurrentRound}/{totalRounds}";
-            await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: roundMessage, arg3: false);
-        }
     }
 }
