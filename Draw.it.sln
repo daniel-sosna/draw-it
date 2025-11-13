@@ -7,6 +7,8 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "draw.it.client", "draw.it.c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Draw.it.Server", "Draw.it.Server\Draw.it.Server.csproj", "{D4D00124-AFBC-4BD5-9B91-5336CFB10CE8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "draw-it.Server.Tests", "draw-it.Server.Tests\draw-it.Server.Tests.csproj", "{8EABA4E2-3DBA-4825-9117-F023808D00E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{D4D00124-AFBC-4BD5-9B91-5336CFB10CE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4D00124-AFBC-4BD5-9B91-5336CFB10CE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4D00124-AFBC-4BD5-9B91-5336CFB10CE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EABA4E2-3DBA-4825-9117-F023808D00E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EABA4E2-3DBA-4825-9117-F023808D00E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EABA4E2-3DBA-4825-9117-F023808D00E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EABA4E2-3DBA-4825-9117-F023808D00E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
