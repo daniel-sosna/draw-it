@@ -85,7 +85,7 @@ public class GameplayHub : BaseHub<GameplayHub>
                 await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: endMessage, arg3: false);
                 _userService.RemoveRoomFromAllUsers(roomId);
                 _gameService.DeleteGame(roomId);
-                await Clients.Group(roomId).SendAsync("GameEnded", game);
+                await Clients.Group(roomId).SendAsync("GameEnded");
             }
         }
     }
@@ -122,7 +122,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
     private async Task StartTurn(GameModel game, string roomId)
     {
-        await Clients.Group(roomId).SendAsync("TurnUpdate", game);
+        await Clients.Group(roomId).SendAsync("TurnUpdate");
 
         var room = _roomService.GetRoom(roomId);
         int totalRounds = room.Settings.NumberOfRounds;

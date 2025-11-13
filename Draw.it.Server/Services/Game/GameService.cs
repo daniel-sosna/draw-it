@@ -108,6 +108,8 @@ public class GameService : IGameService
 
         session.CurrentTurnIndex = nextTurnIndex;
 
+        _gameRepository.Save(session);
+
         return turnOrderIds[session.CurrentTurnIndex];
 
     }
