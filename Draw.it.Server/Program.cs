@@ -2,9 +2,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
+using Draw.it.Server.Data;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Draw.it.Server.Enums;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +37,13 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrWhiteSpace(connectionString))
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+}
+
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
 
 // Allow frontend to send requests
@@ -76,5 +86,14 @@ app.MapHub<GameplayHub>("/gameplayHub");
 app.MapFallbackToFile("/index.html");
 
 app.UseMiddleware<ExceptionHandler>();
+
+// Ensure database is created when using Db repository mode
+var repoType = app.Configuration.GetValue<string>("RepositoryType");
+if (repoType == nameof(RepoType.Db))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();
