@@ -9,7 +9,6 @@ export default function GameplayScreen() {
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
     const navigate = useNavigate();
-    const [gameState, setGameState] = useState(null);
     const [messages, setMessages] = useState([]);
 
     useEffect(() => {
@@ -22,15 +21,13 @@ export default function GameplayScreen() {
             setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess }]);
         })
 
-        gameplayConnection.on("TurnUpdate", (newGameSession) => {
-            console.log("Game Turn Updated:", newGameSession);
-            setGameState(newGameSession); 
+        gameplayConnection.on("TurnUpdate", () => {
+            console.log("Game Turn Updated");
             setMessages([]);
         });
 
-        gameplayConnection.on("GameEnded", (finalGameSession) => {
-            console.log("Game Ended:", finalGameSession);
-            setGameState(finalGameSession);
+        gameplayConnection.on("GameEnded", () => {
+            console.log("Game Ended");
             const REDIRECT_DELAY_MS = 4000;
             setTimeout(() => {
                 navigate('/'); 
