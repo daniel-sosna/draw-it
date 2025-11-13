@@ -117,26 +117,17 @@ public class GameService : IGameService
     {
         var session = GetGame(roomId);
 
-        var guessedIds = session.GuessedPlayersString
-            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(long.Parse)
-            .ToList();
-
-        if (guessedIds.Contains(userId))
+        if (!session.GuessedPlayers.TryAdd(userId, true))
         {
             return false;
         }
-
-        guessedIds.Add(userId);
-
-        session.GuessedPlayersString = string.Join(",", guessedIds);
 
         _gameRepository.Save(session);
 
         var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
         var requiredGuessers = allPlayersCount - 1;
 
-        return guessedIds.Count >= requiredGuessers;
+        return session.GuessedPlayers.Count >= requiredGuessers;
     }
 
 
@@ -155,7 +146,7 @@ public class GameService : IGameService
 
         session.CurrentDrawerId = nextDrawerId;
         session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
-        session.GuessedPlayersString = string.Empty;
+        session.GuessedPlayers.Clear();
 
         _gameRepository.Save(session);
         return false;
