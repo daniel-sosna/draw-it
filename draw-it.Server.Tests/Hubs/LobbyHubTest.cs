@@ -180,7 +180,7 @@ public class LobbyHubTest
     }
 
     [Test]
-    public async Task whenLeaveRoom_andUserHasNoRoom_thenThrowHubException()
+    public void whenLeaveRoom_andUserHasNoRoom_thenThrowHubException()
     {
         _user.RoomId = null;
 
@@ -442,7 +442,7 @@ public class LobbyHubTest
     }
     
     [TearDown]
-    public async Task TearDown()
+    public void TearDown()
     {
         _hub.Dispose();
     }
