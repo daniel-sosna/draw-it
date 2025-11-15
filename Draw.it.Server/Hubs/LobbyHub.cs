@@ -45,6 +45,7 @@ public class LobbyHub : BaseHub<LobbyHub>
         await SendPlayerListUpdate(roomId);
     }
 
+    // TODO add test when finished
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var user = Context.ResolveUser(_userService);
@@ -72,12 +73,7 @@ public class LobbyHub : BaseHub<LobbyHub>
     public async Task LeaveRoom()
     {
         var user = await ResolveUserAsync();
-        string? roomId = user.RoomId;
-
-        if (string.IsNullOrEmpty(roomId))
-        {
-            return;
-        }
+        string roomId = user.RoomId!;
 
         try
         {
@@ -162,6 +158,7 @@ public class LobbyHub : BaseHub<LobbyHub>
         {
             _logger.LogError("Error occurred while trying to start the game:\n{Ex}", ex);
             await Clients.Caller.SendAsync("ReceiveErrorOnGameStart", "An unexpected error occurred while trying to start the game.");
+            return;
         }
 
         await Clients.Group(roomId).SendAsync("ReceiveGameStart");

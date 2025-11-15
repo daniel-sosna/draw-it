@@ -4,7 +4,6 @@ using Draw.it.Server.Models.Game;
 using Draw.it.Server.Repositories.Game;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Enums;
-using Draw.it.Server.Repositories.WordPool;
 using Draw.it.Server.Services.WordPool;
 
 
