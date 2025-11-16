@@ -22,8 +22,8 @@ public static class RepositoryDependencyInjection
         }
         else
         {
-            services.AddScoped<IUserRepository, EfUserRepository>();
-            services.AddScoped<IRoomRepository, EfRoomRepository>();
+            services.AddScoped<IUserRepository, DbUserRepository>();
+            services.AddScoped<IRoomRepository, DbRoomRepository>();
             services.AddSingleton<IWordPoolRepository, FileStreamWordPoolRepository>();
         }
 
