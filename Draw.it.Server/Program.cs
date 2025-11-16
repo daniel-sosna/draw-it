@@ -37,11 +37,15 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// Database
-var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
-if (!string.IsNullOrWhiteSpace(connectionString))
+// Database (only when using Db repository)
+var repoTypeConfig = builder.Configuration.GetValue<string>("RepositoryType");
+if (repoTypeConfig == nameof(RepoType.Db))
 {
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+    var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+    if (!string.IsNullOrWhiteSpace(connectionString))
+    {
+        builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+    }
 }
 
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
