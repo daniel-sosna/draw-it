@@ -1,10 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Draw.it.Server.Data;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +37,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
+
+// Optional: register EF Core if a Postgres connection string is present
+var connectionString = builder.Configuration.GetConnectionString("Postgres");
+if (!string.IsNullOrWhiteSpace(connectionString))
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
@@ -76,5 +86,17 @@ app.MapHub<GameplayHub>("/gameplayHub");
 app.MapFallbackToFile("/index.html");
 
 app.UseMiddleware<ExceptionHandler>();
+
+// Auto-create schema if DbContext is configured
+try
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
+    db?.Database.EnsureCreated();
+}
+catch (Exception e)
+{
+    Console.WriteLine($"Database initialization skipped or failed: {e.Message}");
+}
 
 app.Run();
