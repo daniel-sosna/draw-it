@@ -50,7 +50,6 @@ public class DbUserRepositoryTest
         _context = new ApplicationDbContext(_dbOptions);
         _repository = new DbUserRepository(_context);
         
-        // Clear db for every test
         await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE users RESTART IDENTITY CASCADE;");
     }
 
@@ -69,7 +68,22 @@ public class DbUserRepositoryTest
     }
 
     [Test]
-    public void whenSave_andUpdateExisting_thenUpdated()
+    public void whenSave_andIdZero_thenInsertedWithGeneratedId()
+    {
+        var user = CreateUser(0, Username);
+
+        _repository.Save(user);
+
+        Assert.That(user.Id, Is.GreaterThan(0));
+
+        var fromDb = _repository.FindById(user.Id);
+
+        Assert.That(fromDb, Is.Not.Null);
+        Assert.That(fromDb!.Name, Is.EqualTo(Username));
+    }
+
+    [Test]
+    public void whenSave_andUpdateExisting_thenTrackedEntityUpdated()
     {
         var user = CreateUser(UserId, Username);
         _repository.Save(user);
@@ -81,6 +95,26 @@ public class DbUserRepositoryTest
 
         var fromDb = _repository.FindById(UserId);
 
+        Assert.That(fromDb!.Name, Is.EqualTo("UPDATED"));
+        Assert.That(fromDb.IsConnected, Is.True);
+    }
+
+    [Test]
+    public void whenSave_andExistingButNotTracked_thenExistingRowUpdated()
+    {
+        var user = CreateUser(UserId, Username);
+        _repository.Save(user);
+
+        _context.ChangeTracker.Clear();
+
+        var updated = CreateUser(UserId, "UPDATED");
+        updated.IsConnected = true;
+
+        _repository.Save(updated);
+
+        var fromDb = _repository.FindById(UserId);
+
+        Assert.That(fromDb, Is.Not.Null);
         Assert.That(fromDb!.Name, Is.EqualTo("UPDATED"));
         Assert.That(fromDb.IsConnected, Is.True);
     }
