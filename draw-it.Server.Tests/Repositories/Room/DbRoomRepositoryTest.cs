@@ -44,10 +44,13 @@ public class DbRoomRepositoryTest
     }
 
     [SetUp]
-    public void Setup()
+    public async Task Setup()
     {
         _context = new ApplicationDbContext(_dbOptions);
         _repository = new DbRoomRepository(_context);
+        
+        // Clear db for every test
+        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE rooms RESTART IDENTITY CASCADE;");
     }
 
     [Test]
