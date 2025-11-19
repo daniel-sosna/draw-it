@@ -151,6 +151,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = UserId,
             WordToDraw = "APPLE"
         };
@@ -190,6 +191,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = 2,
             WordToDraw = "APPLE"
         };
@@ -226,6 +228,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = UserId,
             WordToDraw = "APPLE"
         };
@@ -264,6 +267,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = 2,
             WordToDraw = "APPLE"
         };
@@ -302,6 +306,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = 2,
             WordToDraw = "APPLE"
         };
@@ -409,6 +414,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = UserId,
             WordToDraw = "APPLE"
         };
@@ -442,6 +448,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = UserId,
             WordToDraw = "APPLE"
         };
@@ -477,6 +484,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = nextDrawerId,
             CurrentRound = 2,
             CurrentTurnIndex = 0,
@@ -573,6 +581,7 @@ public class GameplayHubTest
         var game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = nextDrawerId,
             CurrentRound = 1,
             CurrentTurnIndex = 1,

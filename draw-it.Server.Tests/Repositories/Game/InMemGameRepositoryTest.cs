@@ -98,6 +98,7 @@ public class InMemGameRepositoryTest
         return new GameModel
         {
             RoomId = roomId,
+            PlayerCount = 2,
             CurrentDrawerId = 1,
             CurrentRound = 1,
             CurrentTurnIndex = 0,

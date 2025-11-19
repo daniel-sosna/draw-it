@@ -65,16 +65,6 @@ public class GameService : IGameService
         return GetGame(roomId).CurrentDrawerId;
     }
 
-    // TODO: delete
-    public void SetDrawerId(string roomId, long newDrawerId)
-    {
-        var game = GetGame(roomId);
-
-        game.CurrentDrawerId = newDrawerId;
-
-        _gameRepository.Save(game);
-    }
-
     public bool AddGuessedPlayer(string roomId, long userId)
     {
         var game = GetGame(roomId);
@@ -107,16 +97,6 @@ public class GameService : IGameService
         return game.GuessedPlayersIds.Count >= game.PlayerCount - 1;
     }
 
-    // TODO: delete
-    public void ClearGuessedPlayers(string roomId)
-    {
-        var game = GetGame(roomId);
-
-        game.GuessedPlayersIds.Clear();
-
-        _gameRepository.Save(game);
-    }
-
 
     public bool AdvanceTurn(string roomId)
     {
@@ -133,7 +113,7 @@ public class GameService : IGameService
 
         game.CurrentDrawerId = nextDrawerId;
         game.WordToDraw = GetRandomWord(room.Settings.CategoryId);
-        ClearGuessedPlayers(roomId);
+        game.GuessedPlayersIds.Clear();
 
         _gameRepository.Save(game);
 
