@@ -92,8 +92,8 @@ The AAA principle consists of 3 phases:
 
 Integration tests verify that multiple components work correctly together — for example: A repository works correctly with a real PostgreSQL database
 
-
 This project uses the Testcontainers library to automatically spin up a real PostgreSQL instance during tests.
+**For tests to run successfully docker has to be turned on !**
 
 A typical setup looks like this:
 
