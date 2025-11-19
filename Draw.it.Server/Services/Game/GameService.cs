@@ -24,50 +24,40 @@ public class GameService : IGameService
         _wordPoolService = wordPoolService;
     }
 
-    public GameModel GetGame(string roomId)
+    public void CreateGame(string roomId)
     {
-        return _gameRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Game for room id={roomId} not found");
+        var room = _roomService.GetRoom(roomId);
+
+        if (room.Status != RoomStatus.InGame)
+        {
+            throw new AppException($"Cannot start game for room {roomId} because the room status is not 'InGame'.", HttpStatusCode.Conflict);
+        }
+
+        var game = new GameModel
+        {
+            RoomId = roomId,
+            PlayerCount = _roomService.GetUsersInRoom(roomId).Count(),
+            CurrentDrawerId = GetPlayerIdByTurnIndex(roomId, 0),
+            WordToDraw = GetRandomWord(room.Settings.CategoryId)
+        };
+
+        _gameRepository.Save(game);
+        _logger.LogInformation("Game for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, game.CurrentDrawerId, game.WordToDraw);
     }
 
     public void DeleteGame(string roomId)
     {
         if (!_gameRepository.DeleteById(roomId))
         {
-            _logger.LogWarning("Attempted to delete non-existent game session for room id={roomId}", roomId);
+            _logger.LogWarning("Attempted to delete non-existent game for room id={roomId}", roomId);
         }
 
         _gameRepository.DeleteById(roomId);
     }
 
-    public void CreateGame(string roomId)
+    public GameModel GetGame(string roomId)
     {
-        var room = _roomService.GetRoom(roomId);
-        var players = _roomService.GetUsersInRoom(roomId).ToList();
-
-        if (room.Status != RoomStatus.InGame)
-        {
-            throw new AppException($"Cannot start game session: Room {roomId} status is invalid.", HttpStatusCode.Conflict);
-        }
-
-        var turnOrderIds = players.Select(p => p.Id).ToList();
-
-        var gameSession = new GameModel
-        {
-            RoomId = roomId,
-            CurrentRound = 1,
-            CurrentTurnIndex = 0,
-            CurrentDrawerId = turnOrderIds[0],
-            WordToDraw = GetRandomWord(room.Settings.CategoryId)
-        };
-
-        _gameRepository.Save(gameSession);
-        _logger.LogInformation("Game session for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, gameSession.CurrentDrawerId, gameSession.WordToDraw);
-    }
-
-    public string GetRandomWord(long categoryId)
-    {
-        var randomWord = _wordPoolService.GetRandomWordByCategoryId(categoryId);
-        return randomWord.Value;
+        return _gameRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Game for room id={roomId} not found");
     }
 
     public long GetDrawerId(string roomId)
@@ -75,94 +65,77 @@ public class GameService : IGameService
         return GetGame(roomId).CurrentDrawerId;
     }
 
+    // TODO: delete
     public void SetDrawerId(string roomId, long newDrawerId)
     {
-        var session = GetGame(roomId);
+        var game = GetGame(roomId);
 
-        session.CurrentDrawerId = newDrawerId;
+        game.CurrentDrawerId = newDrawerId;
 
-        _gameRepository.Save(session);
-        _logger.LogInformation("Room {roomId}: Drawer ID manually set to {drawerId}", session.RoomId, newDrawerId);
+        _gameRepository.Save(game);
     }
-
-    private long GetNextDrawerId(GameModel session)
-    {
-        int totalRounds = _roomService.GetRoom(session.RoomId).Settings.NumberOfRounds;
-
-        var turnOrderIds = _roomService.GetUsersInRoom(session.RoomId).Select(p => p.Id).ToList();
-
-        int nextTurnIndex = (session.CurrentTurnIndex + 1) % turnOrderIds.Count;
-
-        if (nextTurnIndex == 0)
-        {
-            int newRoundValue = session.CurrentRound + 1;
-
-            if (newRoundValue > totalRounds)
-            {
-                return -1;
-            }
-
-            session.CurrentRound = newRoundValue;
-        }
-
-        session.CurrentTurnIndex = nextTurnIndex;
-
-        _gameRepository.Save(session);
-
-        return turnOrderIds[session.CurrentTurnIndex];
-
-    }
-
 
     public bool AddGuessedPlayer(string roomId, long userId)
     {
-        var session = GetGame(roomId);
+        var game = GetGame(roomId);
 
-        if (session.GuessedPlayersIds.Contains(userId))
-        {
-            return false;
-        }
+        // Drawer cannot guess
+        if (userId == game.CurrentDrawerId) return false;
 
-        session.GuessedPlayersIds.Add(userId);
+        if (game.GuessedPlayersIds.Contains(userId)) return false;
 
-        _gameRepository.Save(session);
+        // Determine points: first correct guess gets max (equal to total players), then decreases
+        var position = game.GuessedPlayersIds.Count; // 0-based
+        var points = Math.Max(1, game.PlayerCount - position);
 
-        var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
-        var requiredGuessers = allPlayersCount - 1;
+        // Increment correct guesses (persistent across rounds)
+        if (game.CorrectGuesses.ContainsKey(userId))
+            game.CorrectGuesses[userId] += 1;
+        else
+            game.CorrectGuesses[userId] = 1;
 
-        return session.GuessedPlayersIds.Count >= requiredGuessers;
+        // Add points for this round (cleared at end of round)
+        if (game.RoundScores.ContainsKey(userId))
+            game.RoundScores[userId] += points;
+        else
+            game.RoundScores[userId] = points;
+
+        game.GuessedPlayersIds.Add(userId);
+
+        _gameRepository.Save(game);
+
+        return game.GuessedPlayersIds.Count >= game.PlayerCount - 1;
     }
 
+    // TODO: delete
     public void ClearGuessedPlayers(string roomId)
     {
-        var session = GetGame(roomId);
+        var game = GetGame(roomId);
 
-        session.GuessedPlayersIds.Clear();
+        game.GuessedPlayersIds.Clear();
 
-        _gameRepository.Save(session);
-
-        _logger.LogInformation("Room {roomId}: Guessed players list cleared.", roomId);
+        _gameRepository.Save(game);
     }
 
 
     public bool AdvanceTurn(string roomId)
     {
-        var session = GetGame(roomId);
+        var game = GetGame(roomId);
         var room = _roomService.GetRoom(roomId);
 
-        long nextDrawerId = GetNextDrawerId(session);
+        var nextDrawerId = GetNextDrawerId(game);
 
         if (nextDrawerId == -1)
         {
-            _gameRepository.Save(session);
+            _gameRepository.Save(game);
             return true;
         }
 
-        session.CurrentDrawerId = nextDrawerId;
-        session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
+        game.CurrentDrawerId = nextDrawerId;
+        game.WordToDraw = GetRandomWord(room.Settings.CategoryId);
         ClearGuessedPlayers(roomId);
 
-        _gameRepository.Save(session);
+        _gameRepository.Save(game);
 
         return false;
     }
@@ -172,5 +145,39 @@ public class GameService : IGameService
         if (string.IsNullOrEmpty(word)) return string.Empty;
 
         return new string(word.Select(c => char.IsWhiteSpace(c) ? ' ' : '*').ToArray());
+    }
+
+    public string GetRandomWord(long categoryId)
+    {
+        var randomWord = _wordPoolService.GetRandomWordByCategoryId(categoryId);
+        return randomWord.Value;
+    }
+
+    private long GetPlayerIdByTurnIndex(string roomId, int turnIndex)
+    {
+        return _roomService.GetUsersInRoom(roomId).Select(p => p.Id).ElementAt(turnIndex);
+    }
+
+    private long GetNextDrawerId(GameModel game)
+    {
+        var totalRounds = _roomService.GetRoom(game.RoomId).Settings.NumberOfRounds;
+        var nextTurnIndex = (game.CurrentTurnIndex + 1) % game.PlayerCount;
+
+        if (nextTurnIndex == 0)
+        {
+            var newRoundValue = game.CurrentRound + 1;
+            if (newRoundValue > totalRounds)
+            {
+                return -1;
+            }
+
+            game.CurrentRound = newRoundValue;
+        }
+
+        game.CurrentTurnIndex = nextTurnIndex;
+
+        _gameRepository.Save(game);
+
+        return GetPlayerIdByTurnIndex(game.RoomId, game.CurrentTurnIndex);
     }
 }
