@@ -9,21 +9,21 @@ public class DbRoomRepository(ApplicationDbContext context) : IRoomRepository
     public void Save(RoomModel entity)
     {
         var tracked = context.Rooms.Local.FirstOrDefault(r => r.Id == entity.Id);
-        if (tracked is null)
+        if (tracked is not null)
         {
-            var existing = context.Rooms.AsNoTracking().FirstOrDefault(r => r.Id == entity.Id);
-            if (existing is null)
+            context.Entry(tracked).CurrentValues.SetValues(entity);
+        }
+        else
+        {
+            var existingTrackedEntity = context.Rooms.Find(entity.Id);
+            if (existingTrackedEntity is null)
             {
                 context.Rooms.Add(entity);
             }
             else
             {
-                context.Rooms.Update(entity);
+                context.Entry(existingTrackedEntity).CurrentValues.SetValues(entity);
             }
-        }
-        else
-        {
-            context.Entry(tracked).CurrentValues.SetValues(entity);
         }
         context.SaveChanges();
     }

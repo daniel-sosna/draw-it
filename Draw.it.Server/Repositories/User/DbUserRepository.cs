@@ -14,9 +14,26 @@ public class DbUserRepository(ApplicationDbContext context) : IUserRepository
         }
         else
         {
-            var existing = context.Users.AsNoTracking().FirstOrDefault(u => u.Id == entity.Id);
-            if (existing is null) context.Users.Add(entity);
-            else context.Users.Update(entity);
+            // If the entity is already being tracked in the current context,
+            // update its current values instead of attaching a new instance.
+            var tracked = context.Users.Local.FirstOrDefault(u => u.Id == entity.Id);
+            if (tracked is not null)
+            {
+                context.Entry(tracked).CurrentValues.SetValues(entity);
+            }
+            else
+            {
+                // Try to find existing row; if not present - add as new
+                var existing = context.Users.Find(entity.Id);
+                if (existing is null)
+                {
+                    context.Users.Add(entity);
+                }
+                else
+                {
+                    context.Entry(existing).CurrentValues.SetValues(entity);
+                }
+            }
         }
         context.SaveChanges();
     }
