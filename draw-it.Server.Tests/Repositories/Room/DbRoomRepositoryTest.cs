@@ -11,9 +11,9 @@ namespace draw_it.Tests.Repositories.Room;
 public class DbRoomRepositoryTest
 {
     private PostgreSqlContainer _pgContainer;
-    private DbContextOptions<ApplicationDbContext> _dbOptions = null!;
+    private DbContextOptions<ApplicationDbContext> _dbOptions;
     private ApplicationDbContext _context;
-    private DbRoomRepository _repository = null!;
+    private DbRoomRepository _repository;
 
     private const string RoomId = "ROOM_1";
     private const long HostId = 1;
