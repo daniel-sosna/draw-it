@@ -49,10 +49,8 @@ public class GameService : IGameService
     {
         if (!_gameRepository.DeleteById(roomId))
         {
-            _logger.LogWarning("Attempted to delete non-existent game for room id={roomId}", roomId);
+            throw new EntityNotFoundException($"Game for room id={roomId} not found");
         }
-
-        _gameRepository.DeleteById(roomId);
     }
 
     public GameModel GetGame(string roomId)
@@ -65,26 +63,27 @@ public class GameService : IGameService
         return GetGame(roomId).CurrentDrawerId;
     }
 
-    public bool AddGuessedPlayer(string roomId, long userId)
+    public void AddGuessedPlayer(string roomId, long userId, out bool turnAdvanced, out bool gameEnded)
     {
         var game = GetGame(roomId);
+        turnAdvanced = false;
+        gameEnded = false;
 
         // Drawer cannot guess
-        if (userId == game.CurrentDrawerId) return false;
+        if (userId == game.CurrentDrawerId) return;
 
-        if (game.GuessedPlayersIds.Contains(userId)) return false;
+        // Already guessed
+        if (game.GuessedPlayersIds.Contains(userId)) return;
 
         // Determine points: first correct guess gets max (equal to total players), then decreases
-        var position = game.GuessedPlayersIds.Count; // 0-based
+        var position = game.GuessedPlayersIds.Count;
         var points = Math.Max(1, game.PlayerCount - position);
 
-        // Increment correct guesses (persistent across rounds)
         if (game.CorrectGuesses.ContainsKey(userId))
             game.CorrectGuesses[userId] += 1;
         else
             game.CorrectGuesses[userId] = 1;
 
-        // Add points for this round (cleared at end of round)
         if (game.RoundScores.ContainsKey(userId))
             game.RoundScores[userId] += points;
         else
@@ -94,11 +93,15 @@ public class GameService : IGameService
 
         _gameRepository.Save(game);
 
-        return game.GuessedPlayersIds.Count >= game.PlayerCount - 1;
+        turnAdvanced = game.GuessedPlayersIds.Count >= game.PlayerCount - 1;
+        if (turnAdvanced)
+        {
+            _logger.LogInformation("All players have guessed the word in room id={roomId}. Advancing turn.", roomId);
+            AdvanceTurn(roomId, out gameEnded);
+        }
     }
 
-
-    public bool AdvanceTurn(string roomId)
+    private void AdvanceTurn(string roomId, out bool gameEnded)
     {
         var game = GetGame(roomId);
         var room = _roomService.GetRoom(roomId);
@@ -108,7 +111,8 @@ public class GameService : IGameService
         if (nextDrawerId == -1)
         {
             _gameRepository.Save(game);
-            return true;
+            gameEnded = false;
+            return;
         }
 
         game.CurrentDrawerId = nextDrawerId;
@@ -117,7 +121,7 @@ public class GameService : IGameService
 
         _gameRepository.Save(game);
 
-        return false;
+        gameEnded = false;
     }
 
     public string GetMaskedWord(string word)
@@ -145,13 +149,12 @@ public class GameService : IGameService
 
         if (nextTurnIndex == 0)
         {
-            var newRoundValue = game.CurrentRound + 1;
-            if (newRoundValue > totalRounds)
+            if (game.CurrentRound + 1 > totalRounds)
             {
                 return -1;
             }
 
-            game.CurrentRound = newRoundValue;
+            game.CurrentRound += 1;
         }
 
         game.CurrentTurnIndex = nextTurnIndex;

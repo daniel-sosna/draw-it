@@ -9,4 +9,6 @@ public class GameModel
     public required long CurrentDrawerId { get; set; }
     public required string WordToDraw { get; set; }
     public List<long> GuessedPlayersIds { get; set; } = new List<long>();
+    public Dictionary<long, int> CorrectGuesses { get; set; } = new Dictionary<long, int>();
+    public Dictionary<long, int> RoundScores { get; set; } = new Dictionary<long, int>();
 }

@@ -49,37 +49,26 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
-        var drawerId = _gameService.GetGame(roomId).CurrentDrawerId;
+        var drawerId = _gameService.GetDrawerId(roomId);
 
-        string messageToSend = message;
-        bool isCorrectGuess = false;
-        bool turnAdvance = false;
+        var isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
+            StringComparison.OrdinalIgnoreCase); // check if the word is the word to guess
 
-        if (drawerId != user.Id)
-        {
-            isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
-                StringComparison.OrdinalIgnoreCase); // check if the word is the word to guess
-            messageToSend = isCorrectGuess ? "Guessed The Word!" : message;
-            if (isCorrectGuess)
-            {
-                turnAdvance = _gameService.AddGuessedPlayer(roomId, user.Id);
-
-                await SendWord(correctGuess: true);
-            }
+        if (drawerId == user.Id || !isCorrectGuess) {
+            await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: message, arg3: false);
+            return;
         }
-        await Clients.Group(user.RoomId!).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: messageToSend, arg3: isCorrectGuess);
 
-        if (turnAdvance)
+        await SendWord(correctGuess: true);
+        await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: "Guessed The Word!", arg3: true);
+
+        _gameService.AddGuessedPlayer(roomId, user.Id, out bool turnAdvanced, out bool gameEnded);
+
+        if (turnAdvanced)
         {
-            bool gameEnded = _gameService.AdvanceTurn(roomId);
-
             var game = _gameService.GetGame(roomId);
 
-            if (!gameEnded)
-            {
-                await StartTurn(game, roomId);
-            }
-            else
+            if (gameEnded)
             {
                 var room = _roomService.GetRoom(roomId);
                 int totalRounds = room.Settings.NumberOfRounds;
@@ -88,6 +77,10 @@ public class GameplayHub : BaseHub<GameplayHub>
                 _userService.RemoveRoomFromAllUsers(roomId);
                 _gameService.DeleteGame(roomId);
                 await Clients.Group(roomId).SendAsync("GameEnded");
+            }
+            else
+            {
+                await StartTurn(game, roomId);
             }
         }
     }
