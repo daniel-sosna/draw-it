@@ -2,8 +2,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 
-import Button from '../../src/components/button/Button.jsx';
-import colors from '../../src/constants/colors';
+import Button from '@/components/button/Button.jsx';
+import colors from '@/constants/colors';
 
 const hexToRgb = (hex) => {
     const clean = hex.replace('#', '');
