@@ -90,7 +90,60 @@ The AAA principle consists of 3 phases:
 
 ### 3. Integration tests
 
-TODO when writing integration tests
+Integration tests verify that multiple components work correctly together — for example: A repository works correctly with a real PostgreSQL database
+
+
+This project uses the Testcontainers library to automatically spin up a real PostgreSQL instance during tests.
+
+A typical setup looks like this:
+
+```C#
+private PostgreSqlContainer _pgContainer;
+
+[OneTimeSetUp]
+public async Task OneTimeSetup()
+{
+    _pgContainer = new PostgreSqlBuilder()
+        .WithDatabase("testdb")
+        .WithUsername("testuser")
+        .WithPassword("testpass")
+        .WithImage("postgres:16")
+        .Build();
+
+    await _pgContainer.StartAsync();
+
+    // Configure EF Core to use the container
+    _dbOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseNpgsql(_pgContainer.GetConnectionString())
+        .Options;
+
+    // Apply migrations once
+    using var ctx = new ApplicationDbContext(_dbOptions);
+    await ctx.Database.MigrateAsync();
+}
+
+```
+
+PostgreSQL database itself persists for the entire test run.
+Because of this, tests must clean up the database between runs, usually in `[SetUp]`:
+
+```C#
+[SetUp]
+public async Task Setup()
+{
+    _context = new ApplicationDbContext(_dbOptions);
+    _repository = new DbRoomRepository(_context);
+
+    // Reset state for next test
+    await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE rooms, users RESTART IDENTITY CASCADE;");
+}
+```
+
+Avoid integration tests for:
+Business logic that doesn’t depend on external systems
+Small pure functions (these should be covered by unit tests)
+
+Integration tests are slower — use them only when needed.
 
 ### 4. Run the tests
 
