@@ -63,10 +63,10 @@ public class GameService : IGameService
         return GetGame(roomId).CurrentDrawerId;
     }
 
-    public void AddGuessedPlayer(string roomId, long userId, out bool turnAdvanced, out bool gameEnded)
+    public void AddGuessedPlayer(string roomId, long userId, out bool turnEnded, out bool roundEnded, out bool gameEnded)
     {
         var game = GetGame(roomId);
-        turnAdvanced = gameEnded = false;
+        turnEnded = roundEnded = gameEnded = false;
 
         // Drawer cannot guess
         if (userId == game.CurrentDrawerId) return;
@@ -94,8 +94,8 @@ public class GameService : IGameService
 
         if (game.GuessedPlayersIds.Count >= game.PlayerCount - 1)
         {
-            turnAdvanced = true;
-            AdvanceTurn(game, out var roundEnded, out gameEnded);
+            turnEnded = true;
+            AdvanceTurn(game, out roundEnded, out gameEnded);
         }
     }
 
