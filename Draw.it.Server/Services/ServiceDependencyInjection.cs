@@ -9,10 +9,10 @@ public static class ServiceDependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddSingleton<IUserService, UserService>();
-        services.AddSingleton<IRoomService, RoomService>();
-        services.AddSingleton<IWordPoolService, WordPoolService>();
-        services.AddSingleton<IGameService, GameService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<IWordPoolService, WordPoolService>();
+        services.AddScoped<IGameService, GameService>();
         return services;
     }
 }

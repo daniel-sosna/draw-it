@@ -5,10 +5,10 @@ namespace Draw.it.Server.Models.Room
 {
     public class RoomSettingsModel : IEquatable<RoomSettingsModel>
     {
-        private int _seconds;
-        private int _rounds;
+        private int _seconds = 60;
+        private int _rounds = 2;
         public string RoomName { get; set; } = string.Empty;
-        public long CategoryId { get; set; }
+        public long CategoryId { get; set; } = 1;
 
         public int DrawingTime
         {
@@ -27,7 +27,7 @@ namespace Draw.it.Server.Models.Room
             set
             {
                 if (value < 1)
-                    throw new AppException("Drawing time has to be minimum 20 seconds", HttpStatusCode.BadRequest);
+                    throw new AppException("Number of rounds has to be at least 1", HttpStatusCode.BadRequest);
                 _rounds = value;
             }
         }
