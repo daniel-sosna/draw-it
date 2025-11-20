@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
+import ScoreModal from "@/components/modal/ScoreModal.jsx";
 
 export default function GameplayScreen() {
     
@@ -10,6 +11,9 @@ export default function GameplayScreen() {
     const { roomId } = useParams();
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
+    const [scoreModalOpen, setScoreModalOpen] = useState(false);
+    const [scoreModalTitle, setScoreModalTitle] = useState("");
+    const [scoreModalScores, setScoreModalScores] = useState([]);
 
     useEffect(() => {
         if(!gameplayConnection) return;
@@ -19,18 +23,25 @@ export default function GameplayScreen() {
         })
 
         gameplayConnection.on("ReceiveTurnStarted", () => {
+            setScoreModalOpen(false);
             setMessages([]);
         });
 
         gameplayConnection.on("ReceiveRoundStarted", () => {
         });
 
-        gameplayConnection.on("ReceiveRoundEnded", (score) => {
-            console.log("Scores:", score);
+        // Show round scores in modal
+        gameplayConnection.on("ReceiveRoundEnded", (scores) => {
+            setScoreModalTitle("Round Results");
+            setScoreModalScores(scores || []);
+            setScoreModalOpen(true);
         });
 
-        gameplayConnection.on("ReceiveGameEnded", (score) => {
-            console.log("Final scores:", score);
+        // Show final game scores in modal
+        gameplayConnection.on("ReceiveGameEnded", (scores) => {
+            setScoreModalTitle("Final Scores");
+            setScoreModalScores(scores || []);
+            setScoreModalOpen(true);
         });
 
         gameplayConnection.on("RedirectToLobby", () => {
@@ -75,6 +86,13 @@ export default function GameplayScreen() {
                     className="h-full bg-gray-800 rounded-xl shadow-lg"
                 />
             </div>
+
+            <ScoreModal
+                isOpen={scoreModalOpen}
+                onClose={() => setScoreModalOpen(false)}
+                scores={scoreModalScores}
+                title={scoreModalTitle}
+            />
         </div>
     );
 }

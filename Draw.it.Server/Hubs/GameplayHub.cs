@@ -175,7 +175,7 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var game = _gameService.GetGame(roomId);
         var players = _roomService.GetUsersInRoom(roomId);
-        var scores = ConvertScoresToDto(players, game.RoundScores);
+        var scores = ConvertScoresToDto(players, game.TotalScores);
         
         await Clients.Group(roomId).SendAsync("ReceiveRoundEnded", scores);
     }
@@ -197,7 +197,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         _userService.RemoveRoomFromAllUsers(roomId);
         _gameService.DeleteGame(roomId);
-        await Clients.Group(roomId).SendAsync("ReceiveConnectionAborted");
+        await Clients.Group(roomId).SendAsync("ReceiveConnectionAborted", "Game has ended. Returning to lobby.");
     }
 
     private List<ScoreDto> ConvertScoresToDto(IEnumerable<UserModel> users, Dictionary<long, int> scores)
