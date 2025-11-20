@@ -38,9 +38,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
 
-// Optional: register EF Core if a Postgres connection string is present
+// Register the DbContext if using DB repositories
+var repoType = builder.Configuration.GetValue<string>("RepositoryType");
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
-if (!string.IsNullOrWhiteSpace(connectionString))
+if (repoType == nameof(RepoType.Db) && !string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(connectionString));
