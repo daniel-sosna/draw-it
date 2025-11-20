@@ -69,19 +69,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         _gameService.AddGuessedPlayer(roomId, user.Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
 
-        if (turnEnded) {
-            await EndTurn(roomId, wordToDraw);
-            if (roundEnded) {
-                await EndRound(roomId);
-                if (gameEnded) {
-                    await EndGame(roomId);
-                    return;
-                } else {
-                    await StartRound(roomId);
-                }
-            }
-            await StartTurn(roomId);
-        }
+        if (turnEnded) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
     }
 
     public async Task SendDraw(DrawDto drawDto)
@@ -114,6 +102,30 @@ public class GameplayHub : BaseHub<GameplayHub>
         }
     }
 
+    private async Task ManageTurnEnding(string roomId, string wordToDraw, bool roundEnded, bool gameEnded)
+    {
+        await EndTurn(roomId, wordToDraw);
+        await Task.Delay(TurnDelayMs);
+
+        if (roundEnded)
+        {
+            await EndRound(roomId);
+            await Task.Delay(RoundDelayMs);
+
+            if (gameEnded)
+            {
+                await EndGame(roomId);
+                return;
+            }
+            else
+            {
+                await StartRound(roomId);
+            }
+        }
+
+        await StartTurn(roomId);
+    }
+
     private async Task StartTurn(string roomId)
     {
         await Clients.Group(roomId).SendAsync(method: "ReceiveClear");
@@ -141,8 +153,6 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var endMessage = $"TURN ENDED! The word was: {wordToDraw}";
         await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: endMessage, arg3: false);
-
-        await Task.Delay(TurnDelayMs);
     }
 
     private async Task StartRound(string roomId)
@@ -167,8 +177,6 @@ public class GameplayHub : BaseHub<GameplayHub>
                     return $"{userName}: {score} points";
                 }));
         await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: endMessage, arg3: false);
-
-        await Task.Delay(RoundDelayMs);
     }
 
     private async Task EndGame(string roomId) {
