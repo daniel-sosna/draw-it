@@ -61,14 +61,7 @@ public class RoomService : IRoomService
         var room = new RoomModel
         {
             Id = roomId,
-            HostId = user.Id,
-            Settings = new RoomSettingsModel
-            {
-                RoomName = $"Room-{roomId}",
-                CategoryId = 1,
-                DrawingTime = 60,
-                NumberOfRounds = 2
-            }
+            HostId = user.Id
         };
 
         _roomRepository.Save(room);
