@@ -66,8 +66,7 @@ public class GameService : IGameService
     public void AddGuessedPlayer(string roomId, long userId, out bool turnAdvanced, out bool gameEnded)
     {
         var game = GetGame(roomId);
-        turnAdvanced = false;
-        gameEnded = false;
+        turnAdvanced = gameEnded = false;
 
         // Drawer cannot guess
         if (userId == game.CurrentDrawerId) return;
@@ -93,35 +92,11 @@ public class GameService : IGameService
 
         _gameRepository.Save(game);
 
-        turnAdvanced = game.GuessedPlayersIds.Count >= game.PlayerCount - 1;
-        if (turnAdvanced)
+        if (game.GuessedPlayersIds.Count >= game.PlayerCount - 1)
         {
-            _logger.LogInformation("All players have guessed the word in room id={roomId}. Advancing turn.", roomId);
-            AdvanceTurn(roomId, out gameEnded);
+            turnAdvanced = true;
+            AdvanceTurn(game, out var roundEnded, out gameEnded);
         }
-    }
-
-    private void AdvanceTurn(string roomId, out bool gameEnded)
-    {
-        var game = GetGame(roomId);
-        var room = _roomService.GetRoom(roomId);
-
-        var nextDrawerId = GetNextDrawerId(game);
-
-        if (nextDrawerId == -1)
-        {
-            _gameRepository.Save(game);
-            gameEnded = false;
-            return;
-        }
-
-        game.CurrentDrawerId = nextDrawerId;
-        game.WordToDraw = GetRandomWord(room.Settings.CategoryId);
-        game.GuessedPlayersIds.Clear();
-
-        _gameRepository.Save(game);
-
-        gameEnded = false;
     }
 
     public string GetMaskedWord(string word)
@@ -142,25 +117,44 @@ public class GameService : IGameService
         return _roomService.GetUsersInRoom(roomId).Select(p => p.Id).ElementAt(turnIndex);
     }
 
-    private long GetNextDrawerId(GameModel game)
+    private void AdvanceTurn(GameModel game, out bool roundEnded, out bool gameEnded)
     {
-        var totalRounds = _roomService.GetRoom(game.RoomId).Settings.NumberOfRounds;
+        var room = _roomService.GetRoom(game.RoomId);
+        roundEnded = gameEnded = false;
+
         var nextTurnIndex = (game.CurrentTurnIndex + 1) % game.PlayerCount;
-
-        if (nextTurnIndex == 0)
-        {
-            if (game.CurrentRound + 1 > totalRounds)
-            {
-                return -1;
-            }
-
-            game.CurrentRound += 1;
-        }
+        var nextDrawerId = GetPlayerIdByTurnIndex(game.RoomId, nextTurnIndex);
 
         game.CurrentTurnIndex = nextTurnIndex;
+        game.CurrentDrawerId = nextDrawerId;
+        game.WordToDraw = GetRandomWord(room.Settings.CategoryId);
+        game.GuessedPlayersIds.Clear();
 
         _gameRepository.Save(game);
 
-        return GetPlayerIdByTurnIndex(game.RoomId, game.CurrentTurnIndex);
+        if (nextTurnIndex == 0)
+        {
+            roundEnded = true;
+            AdvanceRound(game, out gameEnded);
+        }
+    }
+
+    private void AdvanceRound(GameModel game, out bool gameEnded)
+    {
+
+        foreach (var kvp in game.RoundScores)
+        {
+            if (game.TotalScores.ContainsKey(kvp.Key))
+                game.TotalScores[kvp.Key] += kvp.Value;
+            else
+                game.TotalScores[kvp.Key] = kvp.Value;
+        }
+        game.CurrentRound += 1;
+        game.RoundScores.Clear();
+
+        _gameRepository.Save(game);
+
+        var totalRounds = _roomService.GetRoom(game.RoomId).Settings.NumberOfRounds;
+        gameEnded = game.CurrentRound > totalRounds;
     }
 }
