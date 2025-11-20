@@ -1,10 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Draw.it.Server.Data;
 using Draw.it.Server.Exceptions;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Repositories;
 using Draw.it.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Draw.it.Server.Enums;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +38,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
+
+// Register the DbContext if using DB repositories
+var repoType = builder.Configuration.GetValue<string>("RepositoryType");
+var connectionString = builder.Configuration.GetConnectionString("Postgres");
+if (repoType == nameof(RepoType.Db) && !string.IsNullOrWhiteSpace(connectionString))
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
@@ -76,5 +88,13 @@ app.MapHub<GameplayHub>("/gameplayHub");
 app.MapFallbackToFile("/index.html");
 
 app.UseMiddleware<ExceptionHandler>();
+
+// Create schema if using DB repositories
+if (repoType == nameof(RepoType.Db))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();
