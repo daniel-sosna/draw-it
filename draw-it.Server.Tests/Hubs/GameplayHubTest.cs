@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Models.Game;
 using Draw.it.Server.Models.Room;
@@ -253,16 +252,12 @@ public class GameplayHubTest
             Times.Once);
 
         _gameService.Verify(
-            s => s.AddGuessedPlayer(It.IsAny<string>(), It.IsAny<long>()),
-            Times.Never);
-
-        _gameService.Verify(
-            s => s.AdvanceTurn(It.IsAny<string>()),
+            s => s.AddGuessedPlayer(It.IsAny<string>(), It.IsAny<long>(), out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny),
             Times.Never);
     }
 
     [Test]
-    public async Task whenSendMessage_andWrongGuess_thenMessageBroadcastNotCorrect()
+    public async Task whenSendMessage_andWrongGuess_thenNormalMessageBroadcast()
     {
         var game = new GameModel
         {
@@ -292,17 +287,17 @@ public class GameplayHubTest
             Times.Once);
 
         _gameService.Verify(
-            s => s.AddGuessedPlayer(It.IsAny<string>(), It.IsAny<long>()),
-            Times.Never);
-
-        _gameService.Verify(
-            s => s.AdvanceTurn(It.IsAny<string>()),
+            s => s.AddGuessedPlayer(It.IsAny<string>(), It.IsAny<long>(), out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny),
             Times.Never);
     }
 
     [Test]
-    public async Task whenSendMessage_andCorrectGuessAndGameEnded_thenCleanupAndGameEndedBroadcast()
+    public async Task whenSendMessage_andCorrectGuess_thenMessageBroadcastCorrect()
     {
+        _userService
+            .Setup(s => s.GetUser(It.IsAny<long>()))
+            .Returns(_user);
+        
         var game = new GameModel
         {
             RoomId = RoomId,
@@ -316,13 +311,14 @@ public class GameplayHubTest
             .Returns(game);
 
         _gameService
-            .Setup(s => s.AddGuessedPlayer(RoomId, UserId))
-            .Returns(true); 
+            .Setup(s => s.AddGuessedPlayer(RoomId, UserId, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny))
+            .Callback((string roomId, long userId, out bool turnEnded, out bool roundEnded, out bool gameEnded) =>
+            {
+                turnEnded = true;
+                roundEnded = false;
+                gameEnded = true;
+            });
 
-        _gameService
-            .Setup(s => s.AdvanceTurn(RoomId))
-            .Returns(true); 
-        
         var roomSettings = new RoomSettingsModel
         {
             NumberOfRounds = 3
@@ -359,27 +355,6 @@ public class GameplayHubTest
                     (string)args[0]! == "APPLE"),
                 It.IsAny<CancellationToken>()),
             Times.Once);
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveMessage",
-                It.Is<object?[]>(args =>
-                    args.Length == 3 &&
-                    (string)args[0]! == "System" &&
-                    ((string)args[1]!).Contains("GAME FINISHED!") &&
-                    (bool)args[2]! == false),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _userService.Verify(s => s.RemoveRoomFromAllUsers(RoomId), Times.Once);
-        _gameService.Verify(s => s.DeleteGame(RoomId), Times.Once);
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "GameEnded",
-                It.Is<object?[]>(args => args.Length == 0),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
     }
 
     [Test]
@@ -409,7 +384,7 @@ public class GameplayHubTest
     }
 
     [Test]
-    public async Task whenSendWord_andNotCorrectGuess_thenWordSentToCurrentDrawerUser()
+    public async Task whenSendWord_andNoArgument_thenWordSentToCurrentDrawerUser()
     {
         var game = new GameModel
         {
@@ -474,198 +449,5 @@ public class GameplayHubTest
                 It.IsAny<object?[]>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
-    }
-    
-    [Test]
-    public async Task whenStartTurn_andNewRound_thenSystemAnnouncesNewRoundAndSendsWords()
-    {
-        var nextDrawerId = 2L;
-
-        var game = new GameModel
-        {
-            RoomId = RoomId,
-            PlayerCount = 2,
-            CurrentDrawerId = nextDrawerId,
-            CurrentRound = 2,
-            CurrentTurnIndex = 0,
-            WordToDraw = "APPLE"
-        };
-
-        var roomSettings = new RoomSettingsModel
-        {
-            NumberOfRounds = 3
-        };
-        var room = new RoomModel
-        {
-            Id = RoomId,
-            HostId = nextDrawerId,
-            Settings = roomSettings
-        };
-
-        _roomService
-            .Setup(s => s.GetRoom(RoomId))
-            .Returns(room);
-
-        var nextDrawerUser = new UserModel
-        {
-            Id = nextDrawerId,
-            Name = "NEXT_DRAWER",
-            RoomId = RoomId
-        };
-
-        _userService
-            .Setup(s => s.GetUser(nextDrawerId))
-            .Returns(nextDrawerUser);
-
-        _gameService
-            .Setup(s => s.GetMaskedWord("APPLE"))
-            .Returns("_____");
-
-        var method = typeof(GameplayHub).GetMethod(
-            "StartTurn",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-
-        Assert.That(method, Is.Not.Null, "Could not find StartTurn via reflection");
-
-        var task = (Task)method!.Invoke(_hub, new object[] { game, RoomId })!;
-        await task;
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveMessage",
-                It.Is<object?[]>(args =>
-                    args.Length == 3 &&
-                    (string)args[0]! == "System" &&
-                    ((string)args[1]!).Contains("New round started: 2/3") &&
-                    ((string)args[1]!).Contains("NEXT_DRAWER") &&
-                    (bool)args[2]! == false),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveClear",
-                It.Is<object?[]>(a => a.Length == 0),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "TurnUpdate",
-                It.Is<object?[]>(a => a.Length == 0),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _groupExceptClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveWordToDraw",
-                It.Is<object?[]>(args =>
-                    args.Length == 1 && (string)args[0]! == "_____"),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _userClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveWordToDraw",
-                It.Is<object?[]>(args =>
-                    args.Length == 1 && (string)args[0]! == "APPLE"),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-    
-    [Test]
-    public async Task whenStartTurn_andSameRound_thenSystemAnnouncesTurnAdvanceAndSendsWords()
-    {
-        var nextDrawerId = 2L;
-
-        var game = new GameModel
-        {
-            RoomId = RoomId,
-            PlayerCount = 2,
-            CurrentDrawerId = nextDrawerId,
-            CurrentRound = 1,
-            CurrentTurnIndex = 1,
-            WordToDraw = "BANANA"
-        };
-
-        var roomSettings = new RoomSettingsModel
-        {
-            NumberOfRounds = 4
-        };
-        var room = new RoomModel
-        {
-            Id = RoomId,
-            HostId = nextDrawerId,
-            Settings = roomSettings
-        };
-
-        _roomService
-            .Setup(s => s.GetRoom(RoomId))
-            .Returns(room);
-
-        var nextDrawerUser = new UserModel
-        {
-            Id = nextDrawerId,
-            Name = "ANOTHER_DRAWER",
-            RoomId = RoomId
-        };
-
-        _userService
-            .Setup(s => s.GetUser(nextDrawerId))
-            .Returns(nextDrawerUser);
-
-        _gameService
-            .Setup(s => s.GetMaskedWord("BANANA"))
-            .Returns("______");
-
-        var method = typeof(GameplayHub).GetMethod(
-            "StartTurn",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-
-        Assert.That(method, Is.Not.Null, "Could not find StartTurn via reflection");
-
-        var task = (Task)method!.Invoke(_hub, new object[] { game, RoomId })!;
-        await task;
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveMessage",
-                It.Is<object?[]>(args =>
-                    args.Length == 3 &&
-                    (string)args[0]! == "System" &&
-                    ((string)args[1]!).StartsWith("Turn is advancing. Next drawer is ANOTHER_DRAWER!") &&
-                    (bool)args[2]! == false),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveClear",
-                It.Is<object?[]>(a => a.Length == 0),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _groupClient.Verify(
-            c => c.SendCoreAsync(
-                "TurnUpdate",
-                It.Is<object?[]>(a => a.Length == 0),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _groupExceptClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveWordToDraw",
-                It.Is<object?[]>(args =>
-                    args.Length == 1 && (string)args[0]! == "______"),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _userClient.Verify(
-            c => c.SendCoreAsync(
-                "ReceiveWordToDraw",
-                It.Is<object?[]>(args =>
-                    args.Length == 1 && (string)args[0]! == "BANANA"),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
     }
 }
