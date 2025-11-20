@@ -16,7 +16,8 @@ public class GameplayHub : BaseHub<GameplayHub>
     private readonly IGameService _gameService;
 
     private const int TurnDelayMs = 3000;
-    private const int RoundDelayMs = 5000;
+    private const int RoundDelayMs = 6000;
+    private const int EndGameDelayMs = 10000;
 
     public GameplayHub(ILogger<GameplayHub> logger, IUserService userService, IGameService gameService, IRoomService roomService)
         : base(logger, userService, roomService)
@@ -38,7 +39,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         }
         else
         {
-            string maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
+            var maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
             await Clients.Caller.SendAsync(method: "ReceiveWordToDraw", arg1: maskedWord);
         }
 
@@ -50,12 +51,15 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
-        var drawerId = _gameService.GetDrawerId(roomId);
+        var game = _gameService.GetGame(roomId);
+        var drawerId = game.CurrentDrawerId;
+        var wordToDraw = game.WordToDraw;
 
-        var isCorrectGuess = string.Equals(message.Trim(), _gameService.GetGame(roomId).WordToDraw,
+        var isCorrectGuess = string.Equals(message.Trim(), wordToDraw,
             StringComparison.OrdinalIgnoreCase); // check if the word is the word to guess
 
-        if (drawerId == user.Id || !isCorrectGuess) {
+        if (drawerId == user.Id || !isCorrectGuess)
+        {
             await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: user.Name, arg2: message, arg3: false);
             return;
         }
@@ -66,7 +70,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         _gameService.AddGuessedPlayer(roomId, user.Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
 
         if (turnEnded) {
-            await EndTurn(roomId);
+            await EndTurn(roomId, wordToDraw);
             if (roundEnded) {
                 await EndRound(roomId);
                 if (gameEnded) {
@@ -96,18 +100,18 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
-        var userId = _gameService.GetGame(roomId).CurrentDrawerId.ToString();
+        var game = _gameService.GetGame(roomId);
 
-        // Only send to the current drawer or to someone who guessed it
         if (correctGuess)
         {
-            await Clients.Caller.SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw); // reveal the word to the guesser
+            // Reveal the word to the player who guessed correctly
+            await Clients.Caller.SendAsync(method: "ReceiveWordToDraw", arg1: game.WordToDraw);
         }
-        else
-        {
-            await Clients.User(userId).SendAsync(method: "ReceiveWordToDraw", arg1: _gameService.GetGame(roomId).WordToDraw);
+        else {
+            // Send the word to the drawer
+            var drawerId = game.CurrentDrawerId.ToString();
+            await Clients.User(drawerId).SendAsync(method: "ReceiveWordToDraw", arg1: game.WordToDraw);
         }
-        _logger.LogInformation("Sent word: {wordToDraw}", _gameService.GetGame(roomId).WordToDraw);
     }
 
     private async Task StartTurn(string roomId)
@@ -133,11 +137,9 @@ public class GameplayHub : BaseHub<GameplayHub>
             arg1: game.WordToDraw);
     }
 
-    private async Task EndTurn(string roomId)
+    private async Task EndTurn(string roomId, string wordToDraw)
     {
-        var game = _gameService.GetGame(roomId);
-
-        var endMessage = $"TURN ENDED! The word was: {game.WordToDraw}";
+        var endMessage = $"TURN ENDED! The word was: {wordToDraw}";
         await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: endMessage, arg3: false);
 
         await Task.Delay(TurnDelayMs);
@@ -155,11 +157,10 @@ public class GameplayHub : BaseHub<GameplayHub>
 
     private async Task EndRound(string roomId)
     {
-        var room = _roomService.GetRoom(roomId);
         var game = _gameService.GetGame(roomId);
 
-        var endMessage = $"ROUND ENDED... Scores:\n" +
-            string.Join("\n", game.RoundScores.Select(kvp =>
+        var endMessage = $"ROUND ENDED... Current scores:\n" +
+            string.Join("\n", game.TotalScores.Select(kvp =>
                 {
                     var userName = _userService.GetUser(kvp.Key).Name;
                     var score = kvp.Value;
@@ -176,6 +177,8 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var endMessage = $"GAME FINISHED! All {totalRounds} rounds played.";
         await Clients.Group(roomId).SendAsync(method: "ReceiveMessage", arg1: "System", arg2: endMessage, arg3: false);
+
+        await Task.Delay(EndGameDelayMs);
 
         _userService.RemoveRoomFromAllUsers(roomId);
         _gameService.DeleteGame(roomId);
