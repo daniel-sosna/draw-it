@@ -87,16 +87,12 @@ app.MapFallbackToFile("/index.html");
 
 app.UseMiddleware<ExceptionHandler>();
 
-// Auto-create schema if DbContext is configured
-try
+// Create schema if using DB repositories
+if (repoType == nameof(RepoType.Db))
 {
     using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
-    db?.Database.EnsureCreated();
-}
-catch (Exception e)
-{
-    Console.WriteLine($"Database initialization skipped or failed: {e.Message}");
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
 }
 
 app.Run();
