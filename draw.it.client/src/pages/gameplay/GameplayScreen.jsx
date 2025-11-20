@@ -1,8 +1,8 @@
-﻿import {useContext, useEffect, useState} from "react";
+﻿import { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
-import {useParams, useNavigate} from "react-router";
 
 export default function GameplayScreen() {
     
@@ -12,40 +12,48 @@ export default function GameplayScreen() {
     const [messages, setMessages] = useState([]);
 
     useEffect(() => {
-        if(!gameplayConnection) {
-            console.log("Gameplay connection not established yet");
-            return;
-        }
+        if(!gameplayConnection) return;
         
         gameplayConnection.on("ReceiveMessage", (userName, message, isCorrectGuess) => {
             setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess }]);
         })
 
-        gameplayConnection.on("TurnUpdate", () => {
-            console.log("Game Turn Updated");
+        gameplayConnection.on("ReceiveTurnStarted", () => {
             setMessages([]);
         });
 
-        gameplayConnection.on("GameEnded", () => {
-            console.log("Game Ended");
-            const REDIRECT_DELAY_MS = 4000;
-            setTimeout(() => {
-                navigate('/'); 
-            }, REDIRECT_DELAY_MS);
+        gameplayConnection.on("ReceiveRoundStarted", () => {
         });
 
-        console.log("Gameplay connection established:", gameplayConnection);
-        
+        gameplayConnection.on("ReceiveRoundEnded", (score) => {
+            console.log("Scores:", score);
+        });
+
+        gameplayConnection.on("ReceiveGameEnded", (score) => {
+            console.log("Final scores:", score);
+        });
+
+        gameplayConnection.on("RedirectToLobby", () => {
+            navigate('/');
+        });
+
+        return () => {
+            gameplayConnection.off("ReceiveMessage");
+            gameplayConnection.off("ReceiveTurnStarted");
+            gameplayConnection.off("ReceiveRoundStarted");
+            gameplayConnection.off("ReceiveRoundEnded");
+            gameplayConnection.off("ReceiveGameEnded");
+            gameplayConnection.off("RedirectToLobby");
+        };
     }, [gameplayConnection, roomId]);
     
     
     const handleSendMessage = async (message) => {
-        console.log("Sending message:", message);
         try {
             await gameplayConnection.invoke("SendMessage", message);
         } catch (error) {
-            console.log(error);
             console.log("Could not send message:", error);
+            alert("Error sending message. Please try again.");
         }        
     };
     
