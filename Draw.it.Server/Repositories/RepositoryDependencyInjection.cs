@@ -24,13 +24,6 @@ public static class RepositoryDependencyInjection
         }
         else
         {
-            // Register EF Core DbContext if connection string present
-            var connectionString = config.GetConnectionString("Postgres")
-                ?? throw new InvalidOperationException("Connection string 'Postgres' not found.");
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(connectionString));
-
             // Use DB-backed repositories
             services.AddScoped<IUserRepository, DbUserRepository>();
             services.AddScoped<IRoomRepository, DbRoomRepository>();
