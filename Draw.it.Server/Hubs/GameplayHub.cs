@@ -1,4 +1,5 @@
 using Draw.it.Server.Hubs.DTO;
+using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Game;
 using Draw.it.Server.Services.Room;
 using Draw.it.Server.Services.User;
@@ -173,8 +174,10 @@ public class GameplayHub : BaseHub<GameplayHub>
     private async Task EndRound(string roomId)
     {
         var game = _gameService.GetGame(roomId);
+        var players = _roomService.GetUsersInRoom(roomId);
+        var scores = ConvertScoresToDto(players, game.RoundScores);
         
-        await Clients.Group(roomId).SendAsync("ReceiveRoundEnded", game.TotalScores);
+        await Clients.Group(roomId).SendAsync("ReceiveRoundEnded", scores);
     }
 
     private async Task EndGame(string roomId)
@@ -182,16 +185,32 @@ public class GameplayHub : BaseHub<GameplayHub>
         var room = _roomService.GetRoom(roomId);
         var game = _gameService.GetGame(roomId);
         var totalRounds = room.Settings.NumberOfRounds;
+        var players = _roomService.GetUsersInRoom(roomId);
+        var scores = ConvertScoresToDto(players, game.TotalScores);
 
         var endMessage = $"GAME FINISHED! All {totalRounds} rounds played.";
         await Clients.Group(roomId).SendAsync("ReceiveMessage", "System", endMessage, false);
 
-        await Clients.Group(roomId).SendAsync("ReceiveGameEnded", game.TotalScores);
+        await Clients.Group(roomId).SendAsync("ReceiveGameEnded", scores);
 
         await Task.Delay(EndGameDelayMs);
 
         _userService.RemoveRoomFromAllUsers(roomId);
         _gameService.DeleteGame(roomId);
         await Clients.Group(roomId).SendAsync("ReceiveConnectionAborted");
+    }
+
+    private List<ScoreDto> ConvertScoresToDto(IEnumerable<UserModel> users, Dictionary<long, int> scores)
+    {
+        var scoreDtos = new List<ScoreDto>();
+
+        foreach (var user in users)
+        {
+            var exists = scores.TryGetValue(user.Id, out int points);
+            if (!exists) points = 0;
+            scoreDtos.Add(new ScoreDto(user.Name, points));
+        }
+
+        return scoreDtos.OrderByDescending(s => s.Points).ToList();
     }
 }
