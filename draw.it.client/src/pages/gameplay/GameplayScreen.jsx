@@ -1,51 +1,62 @@
-﻿import {useContext, useEffect, useState} from "react";
+﻿import { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router";
 import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
-import {useParams, useNavigate} from "react-router";
+import ScoreModal from "@/components/modal/ScoreModal.jsx";
 
 export default function GameplayScreen() {
     
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
-    const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
+    const [scoreModalOpen, setScoreModalOpen] = useState(false);
+    const [scoreModalTitle, setScoreModalTitle] = useState("");
+    const [scoreModalScores, setScoreModalScores] = useState([]);
 
     useEffect(() => {
-        if(!gameplayConnection) {
-            console.log("Gameplay connection not established yet");
-            return;
-        }
+        if(!gameplayConnection) return;
         
         gameplayConnection.on("ReceiveMessage", (userName, message, isCorrectGuess) => {
-            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess }]);
+            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess ?? false }]);
         })
 
-        gameplayConnection.on("TurnUpdate", () => {
-            console.log("Game Turn Updated");
+        gameplayConnection.on("ReceiveTurnStarted", () => {
+            setScoreModalOpen(false);
             setMessages([]);
         });
 
-        gameplayConnection.on("GameEnded", () => {
-            console.log("Game Ended");
-            const REDIRECT_DELAY_MS = 4000;
-            setTimeout(() => {
-                navigate('/'); 
-            }, REDIRECT_DELAY_MS);
+        gameplayConnection.on("ReceiveRoundStarted", () => {
         });
 
-        console.log("Gameplay connection established:", gameplayConnection);
-        
+        gameplayConnection.on("ReceiveRoundEnded", (scores) => {
+            setScoreModalTitle("Round Results");
+            setScoreModalScores(scores || []);
+            setScoreModalOpen(true);
+        });
+
+        gameplayConnection.on("ReceiveGameEnded", (scores) => {
+            setScoreModalTitle("Final Scores");
+            setScoreModalScores(scores || []);
+            setScoreModalOpen(true);
+        });
+
+        return () => {
+            gameplayConnection.off("ReceiveMessage");
+            gameplayConnection.off("ReceiveTurnStarted");
+            gameplayConnection.off("ReceiveRoundStarted");
+            gameplayConnection.off("ReceiveRoundEnded");
+            gameplayConnection.off("ReceiveGameEnded");
+        };
     }, [gameplayConnection, roomId]);
     
     
     const handleSendMessage = async (message) => {
-        console.log("Sending message:", message);
         try {
             await gameplayConnection.invoke("SendMessage", message);
         } catch (error) {
-            console.log(error);
             console.log("Could not send message:", error);
+            alert("Error sending message. Please try again.");
         }        
     };
     
@@ -67,6 +78,13 @@ export default function GameplayScreen() {
                     className="h-full bg-gray-800 rounded-xl shadow-lg"
                 />
             </div>
+
+            <ScoreModal
+                isOpen={scoreModalOpen}
+                onClose={() => setScoreModalOpen(false)}
+                scores={scoreModalScores}
+                title={scoreModalTitle}
+            />
         </div>
     );
 }
