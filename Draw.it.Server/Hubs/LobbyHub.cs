@@ -45,16 +45,12 @@ public class LobbyHub : BaseHub<LobbyHub>
         await SendPlayerListUpdate(roomId);
     }
 
-    // TODO add test when finished
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var user = Context.ResolveUser(_userService);
 
         _logger.LogInformation("User with id={UserId} disconnecting... Exception:\n{Ex}", user.Id, exception?.Message);
         _userService.SetConnectedStatus(user.Id, false);
-
-        // Broadcast the change to other users in the room
-        // await Clients.Group(user.RoomId).SendAsync("ReceivePlayerDisconnected", user.Name);
 
         // If user is still in a room (unintended disconnection) wait a bit for reconnection
         if (!string.IsNullOrEmpty(user.RoomId))

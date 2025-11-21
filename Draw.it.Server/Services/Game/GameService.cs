@@ -63,6 +63,14 @@ public class GameService : IGameService
         return GetGame(roomId).CurrentDrawerId;
     }
 
+    public bool AddConnectedPlayer(string roomId, long userId)
+    {
+        var game = GetGame(roomId);
+        var added = game.ConnectedPlayersIds.Add(userId);
+        _gameRepository.Save(game);
+        return added;
+    }
+
     public void AddGuessedPlayer(string roomId, long userId, out bool turnEnded, out bool roundEnded, out bool gameEnded)
     {
         var game = GetGame(roomId);

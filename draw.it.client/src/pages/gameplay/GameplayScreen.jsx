@@ -9,7 +9,6 @@ export default function GameplayScreen() {
     
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
-    const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
     const [scoreModalOpen, setScoreModalOpen] = useState(false);
     const [scoreModalTitle, setScoreModalTitle] = useState("");
@@ -19,7 +18,7 @@ export default function GameplayScreen() {
         if(!gameplayConnection) return;
         
         gameplayConnection.on("ReceiveMessage", (userName, message, isCorrectGuess) => {
-            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess }]);
+            setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess ?? false }]);
         })
 
         gameplayConnection.on("ReceiveTurnStarted", () => {
@@ -30,22 +29,16 @@ export default function GameplayScreen() {
         gameplayConnection.on("ReceiveRoundStarted", () => {
         });
 
-        // Show round scores in modal
         gameplayConnection.on("ReceiveRoundEnded", (scores) => {
             setScoreModalTitle("Round Results");
             setScoreModalScores(scores || []);
             setScoreModalOpen(true);
         });
 
-        // Show final game scores in modal
         gameplayConnection.on("ReceiveGameEnded", (scores) => {
             setScoreModalTitle("Final Scores");
             setScoreModalScores(scores || []);
             setScoreModalOpen(true);
-        });
-
-        gameplayConnection.on("RedirectToLobby", () => {
-            navigate('/');
         });
 
         return () => {
@@ -54,7 +47,6 @@ export default function GameplayScreen() {
             gameplayConnection.off("ReceiveRoundStarted");
             gameplayConnection.off("ReceiveRoundEnded");
             gameplayConnection.off("ReceiveGameEnded");
-            gameplayConnection.off("RedirectToLobby");
         };
     }, [gameplayConnection, roomId]);
     

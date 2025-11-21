@@ -30,24 +30,39 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
-        var game = _gameService.GetGame(roomId);
 
         await AddConnectionToRoomGroupAsync(user);
+        var added = _gameService.AddConnectedPlayer(roomId, user.Id);
 
-        if (game.CurrentDrawerId == user.Id)
+        // Manage reconnection or new connection scenarios
+        var game = _gameService.GetGame(roomId);
+        if (game.ConnectedPlayersIds.Count == game.PlayerCount)
         {
-            await SendWord();
+            // All players are connected - game in progress
+            if (added)
+            {
+                await StartTurn(roomId, true);
+            }
+            else
+            {
+                var word = game.WordToDraw;
+                var isDrawerOrGuessed = game.CurrentDrawerId == user.Id || game.GuessedPlayersIds.Contains(user.Id);
+                await Clients.Caller.SendAsync("ReceiveWordToDraw", isDrawerOrGuessed ? word : _gameService.GetMaskedWord(word));
+            }
         }
         else
         {
-            var maskedWord = _gameService.GetMaskedWord(game.WordToDraw);
-            await Clients.Caller.SendAsync("ReceiveWordToDraw", maskedWord);
+            // Waiting for other players to connect
+            if (added)
+            {
+                await SendSystemMessageToRoom(roomId, $"{user.Name} joined the game");
+            }
+            var waitingMessage = $"Waiting for other players to connect... ({game.ConnectedPlayersIds.Count}/{game.PlayerCount})";
+            await Clients.Caller.SendAsync("ReceiveMessage", "System", waitingMessage);
         }
 
-        await StartTurn(roomId, true);
-
         await base.OnConnectedAsync();
-        _logger.LogInformation("Connected: User with id={UserId} to gameplay room with roomId={RoomId}", user.Id, user.RoomId);
+        _logger.LogInformation("Connected: User with id={UserId} to gameplay room with roomId={RoomId}", user.Id, roomId);
     }
 
     public async Task SendMessage(string message)
@@ -63,11 +78,11 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         if (drawerId == user.Id || !isCorrectGuess)
         {
-            await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, message, false);
+            await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, message);
             return;
         }
 
-        await SendWord(correctGuess: true);
+        await Clients.Caller.SendAsync("ReceiveWordToDraw", wordToDraw);
         await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, "Guessed The Word!", true);
 
         _gameService.AddGuessedPlayer(roomId, user.Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
@@ -87,23 +102,9 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveClear");
     }
 
-    public async Task SendWord(bool correctGuess = false)
+    private async Task SendSystemMessageToRoom(string roomId, string message)
     {
-        var user = await ResolveUserAsync();
-        var roomId = user.RoomId!;
-        var game = _gameService.GetGame(roomId);
-
-        if (correctGuess)
-        {
-            // Reveal the word to the player who guessed correctly
-            await Clients.Caller.SendAsync("ReceiveWordToDraw", game.WordToDraw);
-        }
-        else
-        {
-            // Send the word to the drawer
-            var drawerId = game.CurrentDrawerId.ToString();
-            await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
-        }
+        await Clients.Group(roomId).SendAsync("ReceiveMessage", "System", message);
     }
 
     private async Task ManageTurnEnding(string roomId, string wordToDraw, bool roundEnded, bool gameEnded)
@@ -142,21 +143,16 @@ public class GameplayHub : BaseHub<GameplayHub>
         if (isFirstTurn) await StartRound(roomId);
 
         var turnMessage = $"{drawerName} is drawing!";
-        await Clients.Group(roomId).SendAsync("ReceiveMessage", "System", turnMessage, false);
+        await SendSystemMessageToRoom(roomId, turnMessage);
 
-        await Clients.GroupExcept(roomId, drawerId).SendAsync(
-            method: "ReceiveWordToDraw",
-            maskedWord);
-
-        await Clients.User(drawerId).SendAsync(
-            method: "ReceiveWordToDraw",
-            game.WordToDraw);
+        await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
+        await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
     }
 
     private async Task EndTurn(string roomId, string wordToDraw)
     {
         var endMessage = $"TURN ENDED! The word was: {wordToDraw}";
-        await Clients.Group(roomId).SendAsync("ReceiveMessage", "System", endMessage, false);
+        await SendSystemMessageToRoom(roomId, endMessage);
     }
 
     private async Task StartRound(string roomId)
@@ -168,7 +164,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.Group(roomId).SendAsync("ReceiveRoundStarted", game.CurrentRound);
 
         var roundMessage = $"ROUND {game.CurrentRound}/{totalRounds} STARTED!";
-        await Clients.Group(roomId).SendAsync("ReceiveMessage", "System", roundMessage, false);
+        await SendSystemMessageToRoom(roomId, roundMessage);
     }
 
     private async Task EndRound(string roomId)
@@ -176,7 +172,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         var game = _gameService.GetGame(roomId);
         var players = _roomService.GetUsersInRoom(roomId);
         var scores = ConvertScoresToDto(players, game.TotalScores);
-        
+
         await Clients.Group(roomId).SendAsync("ReceiveRoundEnded", scores);
     }
 
@@ -189,7 +185,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         var scores = ConvertScoresToDto(players, game.TotalScores);
 
         var endMessage = $"GAME FINISHED! All {totalRounds} rounds played.";
-        await Clients.Group(roomId).SendAsync("ReceiveMessage", "System", endMessage, false);
+        await SendSystemMessageToRoom(roomId, endMessage);
 
         await Clients.Group(roomId).SendAsync("ReceiveGameEnded", scores);
 

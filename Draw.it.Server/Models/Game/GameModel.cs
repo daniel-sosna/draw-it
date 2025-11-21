@@ -4,6 +4,7 @@ public class GameModel
 {
     public required string RoomId { get; set; }
     public required int PlayerCount { get; set; }
+    public HashSet<long> ConnectedPlayersIds { get; set; } = [];
     public int CurrentRound { get; set; } = 1;
     public int CurrentTurnIndex { get; set; } = 0;
     public required long CurrentDrawerId { get; set; }
