@@ -144,73 +144,6 @@ public class GameplayHubTest
         _hub.Dispose();
     }
 
-    // Helper builders and setup methods to reduce duplication across tests
-    private GameModel CreateGame(
-        int playerCount,
-        HashSet<long> connectedPlayersIds,
-        long currentDrawerId,
-        string wordToDraw,
-        int currentRound = 1)
-    {
-        var game = new GameModel
-        {
-            RoomId = RoomId,
-            PlayerCount = playerCount,
-            ConnectedPlayersIds = connectedPlayersIds,
-            CurrentDrawerId = currentDrawerId,
-            WordToDraw = wordToDraw,
-            CurrentRound = currentRound
-        };
-
-        _gameService
-            .Setup(s => s.GetGame(RoomId))
-            .Returns(game);
-
-        return game;
-    }
-
-    private RoomModel CreateRoom(int hostId, int numberOfRounds)
-    {
-        var room = new RoomModel
-        {
-            Id = RoomId,
-            HostId = hostId,
-            Settings = new RoomSettingsModel
-            {
-                NumberOfRounds = numberOfRounds
-            }
-        };
-
-        _roomService
-            .Setup(s => s.GetRoom(RoomId))
-            .Returns(room);
-
-        return room;
-    }
-
-    private void SetupAddGuessedPlayerCallback(bool turnEnded, bool roundEnded, bool gameEnded)
-    {
-        _gameService
-            .Setup(s => s.AddGuessedPlayer(RoomId, UserId, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny))
-            .Callback((string roomId, long userId, out bool turn, out bool round, out bool game) =>
-            {
-                turn = turnEnded;
-                round = roundEnded;
-                game = gameEnded;
-            });
-    }
-
-    private void VerifyAddedToGroupOnce()
-    {
-        _groups.Verify(
-            g => g.AddToGroupAsync(
-                "connection-1",
-                RoomId,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-
     [Test]
     public async Task whenOnConnected_andWaitingForPlayers_andNewPlayer_thenWaitingMessageSentToCaller()
     {
@@ -518,6 +451,72 @@ public class GameplayHubTest
             c => c.SendCoreAsync(
                 "ReceiveClear",
                 It.Is<object?[]>(args => args.Length == 0),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // Helper builders and setup methods to reduce duplication across tests
+    private GameModel CreateGame(
+        int playerCount,
+        HashSet<long> connectedPlayersIds,
+        long currentDrawerId,
+        string wordToDraw,
+        int currentRound = 1)
+    {
+        var game = new GameModel
+        {
+            RoomId = RoomId,
+            PlayerCount = playerCount,
+            ConnectedPlayersIds = connectedPlayersIds,
+            CurrentDrawerId = currentDrawerId,
+            WordToDraw = wordToDraw,
+            CurrentRound = currentRound
+        };
+
+        _gameService
+            .Setup(s => s.GetGame(RoomId))
+            .Returns(game);
+
+        return game;
+    }
+
+    private RoomModel CreateRoom(int hostId, int numberOfRounds)
+    {
+        var room = new RoomModel
+        {
+            Id = RoomId,
+            HostId = hostId,
+            Settings = new RoomSettingsModel
+            {
+                NumberOfRounds = numberOfRounds
+            }
+        };
+
+        _roomService
+            .Setup(s => s.GetRoom(RoomId))
+            .Returns(room);
+
+        return room;
+    }
+
+    private void SetupAddGuessedPlayerCallback(bool turnEnded, bool roundEnded, bool gameEnded)
+    {
+        _gameService
+            .Setup(s => s.AddGuessedPlayer(RoomId, UserId, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny))
+            .Callback((string roomId, long userId, out bool turn, out bool round, out bool game) =>
+            {
+                turn = turnEnded;
+                round = roundEnded;
+                game = gameEnded;
+            });
+    }
+
+    private void VerifyAddedToGroupOnce()
+    {
+        _groups.Verify(
+            g => g.AddToGroupAsync(
+                "connection-1",
+                RoomId,
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
