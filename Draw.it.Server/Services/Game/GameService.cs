@@ -78,7 +78,6 @@ public class GameService : IGameService
 
         // Drawer cannot guess
         if (userId == game.CurrentDrawerId) return;
-
         // Already guessed
         if (game.GuessedPlayersIds.Contains(userId)) return;
 
@@ -86,15 +85,11 @@ public class GameService : IGameService
         var position = game.GuessedPlayersIds.Count;
         var points = Math.Max(1, game.PlayerCount - position);
 
-        if (game.CorrectGuesses.ContainsKey(userId))
+        // Update scores
+        if (!game.CorrectGuesses.TryAdd(userId, 1))
             game.CorrectGuesses[userId] += 1;
-        else
-            game.CorrectGuesses[userId] = 1;
-
-        if (game.RoundScores.ContainsKey(userId))
+        if (!game.RoundScores.TryAdd(userId, points))
             game.RoundScores[userId] += points;
-        else
-            game.RoundScores[userId] = points;
 
         game.GuessedPlayersIds.Add(userId);
 
@@ -152,10 +147,8 @@ public class GameService : IGameService
 
         foreach (var kvp in game.RoundScores)
         {
-            if (game.TotalScores.ContainsKey(kvp.Key))
+            if (!game.TotalScores.TryAdd(kvp.Key, kvp.Value))
                 game.TotalScores[kvp.Key] += kvp.Value;
-            else
-                game.TotalScores[kvp.Key] = kvp.Value;
         }
         game.CurrentRound += 1;
         game.RoundScores.Clear();
