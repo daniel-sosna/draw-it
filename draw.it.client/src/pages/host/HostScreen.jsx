@@ -3,7 +3,9 @@ import { useContext, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import * as signalR from '@microsoft/signalr';
 import Button from "@/components/button/button.jsx";
-import Input from "@/components/input/Input.jsx"
+import TextInput from "@/components/input/TextInput.jsx";
+import NumberInput from "@/components/input/NumberInput.jsx";
+import RadioGroup from "@/components/input/RadioGroup.jsx";
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 
 // This debounce utility is for sending real time updates
@@ -121,9 +123,25 @@ function HostScreen() {
         debouncedSend(newCatId, drawingTime, numberOfRounds, roomName);
     };
 
+    const RULES = {
+        drawingTime: { min: 20, max: 180, step: 1 },
+        numberOfRounds: { min: 1, max: 10, step: 1 },
+    };
+
+    const clampAndSnap = (val, { min, max, step }) => {
+        let v = Number(val);
+        if (Number.isNaN(v)) v = min;
+        v = Math.min(max, Math.max(min, v));
+        const base = min ?? 0;
+        if (step && step > 0) {
+            v = Math.round((v - base) / step) * step + base;
+        }
+        return v;
+    };
+
     const handleNumberInput = (event, setter, fieldName) => {
-        const value = parseInt(event.target.value);
-        const newValue = isNaN(value) ? 0 : value;
+        const rules = RULES[fieldName];
+        const newValue = clampAndSnap(event.target.value, rules);
 
         setter(newValue);
 
@@ -159,9 +177,8 @@ function HostScreen() {
             <div className="top-info-bar">
                 <div className="room-name-input">
                     <label htmlFor="roomName">Room Name:</label>
-                    <Input
+                    <TextInput
                         id="roomName"
-                        type="text"
                         value={roomName}
                         onChange={handleRoomNameChange}
                         placeholder="e.g., Fun Room"
@@ -200,51 +217,36 @@ function HostScreen() {
                     <div className="settings-content">
                         <div className="categories-section">
                             <h3>Choose Category:</h3>
-                            <div className="radio-group" style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '8px',
-                                alignItems: 'flex-start'
-                            }}>
-                                {CATEGORIES.map(cat => (
-                                    <label key={cat.id} className="radio-label">
-                                        <input
-                                            type="radio"
-                                            name="categoryId"
-                                            value={cat.id.toString()}
-                                            checked={categoryId === cat.id.toString()}
-                                            onChange={handleCategoryChange}
-                                            className="category-radio"
-                                        />
-                                        {cat.name}
-                                    </label>
-                                ))}
-                            </div>
+                            <RadioGroup
+                                name="categoryId"
+                                options={CATEGORIES}
+                                value={categoryId}
+                                onChange={handleCategoryChange}
+                                className="radio-group"
+                            />
                         </div>
 
                         <div className="game-options-section">
                             <div className="setting-item">
                                 <label htmlFor="drawingTime">Drawing Time (seconds):</label>
-                                <Input
+                                <NumberInput
                                     id="drawingTime"
-                                    type="number"
                                     value={drawingTime}
                                     onChange={(e) => handleNumberInput(e, setDrawingTime, 'drawingTime')}
-                                    min="20"
-                                    max="180"
-                                    step="1"
+                                    min={20}
+                                    max={180}
+                                    step={1}
                                 />
                             </div>
                             <div className="setting-item">
                                 <label htmlFor="numberOfRounds">Number of Rounds:</label>
-                                <Input
+                                <NumberInput
                                     id="numberOfRounds"
-                                    type="number"
                                     value={numberOfRounds}
                                     onChange={(e) => handleNumberInput(e, setNumberOfRounds, 'numberOfRounds')}
-                                    min="1"
-                                    max="10"
-                                    step="1"
+                                    min={1}
+                                    max={10}
+                                    step={1}
                                 />
                             </div>
                         </div>
