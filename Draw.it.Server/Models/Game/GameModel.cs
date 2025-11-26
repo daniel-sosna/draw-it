@@ -3,9 +3,14 @@
 public class GameModel
 {
     public required string RoomId { get; set; }
-    public int CurrentRound { get; set; } = 0;
-    public long CurrentDrawerId { get; set; }
-    public string WordToDraw { get; set; } = string.Empty;
+    public required int PlayerCount { get; set; }
+    public HashSet<long> ConnectedPlayersIds { get; set; } = [];
+    public int CurrentRound { get; set; } = 1;
     public int CurrentTurnIndex { get; set; } = 0;
-    public List<long> GuessedPlayersIds { get; set; } = new List<long>();
+    public required long CurrentDrawerId { get; set; }
+    public required string WordToDraw { get; set; }
+    public List<long> GuessedPlayersIds { get; set; } = [];
+    public Dictionary<long, int> CorrectGuesses { get; set; } = [];
+    public Dictionary<long, int> RoundScores { get; set; } = [];
+    public Dictionary<long, int> TotalScores { get; set; } = [];
 }
