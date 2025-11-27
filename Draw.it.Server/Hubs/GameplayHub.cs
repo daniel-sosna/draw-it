@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Game;
@@ -144,6 +145,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
+        DateTime roundEnd = await StartTimer(game.RoomId);
 
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
@@ -153,6 +155,16 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var endMessage = $"TURN ENDED! The word was: {wordToDraw}";
         await SendSystemMessageToRoom(roomId, endMessage);
+    }
+
+    private async Task<DateTime> StartTimer(string roomId)
+    {
+        var roundTimer = _roomService.GetRoomSettings(roomId).DrawingTime;
+        DateTime now = DateTime.Now;
+        DateTime roundEnd = now.AddSeconds(roundTimer);
+
+        await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd);
+        return roundEnd;
     }
 
     private async Task StartRound(string roomId)
