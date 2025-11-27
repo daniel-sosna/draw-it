@@ -36,6 +36,10 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         // Manage reconnection or new connection scenarios
         var game = _gameService.GetGame(roomId);
+
+        var playerStatuses = GetPlayerStatuses(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
+
         if (game.ConnectedPlayersIds.Count == game.PlayerCount)
         {
             // All players are connected - game in progress
@@ -87,7 +91,11 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         _gameService.AddGuessedPlayer(roomId, user.Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
 
+        var playerStatuses = GetPlayerStatuses(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
+
         if (turnEnded) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
+
     }
 
     public async Task SendDraw(DrawDto drawDto)
@@ -144,6 +152,9 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
+
+        var playerStatuses = GetPlayerStatuses(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
 
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
@@ -208,5 +219,29 @@ public class GameplayHub : BaseHub<GameplayHub>
         }
 
         return scoreDtos.OrderByDescending(s => s.Points).ToList();
+    }
+
+    private List<PlayerStatusDto> GetPlayerStatuses(string roomId)
+    {
+        var game = _gameService.GetGame(roomId);
+        var users = _roomService.GetUsersInRoom(roomId);
+        var drawerId = game.CurrentDrawerId;
+
+        var statuses = users.Select(user =>
+        {
+
+            int totalScore = game.TotalScores.GetValueOrDefault(user.Id, 0);
+            int roundScore = game.RoundScores.GetValueOrDefault(user.Id, 0);
+            int currentScore = totalScore + roundScore;
+
+            return new PlayerStatusDto(
+                Name: user.Name,
+                Score: currentScore,
+                IsDrawer: user.Id == drawerId,
+                HasGuessed: game.GuessedPlayersIds.Contains(user.Id)
+            );
+        }).OrderByDescending(p => p.Score).ToList();
+
+        return statuses;
     }
 }
