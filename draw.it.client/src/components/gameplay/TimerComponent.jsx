@@ -9,7 +9,6 @@ export default function TimerComponent() {
     const [initialDurationMs, setInitialDurationMs] = useState(null);
     const [serverOffset, setServerOffset] = useState(null);
     const hasCalledEndRef = useRef(false);
-    const { roomId } = useParams();
 
     useEffect(() => {
         if (!gameplayConnection) return;
@@ -56,7 +55,7 @@ export default function TimerComponent() {
                 clearInterval(interval);
                 setSecondsLeft(0);  
                 if (!hasCalledEndRef.current){
-                    gameplayConnection.invoke("TimerEnded", roomId);
+                    gameplayConnection.invoke("TimerEnded");
                     hasCalledEndRef.current = true;
                 } 
             }

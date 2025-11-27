@@ -120,6 +120,11 @@ public class GameService : IGameService
         return _roomService.GetUsersInRoom(roomId).Select(p => p.Id).ElementAt(turnIndex);
     }
 
+    public void AdvanceTimerEnd(GameModel game, out bool roundEnded, out bool gameEnded)
+    {
+        AdvanceTurn(game, out roundEnded, out gameEnded);
+    }
+
     private void AdvanceTurn(GameModel game, out bool roundEnded, out bool gameEnded)
     {
         var room = _roomService.GetRoom(game.RoomId);
@@ -144,7 +149,6 @@ public class GameService : IGameService
 
     private void AdvanceRound(GameModel game, out bool gameEnded)
     {
-
         foreach (var kvp in game.RoundScores)
         {
             if (!game.TotalScores.TryAdd(kvp.Key, kvp.Value))

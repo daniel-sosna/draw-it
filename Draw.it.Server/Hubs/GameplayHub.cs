@@ -149,7 +149,6 @@ public class GameplayHub : BaseHub<GameplayHub>
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
         await StartTimer(game.RoomId);
-        _gameService.GetGame(roomId).CurrentPhase = GamePhase.DrawingPhase;
         
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
@@ -166,15 +165,35 @@ public class GameplayHub : BaseHub<GameplayHub>
         var roundTimer = _roomService.GetRoomSettings(roomId).DrawingTime;
         DateTime now = DateTime.Now;
         DateTime roundEnd = now.AddSeconds(roundTimer);
+        _gameService.GetGame(roomId).CurrentPhase = GamePhase.DrawingPhase; // change to drawing phase
 
         await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd.ToString("o"), roundTimer);
     }
-
-    private async Task EndTimer(string roomId)
+    
+    public async Task TimerEnded()
     {
-        var user = Context.User;
-        if (_gameService.GetGame(roomId).CurrentPhase.Equals(GamePhase.DrawingPhase))
-            _gameService.GetGame(roomId).CurrentPhase = GamePhase.EndingPhase;
+        var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
+    
+        await HandleTimerEnd(roomId);
+    }
+
+    private async Task HandleTimerEnd(string roomId)
+    {
+        var game = _gameService.GetGame(roomId);
+        
+        if (!game.CurrentPhase.Equals(GamePhase.DrawingPhase))
+        {
+            // Ignore the call if the round has already been marked as ending or ended.
+            return; 
+        }
+    
+        // Only the first caller passes, so no duplicate calls
+        game.CurrentPhase = GamePhase.EndingPhase;
+        var wordToDraw = game.WordToDraw;
+        _gameService.AdvanceTimerEnd(game, out bool roundEnded, out bool gameEnded);
+    
+        await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
     }
 
     private async Task StartRound(string roomId)

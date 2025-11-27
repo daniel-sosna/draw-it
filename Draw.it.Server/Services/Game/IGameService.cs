@@ -12,4 +12,5 @@ public interface IGameService
     void AddGuessedPlayer(string roomId, long userId, out bool turnEnded, out bool roundEnded, out bool gameEnded);
     string GetMaskedWord(string word);
     string GetRandomWord(long categoryId);
+    void AdvanceTimerEnd(GameModel game, out bool roundEnded, out bool gameEnded);
 }
