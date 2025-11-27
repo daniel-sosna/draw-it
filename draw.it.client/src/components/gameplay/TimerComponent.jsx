@@ -7,12 +7,14 @@ export default function TimerComponent() {
     const [secondsLeft, setSecondsLeft] = useState(0);
     const [initialDurationMs, setInitialDurationMs] = useState(null);
     const [serverOffset, setServerOffset] = useState(null);
-
+    const hasCalledEndRef = useRef(false);
     useEffect(() => {
         if (!gameplayConnection) return;
         
         gameplayConnection.on("ReceiveTimer", (serverTimeString, durationSeconds) => {
 
+            hasCalledEndRef.current = false;
+            
             // Calculate and set offset of the servers time and clients
             const serverTime = new Date(serverTimeString).getTime();
             const clientTime = Date.now();
@@ -26,7 +28,7 @@ export default function TimerComponent() {
 
             setInitialDurationMs(deadlineMs);
         });
-
+        
         return () => {
             gameplayConnection.off("ReceiveTimer");
         }
@@ -49,6 +51,11 @@ export default function TimerComponent() {
             
             if (diffSecs <= 0) {
                 clearInterval(interval);
+                setSecondsLeft(0);  
+                if (!hasCalledEndRef.current){
+                    gameplayConnection.invoke("TimerEnded");
+                    hasCalledEndRef.current = true;
+                } 
             }
         };
 
@@ -57,9 +64,11 @@ export default function TimerComponent() {
         // Start a 1-second countdown
         const interval = setInterval(updateTimer, 1000);
 
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+        } 
 
-    }, [initialDurationMs, serverOffset]);
+    }, [initialDurationMs, serverOffset, gameplayConnection]);
 
     return (
         <div className="absolute top-4 right-6 bg-black z-10 px-4 py-2 rounded-lg shadow-md text-xl font-semibold text-white">
