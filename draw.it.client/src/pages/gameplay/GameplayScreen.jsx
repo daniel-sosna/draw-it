@@ -13,6 +13,7 @@ export default function GameplayScreen() {
     const [scoreModalOpen, setScoreModalOpen] = useState(false);
     const [scoreModalTitle, setScoreModalTitle] = useState("");
     const [scoreModalScores, setScoreModalScores] = useState([]);
+    const [timer, setTimer] = useState(0);
 
     useEffect(() => {
         if(!gameplayConnection) return;
@@ -41,6 +42,7 @@ export default function GameplayScreen() {
             setScoreModalOpen(true);
         });
 
+        
         return () => {
             gameplayConnection.off("ReceiveMessage");
             gameplayConnection.off("ReceiveTurnStarted");
