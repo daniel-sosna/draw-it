@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices.JavaScript;
+using Draw.it.Server.Enums;
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Game;
@@ -110,6 +111,8 @@ public class GameplayHub : BaseHub<GameplayHub>
 
     private async Task ManageTurnEnding(string roomId, string wordToDraw, bool roundEnded, bool gameEnded)
     {
+        if (_gameService.GetGame(roomId).CurrentPhase.Equals(GamePhase.DrawingPhase))
+            _gameService.GetGame(roomId).CurrentPhase = GamePhase.EndingPhase;
         await EndTurn(roomId, wordToDraw);
         await Task.Delay(TurnDelayMs);
 
@@ -145,8 +148,9 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
-        DateTime roundEnd = await StartTimer(game.RoomId);
-
+        await StartTimer(game.RoomId);
+        _gameService.GetGame(roomId).CurrentPhase = GamePhase.DrawingPhase;
+        
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
     }
@@ -157,14 +161,20 @@ public class GameplayHub : BaseHub<GameplayHub>
         await SendSystemMessageToRoom(roomId, endMessage);
     }
 
-    private async Task<DateTime> StartTimer(string roomId)
+    private async Task StartTimer(string roomId)
     {
         var roundTimer = _roomService.GetRoomSettings(roomId).DrawingTime;
         DateTime now = DateTime.Now;
         DateTime roundEnd = now.AddSeconds(roundTimer);
 
         await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd.ToString("o"), roundTimer);
-        return roundEnd;
+    }
+
+    private async Task EndTimer(string roomId)
+    {
+        var user = Context.User;
+        if (_gameService.GetGame(roomId).CurrentPhase.Equals(GamePhase.DrawingPhase))
+            _gameService.GetGame(roomId).CurrentPhase = GamePhase.EndingPhase;
     }
 
     private async Task StartRound(string roomId)

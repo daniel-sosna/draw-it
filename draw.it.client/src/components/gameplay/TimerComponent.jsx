@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
+import {useParams} from "react-router";
 
 
 export default function TimerComponent() {
@@ -8,6 +9,8 @@ export default function TimerComponent() {
     const [initialDurationMs, setInitialDurationMs] = useState(null);
     const [serverOffset, setServerOffset] = useState(null);
     const hasCalledEndRef = useRef(false);
+    const { roomId } = useParams();
+
     useEffect(() => {
         if (!gameplayConnection) return;
         
@@ -53,7 +56,7 @@ export default function TimerComponent() {
                 clearInterval(interval);
                 setSecondsLeft(0);  
                 if (!hasCalledEndRef.current){
-                    gameplayConnection.invoke("TimerEnded");
+                    gameplayConnection.invoke("TimerEnded", roomId);
                     hasCalledEndRef.current = true;
                 } 
             }

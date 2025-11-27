@@ -1,4 +1,6 @@
-﻿namespace Draw.it.Server.Models.Game;
+﻿using Draw.it.Server.Enums;
+
+namespace Draw.it.Server.Models.Game;
 
 public class GameModel
 {
@@ -13,4 +15,5 @@ public class GameModel
     public Dictionary<long, int> CorrectGuesses { get; set; } = [];
     public Dictionary<long, int> RoundScores { get; set; } = [];
     public Dictionary<long, int> TotalScores { get; set; } = [];
+    public GamePhase CurrentPhase { get; set; } = GamePhase.DrawingPhase;
 }
