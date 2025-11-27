@@ -5,56 +5,65 @@ import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
 export default function TimerComponent() {
     const gameplayConnection = useContext(GameplayHubContext);
     const [secondsLeft, setSecondsLeft] = useState(0);
-    const [timer, setTimer] = useState(null);
+    const [initialDurationMs, setInitialDurationMs] = useState(null);
     const [serverOffset, setServerOffset] = useState(null);
 
     useEffect(() => {
         if (!gameplayConnection) return;
+        
+        gameplayConnection.on("ReceiveTimer", (serverTimeString, durationSeconds) => {
 
-        gameplayConnection.on("ReceiveTimer", (timerString) => {
-            const serverTime = new Date(timerString).getTime();
+            // Calculate and set offset of the servers time and clients
+            const serverTime = new Date(serverTimeString).getTime();
             const clientTime = Date.now();
-            
-            const offset = serverTime - clientTime;
+            const offset = serverTime - clientTime; // Offset in ms
             setServerOffset(offset);
             
-            const timer = new Date(timerString);
-            setTimer(timer);
+            const durationMs = durationSeconds * 1000;
+
+            // Server times deadline
+            const deadlineMs = serverTime + durationMs;
+
+            setInitialDurationMs(deadlineMs);
         });
-    
+
         return () => {
             gameplayConnection.off("ReceiveTimer");
         }
     }, [gameplayConnection]);
-    
+
     useEffect(() => {
-        if (!timer) return;
+        if (!initialDurationMs || serverOffset === null) return;
+
         const updateTimer = () => {
             const clientNow = Date.now();
 
-            // Add the offset to get the "Real" Server Time
+            // Apply the offset to get the Server Time
             const estimatedServerTime = clientNow + serverOffset;
 
-            const targetTimeMs = timer.getTime();
-
-            // Calculate difference
-            const diffMs = targetTimeMs - estimatedServerTime;
+            // Calculate remaining time against the server-anchored deadline
+            const diffMs = initialDurationMs - estimatedServerTime;
             const diffSecs = Math.max(0, Math.floor(diffMs / 1000));
 
             setSecondsLeft(diffSecs);
+            
+            if (diffSecs <= 0) {
+                clearInterval(interval);
+            }
         };
+
         updateTimer();
 
         // Start a 1-second countdown
         const interval = setInterval(updateTimer, 1000);
 
         return () => clearInterval(interval);
-    }, [timer, serverOffset]);
-    
+
+    }, [initialDurationMs, serverOffset]);
+
     return (
         <div className="absolute top-4 right-6 bg-black z-10 px-4 py-2 rounded-lg shadow-md text-xl font-semibold text-white">
             {secondsLeft}
         </div>
-    );  
+    );
 }
-

@@ -163,7 +163,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         DateTime now = DateTime.Now;
         DateTime roundEnd = now.AddSeconds(roundTimer);
 
-        await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd.ToString("o"));
+        await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd.ToString("o"), roundTimer);
         return roundEnd;
     }
 
