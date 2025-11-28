@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices.JavaScript;
+using Draw.it.Server.Enums;
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Game;
@@ -109,6 +111,8 @@ public class GameplayHub : BaseHub<GameplayHub>
 
     private async Task ManageTurnEnding(string roomId, string wordToDraw, bool roundEnded, bool gameEnded)
     {
+        if (_gameService.GetGame(roomId).CurrentPhase.Equals(GamePhase.DrawingPhase))
+            _gameService.GetGame(roomId).CurrentPhase = GamePhase.EndingPhase;
         await EndTurn(roomId, wordToDraw);
         await Task.Delay(TurnDelayMs);
 
@@ -144,6 +148,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
+        await StartTimer(roomId);
 
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
@@ -153,6 +158,26 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var endMessage = $"TURN ENDED! The word was: {wordToDraw}";
         await SendSystemMessageToRoom(roomId, endMessage);
+    }
+
+    private async Task StartTimer(string roomId)
+    {
+        var roundTimer = _roomService.GetRoomSettings(roomId).DrawingTime;
+        DateTime now = DateTime.Now;
+        DateTime roundEnd = now.AddSeconds(roundTimer);
+        _gameService.GetGame(roomId).CurrentPhase = GamePhase.DrawingPhase; // change to drawing phase
+
+        await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd.ToString("o"), roundTimer);
+    }
+
+    public async Task TimerEnded()
+    {
+        var user = await ResolveUserAsync();
+        var roomId = user.RoomId!;
+
+        _gameService.HandleTimerEnd(roomId, out string wordToDraw, out bool roundEnded, out bool gameEnded,
+            out bool alreadyCalled);
+        if (!alreadyCalled) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
     }
 
     private async Task StartRound(string roomId)

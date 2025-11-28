@@ -251,9 +251,11 @@ public class GameplayHubTest
                 Name = "DRAWER_USER",
                 RoomId = RoomId
             });
-
         var room = CreateRoom(2, 3);
-
+        _roomService
+            .Setup(s => s.GetRoomSettings(RoomId))
+            // Assuming 'CreateRoom' creates a room object with a 'Settings' property that has 'DrawingTime'
+            .Returns(room.Settings);
         await _hub.OnConnectedAsync();
 
         VerifyAddedToGroupOnce();
@@ -291,7 +293,7 @@ public class GameplayHubTest
     public async Task whenOnConnected_andGameStarted_andReconnected_andUserIsDrawer_thenSendWordToCaller()
     {
         var game = CreateGame(3, new HashSet<long> { UserId, 2, 3 }, UserId, "APPLE");
-        
+
         _gameService
             .Setup(s => s.AddConnectedPlayer(RoomId, UserId))
             .Returns(false);

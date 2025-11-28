@@ -48,7 +48,7 @@ public class DbRoomRepositoryTest
     {
         _context = new ApplicationDbContext(_dbOptions);
         _repository = new DbRoomRepository(_context);
-        
+
         // Clear db for every test
         await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE rooms RESTART IDENTITY CASCADE;");
     }
@@ -136,14 +136,14 @@ public class DbRoomRepositoryTest
         Assert.That(all.Any(r => r.Id == "R1"), Is.True);
         Assert.That(all.Any(r => r.Id == "R2"), Is.True);
     }
-    
+
     // Runs once for all tests
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
         await _pgContainer.DisposeAsync();
     }
-    
+
     // Runs after every test
     [TearDown]
     public async Task TearDown()

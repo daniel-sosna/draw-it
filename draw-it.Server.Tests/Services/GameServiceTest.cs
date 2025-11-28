@@ -133,7 +133,7 @@ public class GameServiceTest
 
         Assert.That(w, Is.EqualTo("CAT"));
     }
-    
+
     [Test]
     public void whenGetDrawerId_thenReturnCurrentDrawer()
     {
