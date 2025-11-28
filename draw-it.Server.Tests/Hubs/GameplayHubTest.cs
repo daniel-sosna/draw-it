@@ -251,9 +251,11 @@ public class GameplayHubTest
                 Name = "DRAWER_USER",
                 RoomId = RoomId
             });
-
         var room = CreateRoom(2, 3);
-
+        _roomService
+            .Setup(s => s.GetRoomSettings(RoomId))
+            // Assuming 'CreateRoom' creates a room object with a 'Settings' property that has 'DrawingTime'
+            .Returns(room.Settings);
         await _hub.OnConnectedAsync();
 
         VerifyAddedToGroupOnce();
