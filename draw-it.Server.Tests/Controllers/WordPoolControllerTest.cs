@@ -9,8 +9,8 @@ namespace draw_it.Tests.Controllers;
 
 public class WordPoolControllerTest
 {
-    private const long CategoryId = 42; 
-    
+    private const long CategoryId = 42;
+
     private WordPoolController _controller;
     private Mock<IWordPoolService> _wordPoolService;
 

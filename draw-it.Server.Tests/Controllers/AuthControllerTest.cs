@@ -81,10 +81,10 @@ public class AuthControllerTest
             new[] { new Claim(ClaimTypes.NameIdentifier, UserId.ToString()) },
             CookieAuthenticationDefaults.AuthenticationScheme
         );
-        
+
         _httpContext.User = new ClaimsPrincipal(identity);
 
-        var user = new UserModel { Id = UserId, Name = UserName, RoomId = RoomId};
+        var user = new UserModel { Id = UserId, Name = UserName, RoomId = RoomId };
 
         _userService
             .Setup(s => s.GetUser(UserId))

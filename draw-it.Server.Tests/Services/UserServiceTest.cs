@@ -9,14 +9,14 @@ namespace draw_it.Tests.Services;
 
 public class UserServiceTest
 {
-    private const string Name = "TEST_NAME"; 
+    private const string Name = "TEST_NAME";
     private const long Id = 1;
     private const string RoomId = "TEST_ROOM_ID";
-    
+
     private IUserService _userService;
     private Mock<IUserRepository> _userRepository = new();
     private Mock<ILogger<UserService>> _logger = new();
-    
+
     [SetUp]
     public void Setup()
     {
@@ -29,18 +29,18 @@ public class UserServiceTest
     public void whenCreateUser_thenUserCreatedSuccessfully()
     {
         var user = _userService.CreateUser(Name);
-        
+
         _userRepository.Verify(r => r.GetNextId(), Times.Once);
         _userRepository.Verify(r => r.Save(It.IsAny<UserModel>()), Times.Once);
-        
+
         Assert.That(user.Name, Is.EqualTo(Name));
     }
-    
+
     [Test]
     public void whenCreateUser_andNameIsEmpty_thenThrowAppException()
     {
         Assert.Throws<AppException>(() => _userService.CreateUser(""));
-        
+
         _userRepository.Verify(r => r.GetNextId(), Times.Never);
         _userRepository.Verify(r => r.Save(It.IsAny<UserModel>()), Times.Never);
     }
@@ -51,24 +51,24 @@ public class UserServiceTest
         _userRepository
             .Setup(r => r.DeleteById(Id))
             .Returns(true);
-        
+
         _userService.DeleteUser(Id);
-        
+
         _userRepository.Verify(r => r.DeleteById(It.Is<long>(l => l == Id)), Times.Once);
     }
-    
+
     [Test]
     public void whenDeleteUser_andDeleteNotSuccessful_thenThrowException()
     {
         _userRepository
             .Setup(r => r.DeleteById(Id))
             .Returns(false);
-        
+
         Assert.Throws<EntityNotFoundException>(() => _userService.DeleteUser(Id));
-        
+
         _userRepository.Verify(r => r.DeleteById(It.Is<long>(l => l == Id)), Times.Once);
     }
-    
+
     [Test]
     public void whenGetUser_thenReturnUser()
     {
@@ -76,26 +76,26 @@ public class UserServiceTest
         _userRepository
             .Setup(r => r.FindById(Id))
             .Returns(expectedUser);
-        
+
         var user = _userService.GetUser(Id);
-        
+
         _userRepository.Verify(r => r.FindById(It.Is<long>(l => l == Id)), Times.Once);
-        
+
         Assert.That(expectedUser, Is.EqualTo(user));
     }
-    
+
     [Test]
     public void whenGetUser_andUserNotFound_thenThrowException()
     {
         _userRepository
             .Setup(r => r.FindById(Id))
             .Returns((UserModel?)null);
-        
+
         Assert.Throws<EntityNotFoundException>(() => _userService.GetUser(Id));
-        
+
         _userRepository.Verify(r => r.FindById(It.Is<long>(l => l == Id)), Times.Once);
     }
-    
+
     [Test]
     public void whenSetRoom_thenRoomIdUpdatedAndSaved()
     {

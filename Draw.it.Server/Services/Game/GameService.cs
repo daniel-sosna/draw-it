@@ -157,21 +157,21 @@ public class GameService : IGameService
         var totalRounds = _roomService.GetRoom(game.RoomId).Settings.NumberOfRounds;
         gameEnded = game.CurrentRound > totalRounds;
     }
-    
+
     public void HandleTimerEnd(string roomId, out string wordToDraw, out bool roundEnded, out bool gameEnded, out bool alreadyCalled)
     {
         var game = GetGame(roomId);
         alreadyCalled = false;
         gameEnded = roundEnded = false;
-        
+
         if (!game.CurrentPhase.Equals(GamePhase.DrawingPhase))
         {
             // Ignore the call if the round has already been marked as ending or ended.
             alreadyCalled = true;
             wordToDraw = "";
-            return; 
+            return;
         }
-    
+
         // Only the first caller passes, so no duplicate calls
         game.CurrentPhase = GamePhase.EndingPhase;
         wordToDraw = game.WordToDraw;

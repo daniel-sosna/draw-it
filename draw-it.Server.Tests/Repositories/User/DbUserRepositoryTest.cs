@@ -49,7 +49,7 @@ public class DbUserRepositoryTest
     {
         _context = new ApplicationDbContext(_dbOptions);
         _repository = new DbUserRepository(_context);
-        
+
         await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE users RESTART IDENTITY CASCADE;");
     }
 
@@ -222,7 +222,7 @@ public class DbUserRepositoryTest
             IsReady = false
         };
     }
-    
+
     private async Task InsertRoom(string roomId)
     {
         using var roomCtx = new ApplicationDbContext(_dbOptions);

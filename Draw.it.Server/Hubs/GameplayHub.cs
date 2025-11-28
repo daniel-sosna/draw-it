@@ -149,7 +149,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
         await StartTimer(game.RoomId);
-        
+
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
     }
@@ -169,13 +169,13 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         await Clients.Group(roomId).SendAsync("ReceiveTimer", roundEnd.ToString("o"), roundTimer);
     }
-    
+
     public async Task TimerEnded()
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
 
-        _gameService.HandleTimerEnd(roomId, out string wordToDraw, out bool roundEnded, out bool gameEnded, 
+        _gameService.HandleTimerEnd(roomId, out string wordToDraw, out bool roundEnded, out bool gameEnded,
             out bool alreadyCalled);
         if (!alreadyCalled) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
     }
