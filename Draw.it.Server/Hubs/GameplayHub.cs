@@ -179,7 +179,7 @@ public class GameplayHub : BaseHub<GameplayHub>
             out bool alreadyCalled);
         if (!alreadyCalled) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
     }
-    
+
     private async Task StartRound(string roomId)
     {
         var room = _roomService.GetRoom(roomId);
