@@ -5,7 +5,7 @@ import {useParams} from "react-router";
 
 export default function TimerComponent() {
     const gameplayConnection = useContext(GameplayHubContext);
-    const [secondsLeft, setSecondsLeft] = useState(0);
+    const [timeDisplay, setTimeDisplay] = useState("00:00");
     const [initialDurationMs, setInitialDurationMs] = useState(null);
     const [serverOffset, setServerOffset] = useState(null);
     const hasCalledEndRef = useRef(false);
@@ -48,12 +48,19 @@ export default function TimerComponent() {
             // Calculate remaining time against the server-anchored deadline
             const diffMs = initialDurationMs - estimatedServerTime;
             const diffSecs = Math.max(0, Math.floor(diffMs / 1000));
+            
+            const mins = Math.floor(diffSecs / 60);
+            const secs = diffSecs % 60;
 
-            setSecondsLeft(diffSecs);
+            const formattedSecs = secs.toString().padStart(2, '0');
+            const formattedMins = mins.toString().padStart(2, '0');
+            
+            const outputStr = formattedMins + ":" + formattedSecs;
+            setTimeDisplay(outputStr);
             
             if (diffSecs <= 0) {
                 clearInterval(interval);
-                setSecondsLeft(0);  
+                setTimeDisplay("00:00");  
                 if (!hasCalledEndRef.current){
                     gameplayConnection.invoke("TimerEnded");
                     hasCalledEndRef.current = true;
@@ -74,7 +81,7 @@ export default function TimerComponent() {
 
     return (
         <div className="absolute top-4 right-6 bg-black z-10 px-4 py-2 rounded-lg shadow-md text-xl font-semibold text-white">
-            {secondsLeft}
+            {timeDisplay}
         </div>
     );
 }
