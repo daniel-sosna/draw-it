@@ -174,27 +174,13 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
-    
-        await HandleTimerEnd(roomId);
+
+        _gameService.HandleTimerEnd(roomId, out string wordToDraw, out bool roundEnded, out bool gameEnded, 
+            out bool alreadyCalled);
+        if (!alreadyCalled) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
     }
 
-    private async Task HandleTimerEnd(string roomId)
-    {
-        var game = _gameService.GetGame(roomId);
-        
-        if (!game.CurrentPhase.Equals(GamePhase.DrawingPhase))
-        {
-            // Ignore the call if the round has already been marked as ending or ended.
-            return; 
-        }
-    
-        // Only the first caller passes, so no duplicate calls
-        game.CurrentPhase = GamePhase.EndingPhase;
-        var wordToDraw = game.WordToDraw;
-        _gameService.AdvanceTimerEnd(game, out bool roundEnded, out bool gameEnded);
-    
-        await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
-    }
+
 
     private async Task StartRound(string roomId)
     {
