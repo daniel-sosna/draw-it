@@ -1,6 +1,7 @@
 ﻿using Draw.it.Server.Models.Room;
 using Draw.it.Server.Repositories.Room;
-namespace draw_it.Tests.Repositories.Room;
+
+namespace Draw.it.Server.Tests.Unit.Repositories.Room;
 
 public class InMemRoomRepositoryTest
 {
