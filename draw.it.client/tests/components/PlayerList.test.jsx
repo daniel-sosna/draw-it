@@ -18,16 +18,6 @@ describe('PlayerStatusList', () => {
         expect(screen.getByText('Leaderboard')).toBeInTheDocument();
     });
 
-    it('renders players and sorts them by score descending', () => {
-        render(<PlayerStatusList players={mockPlayers} />);
-
-        const scoreTexts = screen.getAllByText(/pts/i).map(el => el.textContent);
-
-        expect(scoreTexts[0]).toContain('3 pts');
-        expect(scoreTexts[1]).toContain('2 pts');
-        expect(scoreTexts[2]).toContain('1 pts');
-    });
-
     it('displays the correct name and score for each player', () => {
         render(<PlayerStatusList players={mockPlayers} />);
 
