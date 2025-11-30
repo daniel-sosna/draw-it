@@ -38,7 +38,7 @@ public class UserService
 You don’t want to connect to a real database during a unit test — that would be slow and unreliable.
 So you use Moq to fake the repository.
 
-1. Create a mock: 
+1. Create a mock:
    ```c#
    var mockRepo = new Mock<IUserRepository>();
    ```
@@ -46,7 +46,7 @@ So you use Moq to fake the repository.
    ```c#
    mockRepo.Setup(r => r.GetUser(1)).Returns(new User { Id = 1, Name = "Alice" });
    ```
-3. Pass the mock into your service: 
+3. Pass the mock into your service:
     ```c#
     var service = new UserService(mockRepo.Object);
     ```
@@ -64,8 +64,8 @@ So you use Moq to fake the repository.
 
 The AAA principle consists of 3 phases:
 1. Arrange
-    This is the setup phase. You prepare everything the test needs: create objects and mocks, define input data, configure mock behavior (Setup)
-    Example:
+   This is the setup phase. You prepare everything the test needs: create objects and mocks, define input data, configure mock behavior (Setup)
+   Example:
     ```c#
     var mockRepo = new Mock<IUserRepository>();
     mockRepo.Setup(r => r.GetUser(1)).Returns(new User { Id = 1, Name = "Alice" });
@@ -74,15 +74,15 @@ The AAA principle consists of 3 phases:
     ```
 
 2. Act
-    This is the execution phase. You call the method you are testing
-    Example:
+   This is the execution phase. You call the method you are testing
+   Example:
     ```c#
     var result = service.GetUserName(1);
     ```
 
 3. Assert
-    This is the verification phase. You check that the outcome is what you expect: a return value, an exception, a call on a mock, ...
-    Example:
+   This is the verification phase. You check that the outcome is what you expect: a return value, an exception, a call on a mock, ...
+   Example:
     ```c#
     Assert.That(result, Is.EqualTo("Alice"));
     mockRepo.Verify(r => r.GetUser(1), Times.Once);
