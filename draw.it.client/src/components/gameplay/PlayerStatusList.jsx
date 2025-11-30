@@ -1,6 +1,9 @@
 ﻿import React from 'react';
 
 const PlayerStatusList = ({ players }) => {
+    
+    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+    
     return (
         <div className="bg-gray-800 p-4 rounded-xl shadow-lg mb-4 text-white max-h-64 overflow-y-scroll flex-shrink-0">
 
@@ -12,7 +15,7 @@ const PlayerStatusList = ({ players }) => {
                 <p className="text-gray-400">Waiting for players...</p>
             )}
 
-            {players.map((player) => (
+            {sortedPlayers.map((player) => (
                 <div
                     key={player.name}
                     className={`flex justify-between items-center p-2 rounded-md transition-colors text-sm text-white
