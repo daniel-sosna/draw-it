@@ -8,10 +8,8 @@ public interface IGameService
     void DeleteGame(string roomId);
     GameModel GetGame(string roomId);
     long GetDrawerId(string roomId);
-    void SetDrawerId(string roomId, long newDrawerId);
-    string GetRandomWord(long categoryId);
-    bool AddGuessedPlayer(string roomId, long userId);
-    void ClearGuessedPlayers(string roomId);
-    bool AdvanceTurn(string roomId);
+    bool AddConnectedPlayer(string roomId, long userId);
+    void AddGuessedPlayer(string roomId, long userId, out bool turnEnded, out bool roundEnded, out bool gameEnded);
     string GetMaskedWord(string word);
+    string GetRandomWord(long categoryId);
 }

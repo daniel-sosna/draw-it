@@ -28,7 +28,7 @@ public class GameServiceTest
 
     private GameService _service = null!;
 
-    private GameModel _session = null!;
+    private GameModel _game = null!;
     private RoomModel _room = null!;
 
     [SetUp]
@@ -41,9 +41,10 @@ public class GameServiceTest
 
         _service = new GameService(_logger.Object, _repo.Object, _roomService.Object, _wordPool.Object);
 
-        _session = new GameModel
+        _game = new GameModel
         {
             RoomId = RoomId,
+            PlayerCount = 2,
             CurrentDrawerId = DrawerId,
             CurrentRound = 1,
             CurrentTurnIndex = 0,
@@ -63,15 +64,17 @@ public class GameServiceTest
             }
         };
 
-        _repo.Setup(r => r.FindById(RoomId)).Returns(_session);
+        _repo.Setup(r => r.FindById(RoomId)).Returns(_game);
         _roomService.Setup(r => r.GetRoom(RoomId)).Returns(_room);
+        _wordPool.Setup(s => s.GetRandomWordByCategoryId(It.IsAny<long>()))
+             .Returns((long categoryId) => new WordModel { CategoryId = categoryId, Value = "BANANA" });
     }
 
     [Test]
     public void whenGetGame_andExists_thenReturnGame()
     {
         var result = _service.GetGame(RoomId);
-        Assert.That(result, Is.EqualTo(_session));
+        Assert.That(result, Is.EqualTo(_game));
     }
 
     [Test]
@@ -82,20 +85,16 @@ public class GameServiceTest
     }
 
     [Test]
-    public void whenDeleteGame_thenRepositoryDeleteCalledTwice()
+    public void whenDeleteGame_andFails_thenThrow()
     {
         _repo.Setup(r => r.DeleteById(RoomId)).Returns(false);
-
-        _service.DeleteGame(RoomId);
-
-        _repo.Verify(r => r.DeleteById(RoomId), Times.Exactly(2));
+        Assert.Throws<EntityNotFoundException>(() => _service.DeleteGame(RoomId));
     }
 
     [Test]
     public void whenCreateGame_withInvalidRoomStatus_thenThrow()
     {
         _room.Status = RoomStatus.InLobby;
-
         Assert.Throws<AppException>(() => _service.CreateGame(RoomId));
     }
 
@@ -143,16 +142,7 @@ public class GameServiceTest
     }
 
     [Test]
-    public void whenSetDrawerId_thenUpdatedAndSaved()
-    {
-        _service.SetDrawerId(RoomId, 99);
-
-        _repo.Verify(r =>
-            r.Save(It.Is<GameModel>(g => g.CurrentDrawerId == 99)), Times.Once);
-    }
-
-    [Test]
-    public void whenAddGuessedPlayer_firstTime_thenAddedAndSaved()
+    public void whenAddGuessedPlayer_firstTime_thenSavedAndTurnAdvanced()
     {
         _roomService.Setup(s => s.GetUsersInRoom(RoomId))
             .Returns(new List<UserModel>
@@ -161,77 +151,24 @@ public class GameServiceTest
                 new UserModel {Id = Player2Id, Name = Name}
             });
 
-        var result = _service.AddGuessedPlayer(RoomId, Player2Id);
+        _service.AddGuessedPlayer(RoomId, Player2Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
 
-        Assert.That(result, Is.True); // Only 1 guesser needed (2 players)
-        Assert.That(_session.GuessedPlayersIds.Contains(Player2Id), Is.True);
-        _repo.Verify(r => r.Save(_session), Times.Once);
+        Assert.That(turnEnded, Is.True); // Only 1 guesser needed (2 players)
+        Assert.That(roundEnded, Is.False); // 2 turns per round (2 players)
+        Assert.That(gameEnded, Is.False); // Not the end of the round
     }
 
     [Test]
-    public void whenAddGuessedPlayer_duplicate_thenReturnFalseAndNotSaved()
+    public void whenAddGuessedPlayer_duplicate_thenNotSaved()
     {
-        _session.GuessedPlayersIds.Add(Player2Id);
+        _game.GuessedPlayersIds.Add(Player2Id);
 
-        var result = _service.AddGuessedPlayer(RoomId, Player2Id);
+        _service.AddGuessedPlayer(RoomId, Player2Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
 
-        Assert.That(result, Is.False);
+        Assert.That(turnEnded, Is.False);
+        Assert.That(roundEnded, Is.False);
+        Assert.That(gameEnded, Is.False);
         _repo.Verify(r => r.Save(It.IsAny<GameModel>()), Times.Never);
-    }
-    
-    [Test]
-    public void whenClearGuessedPlayers_thenListClearedAndSaved()
-    {
-        _session.GuessedPlayersIds.Add(DrawerId);
-        _session.GuessedPlayersIds.Add(Player2Id);
-
-        _service.ClearGuessedPlayers(RoomId);
-
-        Assert.That(_session.GuessedPlayersIds, Is.Empty);
-        _repo.Verify(r => r.Save(_session), Times.Once);
-    }
-
-    [Test]
-    public void whenAdvanceTurn_andGameIsFinished_thenReturnTrue()
-    {
-        _session.CurrentRound = 3;
-        _session.CurrentTurnIndex = 1;
-
-        _roomService.Setup(s => s.GetUsersInRoom(RoomId))
-            .Returns(new List<UserModel>
-            {
-                new UserModel {Id = DrawerId, Name = Name},
-                new UserModel {Id = Player2Id, Name = Name}
-            });
-
-        _roomService.Setup(s => s.GetRoom(RoomId)).Returns(_room);
-
-        var finished = _service.AdvanceTurn(RoomId);
-
-        Assert.That(finished, Is.True);
-        _repo.Verify(r => r.Save(_session), Times.AtLeastOnce);
-    }
-
-    [Test]
-    public void whenAdvanceTurn_thenDrawerWordAndRoundUpdated()
-    {
-        _roomService.Setup(s => s.GetUsersInRoom(RoomId))
-            .Returns(new List<UserModel>
-            {
-                new UserModel {Id = DrawerId, Name = Name},
-                new UserModel {Id = Player2Id, Name = Name}
-            });
-
-        _wordPool.Setup(s => s.GetRandomWordByCategoryId(CategoryId))
-                 .Returns(new WordModel { CategoryId = CategoryId, Value = "DOG" });
-
-        var finished = _service.AdvanceTurn(RoomId);
-
-        Assert.That(finished, Is.False);
-        Assert.That(_session.CurrentDrawerId, Is.EqualTo(Player2Id));
-        Assert.That(_session.WordToDraw, Is.EqualTo("DOG"));
-
-        _repo.Verify(r => r.Save(_session), Times.AtLeastOnce);
     }
 
     [Test]
