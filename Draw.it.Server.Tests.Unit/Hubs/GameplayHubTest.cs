@@ -460,31 +460,18 @@ public class GameplayHubTest
     public void GetPlayerStatuses_ReturnsCorrectStatusesOrderedByScore()
     {
         var drawerId = 2;
-        var userIds = new HashSet<long> { 1, 2, 3 };
-    
+
         var game = CreateGame(
             playerCount: 3,
-            connectedPlayersIds: userIds,
+            connectedPlayersIds: new HashSet<long> { 1, 2, 3 },
             currentDrawerId: drawerId,
             wordToDraw: "APPLE"
         );
-    
-        game.TotalScores = new Dictionary<long, int>
-        {
-            [1] = 5,
-            [2] = 10,
-            [3] = 7
-        };
-        game.RoundScores = new Dictionary<long, int>
-        {
-            [1] = 2,
-            [2] = 1,
-            [3] = 3
-        };
+
+        game.TotalScores = new Dictionary<long, int> { [1] = 5, [2] = 10, [3] = 7 };
+        game.RoundScores = new Dictionary<long, int> { [1] = 2, [2] = 1, [3] = 3 };
         game.GuessedPlayersIds = new List<long> { 1, 3 };
-    
-        _gameService.Setup(s => s.GetGame(RoomId)).Returns(game);
-    
+
         var users = new List<UserModel>
         {
             new UserModel { Id = 1, Name = "Alice" },
@@ -492,26 +479,24 @@ public class GameplayHubTest
             new UserModel { Id = 3, Name = "Charlie" }
         };
         _roomService.Setup(s => s.GetUsersInRoom(RoomId)).Returns(users);
-    
+
         var method = typeof(GameplayHub)
             .GetMethod("GetPlayerStatuses", BindingFlags.NonPublic | BindingFlags.Instance)!;
-    
         var result = (List<PlayerStatusDto>)method.Invoke(_hub, new object[] { RoomId })!;
-        
+
         Assert.That(result.Count, Is.EqualTo(3));
-    
         Assert.That(result[0].Name, Is.EqualTo("Bob"));
-        Assert.That(result[0].Score, Is.EqualTo(11));
+        Assert.That(result[0].Score, Is.EqualTo(11)); 
         Assert.That(result[0].IsDrawer, Is.True);
         Assert.That(result[0].HasGuessed, Is.False);
-    
+
         Assert.That(result[1].Name, Is.EqualTo("Charlie"));
-        Assert.That(result[1].Score, Is.EqualTo(10)); 
+        Assert.That(result[1].Score, Is.EqualTo(10));
         Assert.That(result[1].IsDrawer, Is.False);
         Assert.That(result[1].HasGuessed, Is.True);
-    
+
         Assert.That(result[2].Name, Is.EqualTo("Alice"));
-        Assert.That(result[2].Score, Is.EqualTo(7));
+        Assert.That(result[2].Score, Is.EqualTo(7)); 
         Assert.That(result[2].IsDrawer, Is.False);
         Assert.That(result[2].HasGuessed, Is.True);
     }
