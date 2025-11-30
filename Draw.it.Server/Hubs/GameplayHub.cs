@@ -36,10 +36,10 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         // Manage reconnection or new connection scenarios
         var game = _gameService.GetGame(roomId);
-        
+
         var isDrawer = game.CurrentDrawerId == user.Id;
         await Clients.Caller.SendAsync("SetDrawerStatus", isDrawer);
-        
+
         if (game.ConnectedPlayersIds.Count == game.PlayerCount)
         {
             // All players are connected - game in progress
@@ -104,7 +104,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         {
             return;
         }
-        
+
         await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
     }
 
@@ -118,7 +118,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         {
             return;
         }
-        
+
         await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveClear");
     }
 
@@ -164,10 +164,10 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
-        
+
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
-        
+
         foreach (var playerId in game.ConnectedPlayersIds)
         {
             var isDrawer = playerId == game.CurrentDrawerId;
