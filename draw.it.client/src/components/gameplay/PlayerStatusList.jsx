@@ -14,32 +14,27 @@ const PlayerStatusList = ({ players }) => {
 
             {players.map((player) => (
                 <div
-                    // PATAISYMAS: Naudojame player.name
                     key={player.name}
                     className={`flex justify-between items-center p-2 rounded-md transition-colors text-sm text-white
-                        ${player.isDrawer // PATAISYMAS: player.isDrawer
+                        ${player.isDrawer 
                         ? 'bg-indigo-600 font-extrabold shadow-md'
                         : ''
                     }
-                        ${player.hasGuessed && !player.isDrawer // PATAISYMAS: player.hasGuessed
+                        ${player.hasGuessed && !player.isDrawer
                         ? 'text-lime-400'
                         : ''
                     }
                     `}
                 >
-                    <div className="flex items-center">
-                        {/* Piešėjo simbolis */}
-                        {player.isDrawer && <span className="mr-2 text-yellow-300">✏️</span>}
-
-                        {/* Atspėjusio žaidėjo simbolis */}
-                        {player.hasGuessed && !player.isDrawer && <span className="mr-2 text-lime-400">✔️</span>}
-
-                        {/* Vardo atvaizdavimas */}
-                        <span className="truncate">{player.name || "Unknown Player"}</span>
+                    <div className="flex items-center flex-grow min-w-0">
+                        {player.isDrawer && <span className="mr-2 text-yellow-300 flex-shrink-0">✏️</span>}
+                        
+                        {player.hasGuessed && !player.isDrawer && <span className="mr-2 text-lime-400 flex-shrink-0">✔️</span>}
+                        
+                        <span className="truncate" title={player.name}>{player.name || "Unknown Player"}</span>
                     </div>
 
-                    {/* Taškų atvaizdavimas */}
-                    <span className="font-semibold text-white">{player.score} pts</span>
+                    <span className="font-semibold text-white flex-shrink-0">{player.score} pts</span>
                 </div>
             ))}
         </div>
