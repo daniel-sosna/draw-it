@@ -150,9 +150,6 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         if (isFirstTurn) await StartRound(roomId);
 
-        var turnMessage = $"{drawerName} is drawing!";
-        await SendSystemMessageToRoom(roomId, turnMessage);
-
         var playerStatuses = GetPlayerStatuses(roomId);
         await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
 
