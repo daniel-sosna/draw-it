@@ -1,7 +1,7 @@
 ﻿using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.User;
 
-namespace draw_it.Tests.Repositories.User;
+namespace Draw.it.Server.Tests.Unit.Repositories.User;
 
 public class InMemUserRepositoryTest
 {

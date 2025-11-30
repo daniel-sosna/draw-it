@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace draw_it.Tests.Hubs;
+namespace Draw.it.Server.Tests.Unit.Hubs;
 
 public class LobbyHubTest
 {

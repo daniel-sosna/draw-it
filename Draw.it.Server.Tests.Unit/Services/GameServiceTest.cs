@@ -11,7 +11,7 @@ using Draw.it.Server.Services.WordPool;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace draw_it.Tests.Services;
+namespace Draw.it.Server.Tests.Unit.Services;
 
 public class GameServiceTest
 {
