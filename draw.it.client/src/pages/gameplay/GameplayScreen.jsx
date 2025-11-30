@@ -32,7 +32,6 @@ export default function GameplayScreen() {
         });
 
         gameplayConnection.on("ReceivePlayerStatuses", (statuses) => {
-            console.log("Gauti žaidėjų būsenos:", statuses); // PRIDĖTI ŠIĄ EILUTĘ
             setPlayerStatuses(statuses);
         });
 
