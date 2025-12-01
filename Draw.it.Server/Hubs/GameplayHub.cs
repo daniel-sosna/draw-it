@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
 using Draw.it.Server.Enums;
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.User;

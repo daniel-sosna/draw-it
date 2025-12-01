@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Security.Claims;
+using Draw.it.Server.Enums;
 using Draw.it.Server.Hubs;
 using Draw.it.Server.Models.Game;
 using Draw.it.Server.Models.Room;
@@ -456,7 +457,46 @@ public class GameplayHubTest
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
+    
+    [Test]
+    public async Task whenTimerEnded_andAlreadyCalled_thenNoAdditionalActions()
+    {
+        // Arrange
+        var game = CreateGame(3, new HashSet<long> { 1, 2, 3 }, 2, "APPLE");
+        game.CurrentPhase = GamePhase.DrawingPhase;
+    
+        bool alreadyCalled = true;
+        string wordToDraw = "";
+        bool turnEnded = false, roundEnded = false;
+    
+        _gameService
+            .Setup(s => s.HandleTimerEnd(RoomId, out It.Ref<string>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny))
+            .Callback((string roomId, out string w, out bool te, out bool re, out bool ac) => {
+                w = wordToDraw;
+                te = turnEnded;
+                re = roundEnded;
+                ac = alreadyCalled;
+            });
 
+        // Act
+        await _hub.TimerEnded();
+
+        // Assert
+        _gameService.Verify(
+            s => s.HandleTimerEnd(RoomId, out It.Ref<string>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny),
+            Times.Once);
+    
+        // Verify that ManageTurnEnding was NOT called (no TURN ENDED message)
+        _groupClient.Verify(
+            c => c.SendCoreAsync(
+                "ReceiveMessage",
+                It.Is<object?[]>(args => 
+                    args.Length == 2 &&
+                    (string)args[0]! == "System" &&
+                    ((string)args[1]!).Contains("TURN ENDED!")),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
     // Helper builders and setup methods to reduce duplication across tests
     private GameModel CreateGame(
         int playerCount,
