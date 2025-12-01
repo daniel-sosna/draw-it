@@ -111,8 +111,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
     private async Task ManageTurnEnding(string roomId, string wordToDraw, bool roundEnded, bool gameEnded)
     {
-        if (_gameService.GetGame(roomId).CurrentPhase.Equals(GamePhase.DrawingPhase))
-            _gameService.GetGame(roomId).CurrentPhase = GamePhase.EndingPhase;
+        _gameService.GetGame(roomId).CurrentPhase = GamePhase.EndingPhase;
         await EndTurn(roomId, wordToDraw);
         await Task.Delay(TurnDelayMs);
 
