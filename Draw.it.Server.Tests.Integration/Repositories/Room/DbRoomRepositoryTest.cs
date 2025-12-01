@@ -5,7 +5,7 @@ using Draw.it.Server.Repositories.Room;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
-namespace draw_it.Tests.Repositories.Room;
+namespace Draw.it.Server.Tests.Integration.Repositories.Room;
 
 [TestFixture]
 public class DbRoomRepositoryTest

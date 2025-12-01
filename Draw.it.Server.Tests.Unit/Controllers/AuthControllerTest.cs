@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace draw_it.Tests.Controllers;
+namespace Draw.it.Server.Tests.Unit.Controllers;
 
 public class AuthControllerTest
 {

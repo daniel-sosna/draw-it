@@ -1,6 +1,7 @@
 ﻿using Draw.it.Server.Models.Room;
 using Draw.it.Server.Repositories.Room;
-namespace draw_it.Tests.Repositories.Room;
+
+namespace Draw.it.Server.Tests.Unit.Repositories.Room;
 
 public class InMemRoomRepositoryTest
 {
@@ -19,7 +20,7 @@ public class InMemRoomRepositoryTest
     [Test]
     public void whenSaveRoom_thenRoomCanBeFoundById()
     {
-        var room = new RoomModel { Id = RoomId, HostId = HostId };
+        var room = new RoomModel{ Id = RoomId, HostId = HostId };
 
         _repository.Save(room);
         var result = _repository.FindById(RoomId);
@@ -31,7 +32,7 @@ public class InMemRoomRepositoryTest
     [Test]
     public void whenSaveRoom_thenExistsByIdReturnsTrue()
     {
-        var room = new RoomModel { Id = RoomId, HostId = HostId };
+        var room = new RoomModel{ Id = RoomId, HostId = HostId };
 
         _repository.Save(room);
 
@@ -51,7 +52,7 @@ public class InMemRoomRepositoryTest
     [Test]
     public void whenDeleteExistingRoom_thenReturnsTrueAndRoomIsRemoved()
     {
-        var room = new RoomModel { Id = RoomId, HostId = HostId };
+        var room = new RoomModel{ Id = RoomId, HostId = HostId };
         _repository.Save(room);
 
         var deleted = _repository.DeleteById(RoomId);
@@ -72,8 +73,8 @@ public class InMemRoomRepositoryTest
     [Test]
     public void whenMultipleRoomsSaved_thenGetAllReturnsAllRooms()
     {
-        var room1 = new RoomModel { Id = RoomId, HostId = HostId };
-        var room2 = new RoomModel { Id = AnotherRoomId, HostId = HostId };
+        var room1 = new RoomModel{ Id = RoomId, HostId = HostId };
+        var room2 = new RoomModel{ Id = AnotherRoomId, HostId = HostId };
 
         _repository.Save(room1);
         _repository.Save(room2);
@@ -84,5 +85,5 @@ public class InMemRoomRepositoryTest
         Assert.That(rooms, Does.Contain(room1));
         Assert.That(rooms, Does.Contain(room2));
     }
-
+    
 }

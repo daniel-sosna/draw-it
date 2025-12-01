@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace draw_it.Tests.Controllers;
+namespace Draw.it.Server.Tests.Unit.Controllers;
 
 public class RoomControllerTest
 {

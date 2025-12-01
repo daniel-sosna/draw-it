@@ -6,7 +6,7 @@ using Draw.it.Server.Repositories.User;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
-namespace draw_it.Tests.Repositories.User;
+namespace Draw.it.Server.Tests.Integration.Repositories.User;
 
 [TestFixture]
 public class DbUserRepositoryTest
