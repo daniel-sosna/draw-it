@@ -123,10 +123,10 @@ function HostScreen() {
         debouncedSend(newCatId, drawingTime, numberOfRounds, roomName);
     };
 
-    const RULES = {
+    const RULES = Object.freeze({
         drawingTime: { min: 20, max: 180, step: 1 },
         numberOfRounds: { min: 1, max: 10, step: 1 },
-    };
+    });
 
     const clampAndSnap = (val, { min, max, step }) => {
         let v = Number(val);
@@ -233,9 +233,9 @@ function HostScreen() {
                                     id="drawingTime"
                                     value={drawingTime}
                                     onChange={(e) => handleNumberInput(e, setDrawingTime, 'drawingTime')}
-                                    min={20}
-                                    max={180}
-                                    step={1}
+                                    min={RULES.drawingTime.min}
+                                    max={RULES.drawingTime.max}
+                                    step={RULES.drawingTime.step}
                                 />
                             </div>
                             <div className="setting-item">
@@ -244,9 +244,9 @@ function HostScreen() {
                                     id="numberOfRounds"
                                     value={numberOfRounds}
                                     onChange={(e) => handleNumberInput(e, setNumberOfRounds, 'numberOfRounds')}
-                                    min={1}
-                                    max={10}
-                                    step={1}
+                                    min={RULES.numberOfRounds.min}
+                                    max={RULES.numberOfRounds.max}
+                                    step={RULES.numberOfRounds.step}
                                 />
                             </div>
                         </div>
