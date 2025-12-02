@@ -166,7 +166,7 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 
 Generate the report with:
 ```cmd
-reportgenerator -reports:Draw.it.Server.Tests.Integration/TestResults/**/*.xml;Draw.it.Server.Tests.Unit/TestResults/**/*.xml -targetdir:coveragereport
+reportgenerator -reports:Draw.it.Server.Tests.Integration/TestResults/**/*.xml,Draw.it.Server.Tests.Unit/TestResults/**/*.xml -targetdir:coveragereport
 ```
 
 This will create a directory `coveragereport/` where `.html` files will be generated with pretty graphs
