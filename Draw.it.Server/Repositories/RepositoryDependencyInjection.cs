@@ -1,8 +1,10 @@
 ﻿using Draw.it.Server.Enums;
+using Draw.it.Server.Data;
 using Draw.it.Server.Repositories.Game;
 using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Repositories.WordPool;
 using Draw.it.Server.Repositories.User;
+using Microsoft.EntityFrameworkCore;
 
 namespace Draw.it.Server.Repositories;
 
@@ -22,7 +24,13 @@ public static class RepositoryDependencyInjection
         }
         else
         {
-            // add dependencies with db implementation here
+            // Use DB-backed repositories
+            services.AddScoped<IUserRepository, DbUserRepository>();
+            services.AddScoped<IRoomRepository, DbRoomRepository>();
+
+            // Keep existing singletons
+            services.AddSingleton<IWordPoolRepository, FileStreamWordPoolRepository>();
+            services.AddSingleton<IGameRepository, InMemGameRepository>();
         }
 
         return services;

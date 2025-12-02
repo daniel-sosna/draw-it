@@ -1,7 +1,7 @@
 ﻿using Draw.it.Server.Models.Game;
 using Draw.it.Server.Repositories.Game;
 
-namespace draw_it.Tests.Repositories.Game;
+namespace Draw.it.Server.Tests.Unit.Repositories.Game;
 
 public class InMemGameRepositoryTest
 {
@@ -98,6 +98,7 @@ public class InMemGameRepositoryTest
         return new GameModel
         {
             RoomId = roomId,
+            PlayerCount = 2,
             CurrentDrawerId = 1,
             CurrentRound = 1,
             CurrentTurnIndex = 0,

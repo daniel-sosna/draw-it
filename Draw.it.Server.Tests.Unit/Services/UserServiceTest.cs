@@ -5,7 +5,7 @@ using Draw.it.Server.Services.User;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace draw_it.Tests.Services;
+namespace Draw.it.Server.Tests.Unit.Services;
 
 public class UserServiceTest
 {

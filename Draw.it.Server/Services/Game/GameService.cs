@@ -24,44 +24,89 @@ public class GameService : IGameService
         _wordPoolService = wordPoolService;
     }
 
-    public GameModel GetGame(string roomId)
+    public void CreateGame(string roomId)
     {
-        return _gameRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Game for room id={roomId} not found");
+        var room = _roomService.GetRoom(roomId);
+
+        if (room.Status != RoomStatus.InGame)
+        {
+            throw new AppException($"Cannot start game for room {roomId} because the room status is not 'InGame'.", HttpStatusCode.Conflict);
+        }
+
+        var game = new GameModel
+        {
+            RoomId = roomId,
+            PlayerCount = _roomService.GetUsersInRoom(roomId).Count(),
+            CurrentDrawerId = GetPlayerIdByTurnIndex(roomId, 0),
+            WordToDraw = GetRandomWord(room.Settings.CategoryId)
+        };
+
+        _gameRepository.Save(game);
+        _logger.LogInformation("Game for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, game.CurrentDrawerId, game.WordToDraw);
     }
 
     public void DeleteGame(string roomId)
     {
         if (!_gameRepository.DeleteById(roomId))
         {
-            _logger.LogWarning("Attempted to delete non-existent game session for room id={roomId}", roomId);
+            throw new EntityNotFoundException($"Game for room id={roomId} not found");
         }
-
-        _gameRepository.DeleteById(roomId);
     }
 
-    public void CreateGame(string roomId)
+    public GameModel GetGame(string roomId)
     {
-        var room = _roomService.GetRoom(roomId);
-        var players = _roomService.GetUsersInRoom(roomId).ToList();
+        return _gameRepository.FindById(roomId) ?? throw new EntityNotFoundException($"Game for room id={roomId} not found");
+    }
 
-        if (room.Status != RoomStatus.InGame)
+    public long GetDrawerId(string roomId)
+    {
+        return GetGame(roomId).CurrentDrawerId;
+    }
+
+    public bool AddConnectedPlayer(string roomId, long userId)
+    {
+        var game = GetGame(roomId);
+        var added = game.ConnectedPlayersIds.Add(userId);
+        _gameRepository.Save(game);
+        return added;
+    }
+
+    public void AddGuessedPlayer(string roomId, long userId, out bool turnEnded, out bool roundEnded, out bool gameEnded)
+    {
+        var game = GetGame(roomId);
+        turnEnded = roundEnded = gameEnded = false;
+
+        // Drawer cannot guess
+        if (userId == game.CurrentDrawerId) return;
+        // Already guessed
+        if (game.GuessedPlayersIds.Contains(userId)) return;
+
+        // Determine points: first correct guess gets max (equal to total players), then decreases
+        var position = game.GuessedPlayersIds.Count;
+        var points = Math.Max(1, game.PlayerCount - position);
+
+        // Update scores
+        if (!game.CorrectGuesses.TryAdd(userId, 1))
+            game.CorrectGuesses[userId] += 1;
+        if (!game.RoundScores.TryAdd(userId, points))
+            game.RoundScores[userId] += points;
+
+        game.GuessedPlayersIds.Add(userId);
+
+        _gameRepository.Save(game);
+
+        if (game.GuessedPlayersIds.Count >= game.PlayerCount - 1)
         {
-            throw new AppException($"Cannot start game session: Room {roomId} status is invalid.", HttpStatusCode.Conflict);
+            turnEnded = true;
+            AdvanceTurn(game, out roundEnded, out gameEnded);
         }
+    }
 
-        var turnOrderIds = players.Select(p => p.Id).ToList();
+    public string GetMaskedWord(string word)
+    {
+        if (string.IsNullOrEmpty(word)) return string.Empty;
 
-        var gameSession = new GameModel
-        {
-            RoomId = roomId,
-            CurrentRound = 1,
-            CurrentTurnIndex = 0,
-            CurrentDrawerId = turnOrderIds[0],
-            WordToDraw = GetRandomWord(room.Settings.CategoryId)
-        };
-
-        _gameRepository.Save(gameSession);
-        _logger.LogInformation("Game session for room id={roomId} created. First drawer: {drawerId}, Word: {word}", roomId, gameSession.CurrentDrawerId, gameSession.WordToDraw);
+        return new string(word.Select(c => char.IsWhiteSpace(c) ? ' ' : '*').ToArray());
     }
 
     public string GetRandomWord(long categoryId)
@@ -70,107 +115,47 @@ public class GameService : IGameService
         return randomWord.Value;
     }
 
-    public long GetDrawerId(string roomId)
+    private long GetPlayerIdByTurnIndex(string roomId, int turnIndex)
     {
-        return GetGame(roomId).CurrentDrawerId;
+        return _roomService.GetUsersInRoom(roomId).Select(p => p.Id).ElementAt(turnIndex);
     }
 
-    public void SetDrawerId(string roomId, long newDrawerId)
+    private void AdvanceTurn(GameModel game, out bool roundEnded, out bool gameEnded)
     {
-        var session = GetGame(roomId);
+        var room = _roomService.GetRoom(game.RoomId);
+        roundEnded = gameEnded = false;
 
-        session.CurrentDrawerId = newDrawerId;
+        var nextTurnIndex = (game.CurrentTurnIndex + 1) % game.PlayerCount;
+        var nextDrawerId = GetPlayerIdByTurnIndex(game.RoomId, nextTurnIndex);
 
-        _gameRepository.Save(session);
-        _logger.LogInformation("Room {roomId}: Drawer ID manually set to {drawerId}", session.RoomId, newDrawerId);
-    }
+        game.CurrentTurnIndex = nextTurnIndex;
+        game.CurrentDrawerId = nextDrawerId;
+        game.WordToDraw = GetRandomWord(room.Settings.CategoryId);
+        game.GuessedPlayersIds.Clear();
 
-    private long GetNextDrawerId(GameModel session)
-    {
-        int totalRounds = _roomService.GetRoom(session.RoomId).Settings.NumberOfRounds;
-
-        var turnOrderIds = _roomService.GetUsersInRoom(session.RoomId).Select(p => p.Id).ToList();
-
-        int nextTurnIndex = (session.CurrentTurnIndex + 1) % turnOrderIds.Count;
+        _gameRepository.Save(game);
 
         if (nextTurnIndex == 0)
         {
-            int newRoundValue = session.CurrentRound + 1;
-
-            if (newRoundValue > totalRounds)
-            {
-                return -1;
-            }
-
-            session.CurrentRound = newRoundValue;
+            roundEnded = true;
+            AdvanceRound(game, out gameEnded);
         }
-
-        session.CurrentTurnIndex = nextTurnIndex;
-
-        _gameRepository.Save(session);
-
-        return turnOrderIds[session.CurrentTurnIndex];
-
     }
 
-
-    public bool AddGuessedPlayer(string roomId, long userId)
+    private void AdvanceRound(GameModel game, out bool gameEnded)
     {
-        var session = GetGame(roomId);
 
-        if (session.GuessedPlayersIds.Contains(userId))
+        foreach (var kvp in game.RoundScores)
         {
-            return false;
+            if (!game.TotalScores.TryAdd(kvp.Key, kvp.Value))
+                game.TotalScores[kvp.Key] += kvp.Value;
         }
+        game.CurrentRound += 1;
+        game.RoundScores.Clear();
 
-        session.GuessedPlayersIds.Add(userId);
+        _gameRepository.Save(game);
 
-        _gameRepository.Save(session);
-
-        var allPlayersCount = _roomService.GetUsersInRoom(roomId).Count();
-        var requiredGuessers = allPlayersCount - 1;
-
-        return session.GuessedPlayersIds.Count >= requiredGuessers;
-    }
-
-    public void ClearGuessedPlayers(string roomId)
-    {
-        var session = GetGame(roomId);
-
-        session.GuessedPlayersIds.Clear();
-
-        _gameRepository.Save(session);
-
-        _logger.LogInformation("Room {roomId}: Guessed players list cleared.", roomId);
-    }
-
-
-    public bool AdvanceTurn(string roomId)
-    {
-        var session = GetGame(roomId);
-        var room = _roomService.GetRoom(roomId);
-
-        long nextDrawerId = GetNextDrawerId(session);
-
-        if (nextDrawerId == -1)
-        {
-            _gameRepository.Save(session);
-            return true;
-        }
-
-        session.CurrentDrawerId = nextDrawerId;
-        session.WordToDraw = GetRandomWord(room.Settings.CategoryId);
-        ClearGuessedPlayers(roomId);
-
-        _gameRepository.Save(session);
-
-        return false;
-    }
-
-    public string GetMaskedWord(string word)
-    {
-        if (string.IsNullOrEmpty(word)) return string.Empty;
-
-        return new string(word.Select(c => char.IsWhiteSpace(c) ? ' ' : '*').ToArray());
+        var totalRounds = _roomService.GetRoom(game.RoomId).Settings.NumberOfRounds;
+        gameEnded = game.CurrentRound > totalRounds;
     }
 }

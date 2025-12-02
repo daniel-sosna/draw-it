@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace draw_it.Tests.Controllers;
+namespace Draw.it.Server.Tests.Unit.Controllers;
 
 public class WordPoolControllerTest
 {

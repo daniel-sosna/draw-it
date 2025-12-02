@@ -299,3 +299,4 @@ sketch
 
 # draw-it Custom
 coveragereport/
+.env
