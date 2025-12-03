@@ -4,6 +4,7 @@ import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
 import ScoreModal from "@/components/modal/ScoreModal.jsx";
+import PlayerStatusList from "@/components/gameplay/PlayerStatusList";
 
 export default function GameplayScreen() {
     
@@ -13,7 +14,8 @@ export default function GameplayScreen() {
     const [scoreModalOpen, setScoreModalOpen] = useState(false);
     const [scoreModalTitle, setScoreModalTitle] = useState("");
     const [scoreModalScores, setScoreModalScores] = useState([]);
-
+    const [playerStatuses, setPlayerStatuses] = useState([]);
+    
     useEffect(() => {
         if(!gameplayConnection) return;
         
@@ -27,6 +29,10 @@ export default function GameplayScreen() {
         });
 
         gameplayConnection.on("ReceiveRoundStarted", () => {
+        });
+
+        gameplayConnection.on("ReceivePlayerStatuses", (statuses) => {
+            setPlayerStatuses(statuses);
         });
 
         gameplayConnection.on("ReceiveRoundEnded", (scores) => {
@@ -47,6 +53,7 @@ export default function GameplayScreen() {
             gameplayConnection.off("ReceiveRoundStarted");
             gameplayConnection.off("ReceiveRoundEnded");
             gameplayConnection.off("ReceiveGameEnded");
+            gameplayConnection.off("ReceivePlayerStatuses");
         };
     }, [gameplayConnection, roomId]);
     
@@ -70,13 +77,20 @@ export default function GameplayScreen() {
             </div>
 
             {/* FIX 2: Explicitly wrap ChatComponent to control its w-1/4 and h-full layout */}
-            <div className="w-1/4 h-[90vh]">
-                <ChatComponent
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    // Pass classes to ChatComponent to handle its internal styling (like h-full)
-                    className="h-full bg-gray-800 rounded-xl shadow-lg"
-                />
+            <div className="w-1/4 h-[90vh] flex flex-col">
+
+                {/* 1. NAUJAS KOMPONENTAS: PlayerStatusList */}
+                <PlayerStatusList players={playerStatuses} />
+
+                {/* 2. ChatComponent (naudojame flex-grow, kad užpildytų likusią vietą) */}
+                <div className="flex-grow">
+                    <ChatComponent
+                        messages={messages}
+                        onSendMessage={handleSendMessage}
+                        // Dabar h-full nustatomas iš flex-grow
+                        className="h-full bg-gray-800 rounded-xl shadow-lg"
+                    />
+                </div>
             </div>
 
             <ScoreModal
