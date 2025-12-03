@@ -106,7 +106,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         if (user.Id != game.CurrentDrawerId)
         {
-            return;
+            throw new HubException("Only drawer is allowed to draw.");
         }
 
         await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
@@ -120,7 +120,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         if (user.Id != game.CurrentDrawerId)
         {
-            return;
+            throw new HubException("Only drawer is allowed to clear.");
         }
 
         await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveClear");
