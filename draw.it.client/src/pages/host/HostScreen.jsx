@@ -56,7 +56,7 @@ function HostScreen() {
                 // small pause
                 await new Promise(r => setTimeout(r, 300));
             }
-            await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
+            await sendSettingsUpdate(categoryId, drawingTime, numberOfRounds, roomName);
         })();
 
         lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
@@ -85,7 +85,7 @@ function HostScreen() {
         }
     }, [lobbyConnection, roomId]);
 
-    const sendSettingsUpdate = async (roomName, catId, drawingTime, numberOfRounds) => {
+    const sendSettingsUpdate = async (catId, drawingTime, numberOfRounds, roomName) => {
         if (!lobbyConnection) {
             console.error("SignalR connection not established.");
             return;
@@ -106,8 +106,8 @@ function HostScreen() {
 
     // Waits 500ms after the last change before sending the update
     const debouncedSend = useMemo(() => {
-        return debounce((catId, drawTime, rounds, name) => {
-            sendSettingsUpdate(name, catId, drawTime, rounds);
+        return debounce((...args) => {
+            sendSettingsUpdate(...args);
         }, 500);
     }, [lobbyConnection, roomId]);
 
@@ -140,7 +140,7 @@ function HostScreen() {
                 sendSettingsUpdate(categoryId, drawingTime, newValue, roomName);
             }
         }, 1000);
-    }, []);
+    }, [lobbyConnection, roomId]);
 
     const clampAndSnap = (val, { min, max, step }) => {
         let v = Number(val);
