@@ -56,7 +56,7 @@ function HostScreen() {
                 // small pause
                 await new Promise(r => setTimeout(r, 300));
             }
-            await sendSettingsUpdate(roomName, categoryId, drawingTime, numberOfRounds);
+            await sendSettingsUpdate(categoryId, drawingTime, numberOfRounds, roomName);
         })();
 
         lobbyConnection.on("ReceiveUpdateSettings", (newCategoryId, newDrawingTime, newNumberOfRounds) => {
@@ -85,7 +85,7 @@ function HostScreen() {
         }
     }, [lobbyConnection, roomId]);
 
-    const sendSettingsUpdate = async (roomName, catId, drawingTime, numberOfRounds) => {
+    const sendSettingsUpdate = async (catId, drawingTime, numberOfRounds, roomName) => {
         if (!lobbyConnection) {
             console.error("SignalR connection not established.");
             return;
@@ -106,8 +106,8 @@ function HostScreen() {
 
     // Waits 500ms after the last change before sending the update
     const debouncedSend = useMemo(() => {
-        return debounce((catId, drawTime, rounds, name) => {
-            sendSettingsUpdate(name, catId, drawTime, rounds);
+        return debounce((...args) => {
+            sendSettingsUpdate(...args);
         }, 500);
     }, [lobbyConnection, roomId]);
 
@@ -128,6 +128,20 @@ function HostScreen() {
         numberOfRounds: { min: 1, max: 10, step: 1 },
     });
 
+    // Waits 500ms after the last input before clamping and snapping the value
+    const debouncedClampAndSnap = useMemo(() => {
+        return debounce((val, rules, setter, fieldName) => {
+            const newValue = clampAndSnap(val, rules);
+            setter(newValue);
+
+            if (fieldName === 'drawingTime') {
+                sendSettingsUpdate(categoryId, newValue, numberOfRounds, roomName);
+            } else if (fieldName === 'numberOfRounds') {
+                sendSettingsUpdate(categoryId, drawingTime, newValue, roomName);
+            }
+        }, 1000);
+    }, [lobbyConnection, roomId]);
+
     const clampAndSnap = (val, { min, max, step }) => {
         let v = Number(val);
         if (Number.isNaN(v)) v = min;
@@ -141,15 +155,10 @@ function HostScreen() {
 
     const handleNumberInput = (event, setter, fieldName) => {
         const rules = RULES[fieldName];
-        const newValue = clampAndSnap(event.target.value, rules);
 
-        setter(newValue);
+        setter(event.target.value);
 
-        if (fieldName === 'drawingTime') {
-            debouncedSend(categoryId, newValue, numberOfRounds, roomName);
-        } else if (fieldName === 'numberOfRounds') {
-            debouncedSend(categoryId, drawingTime, newValue, roomName);
-        }
+        debouncedClampAndSnap(event.target.value, rules, setter, fieldName);
     };
 
     const startGame = async () => {
