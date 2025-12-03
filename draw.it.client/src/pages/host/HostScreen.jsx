@@ -128,6 +128,14 @@ function HostScreen() {
         numberOfRounds: { min: 1, max: 10, step: 1 },
     });
 
+    // Waits 500ms after the last input before clamping and snapping the value
+    const debouncedClampAndSnap = useMemo(() => {
+        return debounce((setter, ...args) => {
+            const val = clampAndSnap(...args);
+            setter(val);
+        }, 1000);
+    }, []);
+
     const clampAndSnap = (val, { min, max, step }) => {
         let v = Number(val);
         if (Number.isNaN(v)) v = min;
@@ -141,9 +149,9 @@ function HostScreen() {
 
     const handleNumberInput = (event, setter, fieldName) => {
         const rules = RULES[fieldName];
-        const newValue = clampAndSnap(event.target.value, rules);
 
-        setter(newValue);
+        debouncedClampAndSnap(setter, event.target.value, rules);
+        const newValue = clampAndSnap(event.target.value, rules);
 
         if (fieldName === 'drawingTime') {
             debouncedSend(categoryId, newValue, numberOfRounds, roomName);
