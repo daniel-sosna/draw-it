@@ -40,10 +40,6 @@ public class GameplayHub : BaseHub<GameplayHub>
         var playerStatuses = GetPlayerStatuses(roomId);
         await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
 
-
-        var isDrawer = game.CurrentDrawerId == user.Id;
-        await Clients.Caller.SendAsync("SetDrawerStatus", isDrawer);
-
         if (game.ConnectedPlayersIds.Count == game.PlayerCount)
         {
             // All players are connected - game in progress
@@ -113,7 +109,7 @@ public class GameplayHub : BaseHub<GameplayHub>
             return;
         }
 
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
+        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
     }
 
     public async Task SendClear()
@@ -127,7 +123,7 @@ public class GameplayHub : BaseHub<GameplayHub>
             return;
         }
 
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveClear");
+        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveClear");
     }
 
     private async Task SendSystemMessageToRoom(string roomId, string message)
@@ -175,12 +171,6 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
         await Clients.User(drawerId).SendAsync("ReceiveWordToDraw", game.WordToDraw);
-
-        foreach (var playerId in game.ConnectedPlayersIds)
-        {
-            var isDrawer = playerId == game.CurrentDrawerId;
-            await Clients.User(playerId.ToString()).SendAsync("SetDrawerStatus", isDrawer);
-        }
     }
 
     private async Task EndTurn(string roomId, string wordToDraw)
