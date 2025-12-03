@@ -130,9 +130,15 @@ function HostScreen() {
 
     // Waits 500ms after the last input before clamping and snapping the value
     const debouncedClampAndSnap = useMemo(() => {
-        return debounce((setter, ...args) => {
-            const val = clampAndSnap(...args);
-            setter(val);
+        return debounce((val, rules, setter, fieldName) => {
+            const newValue = clampAndSnap(val, rules);
+            setter(newValue);
+
+            if (fieldName === 'drawingTime') {
+                sendSettingsUpdate(categoryId, newValue, numberOfRounds, roomName);
+            } else if (fieldName === 'numberOfRounds') {
+                sendSettingsUpdate(categoryId, drawingTime, newValue, roomName);
+            }
         }, 1000);
     }, []);
 
@@ -150,14 +156,9 @@ function HostScreen() {
     const handleNumberInput = (event, setter, fieldName) => {
         const rules = RULES[fieldName];
 
-        debouncedClampAndSnap(setter, event.target.value, rules);
-        const newValue = clampAndSnap(event.target.value, rules);
+        setter(event.target.value);
 
-        if (fieldName === 'drawingTime') {
-            debouncedSend(categoryId, newValue, numberOfRounds, roomName);
-        } else if (fieldName === 'numberOfRounds') {
-            debouncedSend(categoryId, drawingTime, newValue, roomName);
-        }
+        debouncedClampAndSnap(event.target.value, rules, setter, fieldName);
     };
 
     const startGame = async () => {
