@@ -5,7 +5,7 @@ import "../../index.css";
 import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
 import WordComponent from "@/components/gameplay/WordComponent.jsx";
 
-const App = () => {
+const App = ({ isDrawer }) => {
     const canvasRef = useRef(null);
     const strokesRef = useRef([]); // [{ points:[{x,y}], color, size, eraser, canvasW, canvasH }]
     const localPathRef = useRef(null);
@@ -16,7 +16,6 @@ const App = () => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [brushSize, setBrushSize] = useState(5);
     const gameplayConnection = useContext(GameplayHubContext);
-    const [isDrawer, setIsDrawer] = useState(false);
     
     const toNorm = ({x,y}) => {
         const r = canvasRef.current.getBoundingClientRect();
@@ -110,11 +109,10 @@ const App = () => {
         
         gameplayConnection.on("ReceiveDraw", onReceiveDraw);
         gameplayConnection.on("ReceiveClear", onReceiveClear);
-        gameplayConnection.on("SetDrawerStatus", (status) => setIsDrawer(status));
+
         return () => {
             gameplayConnection.off("ReceiveDraw", onReceiveDraw);
             gameplayConnection.off("ReceiveClear", onReceiveClear);
-            gameplayConnection.off("SetDrawerStatus");
         };
     }, [gameplayConnection]);
 
