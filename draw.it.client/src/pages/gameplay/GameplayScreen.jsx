@@ -9,13 +9,15 @@ import PlayerStatusList from "@/components/gameplay/PlayerStatusList";
 import api from "@/utils/api.js";
 
 export default function GameplayScreen() {
-    
+
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
     const [messages, setMessages] = useState([]);
     const [scoreModalOpen, setScoreModalOpen] = useState(false);
     const [scoreModalTitle, setScoreModalTitle] = useState("");
     const [scoreModalScores, setScoreModalScores] = useState([]);
+    const [playerStatuses, setPlayerStatuses] = useState([]);
+    const [myName, setMyName] = useState("");
     const [timer, setTimer] = useState(0);
 
     useEffect(() => {
