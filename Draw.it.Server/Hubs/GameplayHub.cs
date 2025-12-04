@@ -1,4 +1,3 @@
-using Draw.it.Server.Enums;
 using Draw.it.Server.Hubs.DTO;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Game;
@@ -37,6 +36,10 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         // Manage reconnection or new connection scenarios
         var game = _gameService.GetGame(roomId);
+
+        var playerStatuses = GetPlayerStatuses(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
+
         if (game.ConnectedPlayersIds.Count == game.PlayerCount)
         {
             // All players are connected - game in progress
@@ -88,19 +91,39 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         _gameService.AddGuessedPlayer(roomId, user.Id, out bool turnEnded, out bool roundEnded, out bool gameEnded);
 
+        var playerStatuses = GetPlayerStatuses(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
+
         if (turnEnded) await ManageTurnEnding(roomId, wordToDraw, roundEnded, gameEnded);
+
     }
 
     public async Task SendDraw(DrawDto drawDto)
     {
         var user = await ResolveUserAsync();
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
+        var roomId = user.RoomId!;
+        var game = _gameService.GetGame(roomId);
+
+        if (user.Id != game.CurrentDrawerId)
+        {
+            throw new HubException("Only drawer is allowed to draw.");
+        }
+
+        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
     }
 
     public async Task SendClear()
     {
         var user = await ResolveUserAsync();
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveClear");
+        var roomId = user.RoomId!;
+        var game = _gameService.GetGame(roomId);
+
+        if (user.Id != game.CurrentDrawerId)
+        {
+            throw new HubException("Only drawer is allowed to clear.");
+        }
+
+        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveClear");
     }
 
     private async Task SendSystemMessageToRoom(string roomId, string message)
@@ -144,6 +167,8 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         if (isFirstTurn) await StartRound(roomId);
 
+        var playerStatuses = GetPlayerStatuses(roomId);
+        await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
         var turnMessage = $"{drawerName} is drawing!";
         await SendSystemMessageToRoom(roomId, turnMessage);
         await StartTimer(roomId);
@@ -231,5 +256,29 @@ public class GameplayHub : BaseHub<GameplayHub>
         }
 
         return scoreDtos.OrderByDescending(s => s.Points).ToList();
+    }
+
+    private List<PlayerStatusDto> GetPlayerStatuses(string roomId)
+    {
+        var game = _gameService.GetGame(roomId);
+        var users = _roomService.GetUsersInRoom(roomId);
+        var drawerId = game.CurrentDrawerId;
+
+        var statuses = users.Select(user =>
+        {
+
+            int totalScore = game.TotalScores.GetValueOrDefault(user.Id, 0);
+            int roundScore = game.RoundScores.GetValueOrDefault(user.Id, 0);
+            int currentScore = totalScore + roundScore;
+
+            return new PlayerStatusDto(
+                Name: user.Name,
+                Score: currentScore,
+                IsDrawer: user.Id == drawerId,
+                HasGuessed: game.GuessedPlayersIds.Contains(user.Id)
+            );
+        }).OrderByDescending(p => p.Score).ToList();
+
+        return statuses;
     }
 }

@@ -5,6 +5,8 @@ import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
 import ScoreModal from "@/components/modal/ScoreModal.jsx";
 import TimerComponent from "@/components/gameplay/TimerComponent.jsx";
+import PlayerStatusList from "@/components/gameplay/PlayerStatusList";
+import api from "@/utils/api.js";
 
 export default function GameplayScreen() {
     
@@ -16,6 +18,25 @@ export default function GameplayScreen() {
     const [scoreModalScores, setScoreModalScores] = useState([]);
     const [timer, setTimer] = useState(0);
 
+    useEffect(() => {
+        const fetchMyName = async () => {
+            try {
+                const response = await api.get('/auth/me');
+
+                if (response.status === 200) {
+                    const username = response.data.name;
+                    setMyName(username);
+                } else {
+                    console.error("Failed to fetch user data. Status:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchMyName();
+    }, []);
+    
     useEffect(() => {
         if(!gameplayConnection) return;
         
@@ -29,6 +50,10 @@ export default function GameplayScreen() {
         });
 
         gameplayConnection.on("ReceiveRoundStarted", () => {
+        });
+
+        gameplayConnection.on("ReceivePlayerStatuses", (statuses) => {
+            setPlayerStatuses(statuses);
         });
 
         gameplayConnection.on("ReceiveRoundEnded", (scores) => {
@@ -50,6 +75,7 @@ export default function GameplayScreen() {
             gameplayConnection.off("ReceiveRoundStarted");
             gameplayConnection.off("ReceiveRoundEnded");
             gameplayConnection.off("ReceiveGameEnded");
+            gameplayConnection.off("ReceivePlayerStatuses");
         };
     }, [gameplayConnection, roomId]);
     
@@ -62,6 +88,10 @@ export default function GameplayScreen() {
             alert("Error sending message. Please try again.");
         }        
     };
+
+    const isDrawer = playerStatuses.some(
+        (player) => player.isDrawer && player.name === myName 
+    );
     
     return (
         // FIX 1: Use w-screen h-screen and overflow-hidden to contain the layout.
@@ -70,17 +100,24 @@ export default function GameplayScreen() {
             {/* Canvas Wrapper: w-3/4 and h-full remains correct */}
             <div className="relative w-3/4 h-full bg-gray-100 p-6 rounded-xl shadow-lg flex flex-col mr-4">
                 <TimerComponent />
-                <DrawingCanvas />
+                <DrawingCanvas isDrawer={isDrawer} />
             </div>
 
             {/* FIX 2: Explicitly wrap ChatComponent to control its w-1/4 and h-full layout */}
-            <div className="w-1/4 h-[90vh]">
-                <ChatComponent
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    // Pass classes to ChatComponent to handle its internal styling (like h-full)
-                    className="h-full bg-gray-800 rounded-xl shadow-lg"
-                />
+            <div className="w-1/4 h-[90vh] flex flex-col">
+
+                {/* 1. NAUJAS KOMPONENTAS: PlayerStatusList */}
+                <PlayerStatusList players={playerStatuses} />
+
+                {/* 2. ChatComponent (naudojame flex-grow, kad užpildytų likusią vietą) */}
+                <div className="flex-grow">
+                    <ChatComponent
+                        messages={messages}
+                        onSendMessage={handleSendMessage}
+                        // Dabar h-full nustatomas iš flex-grow
+                        className="h-full bg-gray-800 rounded-xl shadow-lg"
+                    />
+                </div>
             </div>
 
             <ScoreModal
