@@ -1,4 +1,5 @@
 using Draw.it.Server.Hubs.DTO;
+using Draw.it.Server.Enums;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Services.Game;
 using Draw.it.Server.Services.Room;
