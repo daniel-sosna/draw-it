@@ -170,8 +170,6 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         var playerStatuses = GetPlayerStatuses(roomId);
         await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
-        var turnMessage = $"{drawerName} is drawing!";
-        await SendSystemMessageToRoom(roomId, turnMessage);
         await StartTimer(roomId);
 
         await Clients.GroupExcept(roomId, drawerId).SendAsync("ReceiveWordToDraw", maskedWord);
