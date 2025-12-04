@@ -101,13 +101,29 @@ public class GameplayHub : BaseHub<GameplayHub>
     public async Task SendDraw(DrawDto drawDto)
     {
         var user = await ResolveUserAsync();
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
+        var roomId = user.RoomId!;
+        var game = _gameService.GetGame(roomId);
+
+        if (user.Id != game.CurrentDrawerId)
+        {
+            throw new HubException("Only drawer is allowed to draw.");
+        }
+
+        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveDraw", drawDto);
     }
 
     public async Task SendClear()
     {
         var user = await ResolveUserAsync();
-        await Clients.GroupExcept(user.RoomId!, Context.ConnectionId).SendAsync("ReceiveClear");
+        var roomId = user.RoomId!;
+        var game = _gameService.GetGame(roomId);
+
+        if (user.Id != game.CurrentDrawerId)
+        {
+            throw new HubException("Only drawer is allowed to clear.");
+        }
+
+        await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveClear");
     }
 
     private async Task SendSystemMessageToRoom(string roomId, string message)
