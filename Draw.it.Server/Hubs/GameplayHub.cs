@@ -102,7 +102,10 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
+        if (user?.RoomId is null) throw new HubException("User context not available or RoomId missing.");
+
         var game = _gameService.GetGame(roomId);
+        if (game is null) throw new HubException("Game not found.");
 
         if (user.Id != game.CurrentDrawerId)
         {
@@ -116,7 +119,10 @@ public class GameplayHub : BaseHub<GameplayHub>
     {
         var user = await ResolveUserAsync();
         var roomId = user.RoomId!;
+        if (user?.RoomId is null) throw new HubException("User context not available or RoomId missing.");
+
         var game = _gameService.GetGame(roomId);
+        if (game is null) throw new HubException("Game not found.");
 
         if (user.Id != game.CurrentDrawerId)
         {
