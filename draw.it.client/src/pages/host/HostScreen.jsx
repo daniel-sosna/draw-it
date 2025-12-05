@@ -25,7 +25,8 @@ const CATEGORIES = [
     { id: 1, name: 'Animals' },
     { id: 2, name: 'Vehicle type' },
     { id: 3, name: 'Games' },
-    { id: 4, name: 'Custom' },
+    { id: 4, name: 'Food' },
+    { id: 5, name: 'Household items' },
 ];
 
 function HostScreen() {
