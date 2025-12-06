@@ -4,15 +4,13 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'Draw.it.Server/**'
-    paths-ignore:
-      - '**.md'
+      - Draw.it.Server/**
+      - '!**.md'
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'Draw.it.Server/**'
-    paths-ignore:
-      - '**.md'
+      - Draw.it.Server/**
+      - '!**.md'
 
 jobs:
   lint_format:

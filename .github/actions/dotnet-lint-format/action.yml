@@ -16,16 +16,19 @@ runs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
-      cache: true
-      cache-dependency-path: |
-        ${{ inputs.project_path }}/**/*.csproj
-        ${{ inputs.project_path }}/**/*.sln
+        cache: true
+        cache-dependency-path: |
+          ${{ inputs.project_path }}/**/*.csproj
+          ${{ inputs.project_path }}/**/*.sln
 
     - name: Restore dependencies
       run: dotnet restore "${{ inputs.project_path }}" --locked-mode
+      shell: bash
 
     - name: Run static analysis (lint)
       run: dotnet build "${{ inputs.project_path }}" --no-restore -warnaserror
+      shell: bash
 
     - name: Run dotnet format (check only)
       run: dotnet format "${{ inputs.project_path }}" --verify-no-changes
+      shell: bash

@@ -16,13 +16,15 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
-      cache: 'npm'
-      cache-dependency-path: ${{ inputs.project_path }}/package-lock.json
+        cache: npm
+        cache-dependency-path: ${{ inputs.project_path }}/package-lock.json
 
     - name: Install dependencies
       working-directory: ${{ inputs.project_path }}
       run: npm ci # Use instead of `npm install` (faster, reproducible, fails if package-lock.json is out of sync)
+      shell: bash
 
     - name: Run ESLint
       working-directory: ${{ inputs.project_path }}
       run: npm run lint
+      shell: bash
