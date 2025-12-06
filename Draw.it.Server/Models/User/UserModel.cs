@@ -7,4 +7,5 @@ public class UserModel
     public string? RoomId { get; set; } // Link to Room
     public bool IsConnected { get; set; } = false;
     public bool IsReady { get; set; } = false;
+    public bool IsAi { get; set; } = false;
 }

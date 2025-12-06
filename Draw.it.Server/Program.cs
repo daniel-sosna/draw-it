@@ -32,7 +32,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 builder.Services.AddAuthorization();
 
-builder.Services.AddSignalR()
+builder.Services.AddSignalR(options =>
+    {
+        options.MaximumReceiveMessageSize = 1024 * 512; // 500kb
+    })
     .AddJsonProtocol(options =>
     {
         options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

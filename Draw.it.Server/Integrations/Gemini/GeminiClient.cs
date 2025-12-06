@@ -67,12 +67,14 @@ public class GeminiClient : IGeminiClient
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HubException($"Gemini API Error: {response.StatusCode} - {errorContent}");
+            var errorMsg = $"Gemini API Error: {response.StatusCode} - {errorContent}";
+            _logger.LogWarning(errorMsg);
+            return string.Empty;
         }
 
         var jsonResponse = await response.Content.ReadFromJsonAsync<JsonNode>();
 
         var answer = jsonResponse?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString();
-        return answer ?? "";
+        return answer ?? string.Empty;
     }
 }

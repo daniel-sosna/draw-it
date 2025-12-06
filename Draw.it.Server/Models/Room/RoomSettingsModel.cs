@@ -9,7 +9,8 @@ namespace Draw.it.Server.Models.Room
         private int _rounds = 2;
         public string RoomName { get; set; } = string.Empty;
         public long CategoryId { get; set; } = 1;
-
+        public bool HasAiPlayer { get; set; } = false;
+        
         public int DrawingTime
         {
             get => _seconds;

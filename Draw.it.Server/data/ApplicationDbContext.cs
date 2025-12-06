@@ -40,6 +40,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                     .HasColumnName("drawing_time_seconds");
                 settings.Property(s => s.NumberOfRounds)
                     .HasColumnName("number_of_rounds");
+                settings.Property(s => s.HasAiPlayer)
+                    .HasColumnName("has_ai_player");
             });
         });
 
@@ -66,6 +68,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             entity.Property(u => u.IsReady)
                 .HasColumnName("is_ready");
+            
+            entity.Property(u => u.IsAi)
+                .HasColumnName("is_ai");
 
             entity.HasOne<RoomModel>()
                 .WithMany()

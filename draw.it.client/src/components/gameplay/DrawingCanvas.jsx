@@ -281,6 +281,46 @@ const App = ({ isDrawer }) => {
         return () => ro.disconnect();
     }, []);
 
+    // Effect to send images of canvas to backend for AI to guess
+    useEffect(() => {
+        if (!isDrawer || !gameplayConnection) return;
+        if (!canvasRef.current) return;
+
+        let intervalId;
+
+        const sendSnapshot = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+
+                try {
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const uint8 = new Uint8Array(arrayBuffer);
+                    const bytes = btoa(String.fromCharCode(...uint8));
+
+                    await gameplayConnection.invoke(
+                        "SendCanvasSnapshot",
+                        {
+                            imageBytes: bytes,
+                            mimeType: blob.type    
+                        }
+                    );
+                } catch (err) {
+                    console.error("Failed to send canvas snapshot:", err);
+                }
+            }, "image/png");
+        };
+
+        // Send every 10 seconds
+        intervalId = setInterval(sendSnapshot, 10_000);
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [isDrawer, gameplayConnection, isInitialized]);
+    
     return (
         <div className="flex h-full min-w-screen p-1 bg-gray-100 font-sans">
             <div className="w-screen h-[80vh] p-4 bg-gray-100 font-sans flex flex-col mr-4">

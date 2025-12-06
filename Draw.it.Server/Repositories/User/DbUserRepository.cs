@@ -68,6 +68,11 @@ public class DbUserRepository(ApplicationDbContext context) : IUserRepository
     {
         return context.Users.AsNoTracking().Where(u => u.RoomId == roomId).ToList();
     }
+
+    public UserModel FindAiPlayerByRoomId(string roomId)
+    {
+        return context.Users.First(u => u.RoomId == roomId && u.IsAi);
+    }
 }
 
 
