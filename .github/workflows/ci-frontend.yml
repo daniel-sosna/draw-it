@@ -25,4 +25,4 @@ jobs:
       - name: Lint
         uses: ./.github/actions/node-lint
         with:
-          working_directory: 'draw.it.client'
+          project_path: 'draw.it.client'

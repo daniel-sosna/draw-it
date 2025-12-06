@@ -25,4 +25,20 @@ jobs:
       - name: Lint and check formatting
         uses: ./.github/actions/dotnet-lint-format
         with:
-          project_path: 'Draw.it.Server/Draw.it.Server.csproj'
+          project_path: 'Draw.it.Server'
+
+  test_coverage:
+    name: 🧪 Test Backend with Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests with coverage
+        id: test_coverage
+        uses: ./.github/actions/dotnet-test-coverage
+        with:
+          test_project_path: 'Draw.it.Server/Draw.it.Server.Tests.Unit/'
+      
+      - name: Placeholder for uploading
+        run: echo "Coverage report located at ${{ steps.test_coverage.outputs.coverage_output }}"
