@@ -1,5 +1,13 @@
 name: "Node lint"
-description: "Runs frontend linter"
+description: "Runs linter on a given project"
+inputs:
+  project_path:
+    description: "Path to the project directory"
+    required: true
+  node_version:
+    description: "Node.js version to use"
+    required: false
+    default: "20.x"
 
 runs:
   using: "composite"
@@ -7,7 +15,7 @@ runs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: ${{ inputs.node_version }}
 
     - name: Cache npm
       uses: actions/cache@v4
@@ -18,7 +26,9 @@ runs:
           ${{ runner.os }}-npm-
 
     - name: Install dependencies
+      working-directory: ${{ inputs.project_path }}
       run: npm ci # Use instead of `npm install` (faster, reproducible, fails if package-lock.json is out of sync)
 
     - name: Run ESLint
+      working-directory: ${{ inputs.project_path }}
       run: npm run lint

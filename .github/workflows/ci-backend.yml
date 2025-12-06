@@ -24,3 +24,5 @@ jobs:
 
       - name: Lint and check formatting
         uses: ./.github/actions/dotnet-lint-format
+        with:
+          project_path: 'Draw.it.Server/Draw.it.Server.csproj'

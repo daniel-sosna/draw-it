@@ -1,5 +1,13 @@
 name: "Dotnet lint & format"
-description: "Runs .NET analyzers and formatting checks"
+description: "Runs .NET analyzers and formatting checks on a given project"
+inputs:
+  project_path:
+    description: "Path to the project directory to lint & format"
+    required: true
+  dotnet_version:
+    description: "Dotnet SDK version to use"
+    required: false
+    default: "8.0.x"
 
 runs:
   using: "composite"
@@ -7,7 +15,7 @@ runs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: ${{ inputs.dotnet_version }}
 
     - name: Cache NuGet
       uses: actions/cache@v4
@@ -18,11 +26,10 @@ runs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore "Draw.it.Server/Draw.it.Server.sln"
+      run: dotnet restore "${{ inputs.project_path }}"
 
     - name: Run static analysis (lint)
-      run: dotnet build "Draw.it.Server/Draw.it.Server.sln" --no-restore -warnaserror
-      shell: bash
+      run: dotnet build "${{ inputs.project_path }}" --no-restore -warnaserror
 
     - name: Run dotnet format (check only)
-      run: dotnet format "Draw.it.Server/Draw.it.Server.sln" --verify-no-changes
+      run: dotnet format "${{ inputs.project_path }}" --verify-no-changes
