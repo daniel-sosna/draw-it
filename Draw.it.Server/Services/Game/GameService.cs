@@ -117,7 +117,11 @@ public class GameService : IGameService
 
     private long GetPlayerIdByTurnIndex(string roomId, int turnIndex)
     {
-        return _roomService.GetUsersInRoom(roomId).Select(p => p.Id).ElementAt(turnIndex);
+        return _roomService
+            .GetUsersInRoom(roomId)
+            .Where(p => !p.IsAi)
+            .Select(p => p.Id)
+            .ElementAt(turnIndex);
     }
 
     private void AdvanceTurn(GameModel game, out bool roundEnded, out bool gameEnded)
@@ -125,7 +129,8 @@ public class GameService : IGameService
         var room = _roomService.GetRoom(game.RoomId);
         roundEnded = gameEnded = false;
 
-        var nextTurnIndex = (game.CurrentTurnIndex + 1) % game.PlayerCount;
+        var playerCount = room.Settings.HasAiPlayer ? game.PlayerCount - 1 : game.PlayerCount;
+        var nextTurnIndex = (game.CurrentTurnIndex + 1) % playerCount;
         var nextDrawerId = GetPlayerIdByTurnIndex(game.RoomId, nextTurnIndex);
 
         game.CurrentTurnIndex = nextTurnIndex;
