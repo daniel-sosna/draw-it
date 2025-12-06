@@ -5,15 +5,7 @@ import '@testing-library/jest-dom';
 
 import Input from '@/components/input/Input.jsx';
 import colors from '@/constants/colors.js';
-
-const hexToRgb = (hex) => {
-    const clean = hex.replace('#', '');
-    const int = parseInt(clean, 16);
-    const r = (int >> 16) & 255;
-    const g = (int >> 8) & 255;
-    const b = int & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-};
+import { hexToRgb } from '../../utils/colors';
 
 describe('Input', () => {
     it('renders a text input by default with provided value and placeholder', () => {
