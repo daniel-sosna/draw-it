@@ -2,14 +2,15 @@ name: CI for Backend
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
     paths:
       - Draw.it.Server/**
       - '!**.md'
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
     paths:
       - Draw.it.Server/**
+      - .github/workflows/**
       - '!**.md'
 
 jobs:
@@ -23,7 +24,7 @@ jobs:
       - name: Lint and check formatting
         uses: ./.github/actions/dotnet-lint-format
         with:
-          project_path: 'Draw.it.Server'
+          project_path: Draw.it.Server
 
   test_coverage:
     name: 🧪 Test Backend with Coverage
@@ -36,7 +37,7 @@ jobs:
         id: test_coverage
         uses: ./.github/actions/dotnet-test-coverage
         with:
-          test_project_path: 'Draw.it.Server/Draw.it.Server.Tests.Unit/'
+          test_project_path: Draw.it.Server.Tests.Unit
       
       - name: Placeholder for uploading
         run: echo "Coverage report located at ${{ steps.test_coverage.outputs.coverage_output }}"

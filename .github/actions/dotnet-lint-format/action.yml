@@ -1,16 +1,16 @@
-name: "Dotnet lint & format"
-description: "Runs .NET analyzers and formatting checks on a given project"
+name: Dotnet lint & format
+description: Runs .NET analyzers and formatting checks on a given project
 inputs:
   project_path:
-    description: "Path to the project directory to lint & format"
+    description: Path to the project directory to lint & format
     required: true
   dotnet_version:
-    description: "Dotnet SDK version to use"
+    description: Dotnet SDK version to use
     required: false
-    default: "8.0.x"
+    default: 8.0.x
 
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
