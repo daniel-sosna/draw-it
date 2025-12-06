@@ -4,15 +4,7 @@ import { render, fireEvent } from '@testing-library/react';
 
 import Button from '@/components/button/Button.jsx';
 import colors from '@/constants/colors';
-
-const hexToRgb = (hex) => {
-    const clean = hex.replace('#', '');
-    const int = parseInt(clean, 16);
-    const r = (int >> 16) & 255;
-    const g = (int >> 8) & 255;
-    const b = int & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-};
+import { hexToRgb } from '../utils/colors';
 
 describe('Button', () => {
     it('renders children text', () => {
