@@ -60,7 +60,7 @@ public class LobbyHubTest
         _context.SetupGet(c => c.User).Returns(principal);
         _context.SetupGet(c => c.ConnectionId).Returns("connection-1");
         _context.SetupGet(c => c.UserIdentifier).Returns(UserId.ToString());
-        
+
         _userService
             .Setup(s => s.GetUser(UserId))
             .Returns(_user);
@@ -82,7 +82,7 @@ public class LobbyHubTest
                 It.IsAny<object?[]>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        
+
         _groups
             .Setup(g => g.AddToGroupAsync(
                 It.IsAny<string>(),
@@ -117,7 +117,7 @@ public class LobbyHubTest
         public void SetClients(IHubCallerClients clients) => Clients = clients;
         public void SetGroups(IGroupManager groups) => Groups = groups;
     }
-    
+
     [Test]
     public async Task whenOnConnected_andUserIsNotHost_thenSettingsAndPlayerListSent()
     {
@@ -440,7 +440,7 @@ public class LobbyHubTest
                 It.IsAny<CancellationToken>()),
             Times.Never);
     }
-    
+
     [TearDown]
     public void TearDown()
     {

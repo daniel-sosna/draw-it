@@ -104,7 +104,7 @@ public class RoomControllerTest
             .Returns(room);
 
         var result = _roomController.GetRoom(RoomId);
-        
+
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
         var ok = (OkObjectResult)result;
 
@@ -135,7 +135,7 @@ public class RoomControllerTest
         _roomService
             .Setup(s => s.GetUsersInRoom(RoomId))
             .Returns(users);
-        
+
         var result = _roomController.GetRoomUsers(RoomId);
 
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
@@ -149,7 +149,7 @@ public class RoomControllerTest
     public void whenStartGame_thenServiceCalledAndNoContentReturned()
     {
         var user = SetupAuthenticatedUser();
-        
+
         var result = _roomController.StartGame(RoomId);
 
         Assert.That(result, Is.InstanceOf<NoContentResult>());
@@ -161,9 +161,9 @@ public class RoomControllerTest
     {
         var user = SetupAuthenticatedUser();
         var settings = new RoomSettingsModel();
-        
+
         var result = _roomController.UpdateSettings(RoomId, settings);
-        
+
         Assert.That(result, Is.InstanceOf<NoContentResult>());
         _roomService.Verify(s => s.UpdateSettings(RoomId, user, settings), Times.Once);
     }
@@ -184,7 +184,7 @@ public class RoomControllerTest
         var attr = method!.GetCustomAttribute<AllowAnonymousAttribute>();
         Assert.That(attr, Is.Not.Null);
     }
-    
+
     private UserModel SetupAuthenticatedUser()
     {
         var user = new UserModel

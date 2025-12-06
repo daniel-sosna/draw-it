@@ -52,7 +52,7 @@ public class UserControllerTest
         var attr = typeof(UserController).GetCustomAttribute<AuthorizeAttribute>();
         Assert.That(attr, Is.Not.Null);
     }
-    
+
     private void SetupAuthenticatedUser()
     {
         var identity = new ClaimsIdentity(new[]
