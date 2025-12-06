@@ -8,7 +8,11 @@ using Draw.it.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Draw.it.Server.Enums;
+using DotNetEnv;
+using Npgsql;
 
+// Load '.env' file
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +45,14 @@ builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Con
 
 // Register the DbContext if using DB repositories
 var repoType = builder.Configuration.GetValue<string>("RepositoryType");
-var connectionString = builder.Configuration.GetConnectionString("Postgres");
+var baseConnectionString = builder.Configuration.GetConnectionString("Postgres");
+
+var connectionString = new NpgsqlConnectionStringBuilder(baseConnectionString)
+{
+    Username = builder.Configuration["Postgres:Username"],
+    Password = builder.Configuration["Postgres:Password"]
+}.ToString();
+
 if (repoType == nameof(RepoType.Db) && !string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -60,7 +71,6 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-
 
 var app = builder.Build();
 
