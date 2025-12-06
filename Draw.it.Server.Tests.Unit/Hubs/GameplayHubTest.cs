@@ -433,6 +433,8 @@ public class GameplayHubTest
     [Test]
     public async Task whenSendDraw_thenBroadcastToGroupExceptCaller()
     {
+        CreateGame(2, new HashSet<long>(), UserId, "APPLE");
+        
         await _hub.SendDraw(null!);
 
         _groupExceptClient.Verify(
@@ -446,6 +448,8 @@ public class GameplayHubTest
     [Test]
     public async Task whenSendClear_thenBroadcastClearToGroupExceptCaller()
     {
+        CreateGame(2, new HashSet<long>(), UserId, "APPLE");
+        
         await _hub.SendClear();
 
         _groupExceptClient.Verify(
