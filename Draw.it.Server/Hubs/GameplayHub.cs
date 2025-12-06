@@ -280,7 +280,7 @@ public class GameplayHub : BaseHub<GameplayHub>
             return;
         }
 
-        // TODO turn of sending canvas screenshot
+        await Clients.User(game.CurrentDrawerId.ToString()).SendAsync("AiGuessedCorrectly");
         await SendCorrectAnswer(game.RoomId, aiUser, game.WordToDraw);
     }
     

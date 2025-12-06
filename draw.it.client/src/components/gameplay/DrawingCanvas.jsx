@@ -16,7 +16,8 @@ const App = ({ isDrawer }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [brushSize, setBrushSize] = useState(5);
     const gameplayConnection = useContext(GameplayHubContext);
-    
+    const [aiGuessingEnabled, setAiGuessingEnabled] = useState(true);
+
     const toNorm = ({x,y}) => {
         const r = canvasRef.current.getBoundingClientRect();
         return { x: x / r.width, y: y / r.height };
@@ -281,10 +282,28 @@ const App = ({ isDrawer }) => {
         return () => ro.disconnect();
     }, []);
 
+    // Listener for correct AI guess
+    useEffect(() => {
+        if (!gameplayConnection) return;
+
+        const handleAiGuessed = () => {
+            setAiGuessingEnabled(false);
+        };
+
+        gameplayConnection.on("AiGuessedCorrectly", handleAiGuessed);
+
+        return () => {
+            gameplayConnection.off("AiGuessedCorrectly", handleAiGuessed);
+        };
+    }, [gameplayConnection]);
+
     // Effect to send images of canvas to backend for AI to guess
     useEffect(() => {
-        if (!isDrawer || !gameplayConnection) return;
-        if (!canvasRef.current) return;
+        console.log(isDrawer)
+        console.log(gameplayConnection)
+        console.log(aiGuessingEnabled)
+        console.log(canvasRef.current)
+        if (!isDrawer || !gameplayConnection || !aiGuessingEnabled || !canvasRef.current) return;
 
         let intervalId;
 
@@ -319,7 +338,16 @@ const App = ({ isDrawer }) => {
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [isDrawer, gameplayConnection, isInitialized]);
+    }, [isDrawer, gameplayConnection, isInitialized, aiGuessingEnabled]);
+
+    // Enable sending canvas to AI if the user is the drawer
+    useEffect(() => {
+        if (isDrawer) {
+            setAiGuessingEnabled(true);
+        } else {
+            setAiGuessingEnabled(false);
+        }
+    }, [isDrawer]);
     
     return (
         <div className="flex h-full min-w-screen p-1 bg-gray-100 font-sans">
