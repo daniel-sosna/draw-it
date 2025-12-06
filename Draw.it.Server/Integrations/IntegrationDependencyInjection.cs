@@ -6,7 +6,7 @@ public static class IntegrationDependencyInjection
 {
     public static IServiceCollection AddApplicationIntegrations(this IServiceCollection services)
     {
-        services.AddScoped<IGeminiClient, GeminiClient>();
+        services.AddHttpClient<IGeminiClient, GeminiClient>();
         return services;
     }
 }

@@ -2,5 +2,5 @@
 
 public interface IGeminiClient
 {
-    string GuessImage();
+    Task<string> GuessImage(string imageBase64, string mimeType);
 }
