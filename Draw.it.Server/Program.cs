@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Draw.it.Server.Enums;
 using DotNetEnv;
+using Draw.it.Server.Integrations;
+using Draw.it.Server.Integrations.Gemini;
 using Npgsql;
 
 // Load '.env' file
@@ -41,7 +43,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddApplicationServices().AddApplicationRepositories(builder.Configuration);
+
+// Register classes for Dependency Injection
+builder.Services
+    .AddApplicationServices()
+    .AddApplicationRepositories(builder.Configuration)
+    .AddApplicationIntegrations();
 
 // Register the DbContext if using DB repositories
 var repoType = builder.Configuration.GetValue<string>("RepositoryType");
@@ -58,6 +65,9 @@ if (repoType == nameof(RepoType.Db) && !string.IsNullOrWhiteSpace(connectionStri
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(connectionString));
 }
+
+builder.Services.Configure<GeminiOptions>(
+    builder.Configuration.GetSection("Gemini"));
 
 // Allow frontend to send requests
 builder.Services.AddCors(options =>
