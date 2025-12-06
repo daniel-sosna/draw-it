@@ -64,6 +64,12 @@ public class GameplayHub : BaseHub<GameplayHub>
                 var isDrawerOrGuessed = game.CurrentDrawerId == user.Id || game.GuessedPlayersIds.Contains(user.Id);
                 await Clients.Caller.SendAsync("ReceiveWordToDraw", isDrawerOrGuessed ? word : _gameService.GetMaskedWord(word));
             }
+
+            // Don't send screen captures of canvas if no AI
+            if (!room.Settings.HasAiPlayer)
+            {
+                await Clients.User(game.CurrentDrawerId.ToString()).SendAsync("AiGuessedCorrectly");
+            }
         }
         else
         {
@@ -131,6 +137,12 @@ public class GameplayHub : BaseHub<GameplayHub>
     public async Task SendCanvasSnapshot(CanvasSnapshotDto dto)
     {
         var guess = await _geminiClient.GuessImage(dto.ImageBytes, dto.MimeType);
+
+        if (guess.Equals(string.Empty))
+        {
+            return;
+        }
+        
         await SendMessageAi(guess);
     }
 

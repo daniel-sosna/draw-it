@@ -8,7 +8,7 @@ const initialRoomState = {
     id: "",
     name: "Game Room",
     players: [],
-    settings: { durationSec: 90, rounds: 3, category: "Loading..." },
+    settings: { durationSec: 90, rounds: 3, category: "Loading...", hasAiPlayer: false },
 };
 
 export default function RoomPage() {
@@ -51,6 +51,7 @@ export default function RoomPage() {
                     category: settings.categoryName,
                     durationSec: settings.drawingTime,
                     rounds: settings.numberOfRounds,
+                    hasAiPlayer: settings.hasAiPlayer
                 }
             }));
         });
@@ -140,6 +141,10 @@ export default function RoomPage() {
                         <div className="game-setting">
                             <span className="setting-label">ROUNDS:</span>
                             <span className="setting-value">{settings.rounds}</span>
+                        </div>
+                        <div className="game-setting">
+                            <span className="setting-label">HAS AI PLAYER:</span>
+                            <span className="setting-value">{settings.hasAiPlayer ? "✅" : "❌"}</span>
                         </div>
                         <div className="leave-button-container">
                             <Button onClick={leaveRoom}>

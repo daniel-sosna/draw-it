@@ -40,7 +40,8 @@ namespace Draw.it.Server.Models.Room
             return RoomName == other.RoomName
                    && CategoryId == other.CategoryId
                    && DrawingTime == other.DrawingTime
-                   && NumberOfRounds == other.NumberOfRounds;
+                   && NumberOfRounds == other.NumberOfRounds
+                   && HasAiPlayer == other.HasAiPlayer;
         }
 
         public override bool Equals(object? obj)
