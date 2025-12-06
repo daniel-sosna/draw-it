@@ -1,0 +1,28 @@
+name: "Dotnet lint & format"
+description: "Runs .NET analyzers and formatting checks"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Cache NuGet
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages # Local NuGet cache files are stored in `~/.nuget/packages`
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore "Draw.it.Server/Draw.it.Server.sln"
+
+    - name: Run static analysis (lint)
+      run: dotnet build "Draw.it.Server/Draw.it.Server.sln" --no-restore -warnaserror
+      shell: bash
+
+    - name: Run dotnet format (check only)
+      run: dotnet format "Draw.it.Server/Draw.it.Server.sln" --verify-no-changes

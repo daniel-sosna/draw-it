@@ -1,0 +1,24 @@
+name: "Node lint"
+description: "Runs frontend linter"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Cache npm
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-
+
+    - name: Install dependencies
+      run: npm ci # Use instead of `npm install` (faster, reproducible, fails if package-lock.json is out of sync)
+
+    - name: Run ESLint
+      run: npm run lint

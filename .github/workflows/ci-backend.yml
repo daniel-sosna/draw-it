@@ -15,34 +15,12 @@ on:
       - '**.md'
 
 jobs:
-  lint:
-    name: Lint and Build Backend
+  lint_format:
+    name: 🧹 Lint and Format Backend
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Draw.it.Server
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Cache NuGet
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages # Local NuGet cache files are stored in `~/.nuget/packages`
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: 🧹 Check formatting
-        run: dotnet format --verify-no-changes
-
-      - name: 👷‍ Build project
-        run: dotnet build --configuration Release --no-restore
+      - name: Lint and check formatting
+        uses: ./.github/actions/dotnet-lint-format
