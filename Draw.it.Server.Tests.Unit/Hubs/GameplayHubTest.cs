@@ -295,7 +295,7 @@ public class GameplayHubTest
     public async Task whenOnConnected_andGameStarted_andReconnected_andUserIsDrawer_thenSendWordToCaller()
     {
         var game = CreateGame(3, new HashSet<long> { UserId, 2, 3 }, UserId, "APPLE");
-        
+
         _gameService
             .Setup(s => s.AddConnectedPlayer(RoomId, UserId))
             .Returns(false);
@@ -458,21 +458,22 @@ public class GameplayHubTest
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
-    
+
     [Test]
     public async Task whenTimerEnded_andAlreadyCalled_thenNoAdditionalActions()
     {
         // Arrange
         var game = CreateGame(3, new HashSet<long> { 1, 2, 3 }, 2, "APPLE");
         game.CurrentPhase = GamePhase.DrawingPhase;
-    
+
         bool alreadyCalled = true;
         string wordToDraw = "";
         bool turnEnded = false, roundEnded = false;
-    
+
         _gameService
             .Setup(s => s.HandleTimerEnd(RoomId, out It.Ref<string>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny))
-            .Callback((string roomId, out string w, out bool te, out bool re, out bool ac) => {
+            .Callback((string roomId, out string w, out bool te, out bool re, out bool ac) =>
+            {
                 w = wordToDraw;
                 te = turnEnded;
                 re = roundEnded;
@@ -486,49 +487,50 @@ public class GameplayHubTest
         _gameService.Verify(
             s => s.HandleTimerEnd(RoomId, out It.Ref<string>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny, out It.Ref<bool>.IsAny),
             Times.Once);
-    
+
         // Verify that ManageTurnEnding was NOT called (no TURN ENDED message)
         _groupClient.Verify(
             c => c.SendCoreAsync(
                 "ReceiveMessage",
-                It.Is<object?[]>(args => 
+                It.Is<object?[]>(args =>
                     args.Length == 2 &&
                     (string)args[0]! == "System" &&
                     ((string)args[1]!).Contains("TURN ENDED!")),
                 It.IsAny<CancellationToken>()),
             Times.Never);
     }
-    
+
     [Test]
     public async Task whenTimerEnded_andDrawingPhase_thenManageTurnEndingCalled()
     {
         // Arrange
         var game = CreateGame(3, new HashSet<long> { 1, 2, 3 }, 2, "APPLE");
         game.CurrentPhase = GamePhase.DrawingPhase;
-    
+
         string wordToDraw = "APPLE";
         bool roundEnded = false, gameEnded = false, alreadyCalled = false;
-    
+
         _gameService
-            .Setup(s => s.HandleTimerEnd(RoomId, 
-                out It.Ref<string>.IsAny, 
-                out It.Ref<bool>.IsAny, 
-                out It.Ref<bool>.IsAny, 
+            .Setup(s => s.HandleTimerEnd(RoomId,
+                out It.Ref<string>.IsAny,
+                out It.Ref<bool>.IsAny,
+                out It.Ref<bool>.IsAny,
                 out It.Ref<bool>.IsAny))
-            .Callback((string roomId, out string w, out bool re, out bool ge, out bool ac) => {
+            .Callback((string roomId, out string w, out bool re, out bool ge, out bool ac) =>
+            {
                 w = wordToDraw;
                 re = roundEnded;
                 ge = gameEnded;
                 ac = alreadyCalled;
             });
-    
+
         // Mock the user service to return a drawer user
         var drawerUser = new UserModel { Id = 2, Name = "DRAWER_USER", RoomId = RoomId };
         _userService.Setup(s => s.GetUser(2)).Returns(drawerUser);
-    
+
         // Mock GetMaskedWord for StartTurn
         _gameService.Setup(s => s.GetMaskedWord(It.IsAny<string>())).Returns("_____");
-    
+
         // Mock room settings for StartTimer
         var roomSettings = new RoomSettingsModel { DrawingTime = 60 };
         _roomService.Setup(s => s.GetRoomSettings(RoomId)).Returns(roomSettings);
@@ -538,26 +540,26 @@ public class GameplayHubTest
 
         // Assert
         _gameService.Verify(
-            s => s.HandleTimerEnd(RoomId, 
-                out It.Ref<string>.IsAny, 
-                out It.Ref<bool>.IsAny, 
-                out It.Ref<bool>.IsAny, 
+            s => s.HandleTimerEnd(RoomId,
+                out It.Ref<string>.IsAny,
+                out It.Ref<bool>.IsAny,
+                out It.Ref<bool>.IsAny,
                 out It.Ref<bool>.IsAny),
             Times.Once);
-    
+
         _groupClient.Verify(
             c => c.SendCoreAsync(
                 "ReceiveMessage",
-                It.Is<object?[]>(args => 
+                It.Is<object?[]>(args =>
                     args.Length == 2 &&
                     (string)args[0]! == "System" &&
                     ((string)args[1]!).Contains($"TURN ENDED! The word was: {wordToDraw}")),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
-    
-    
-    
+
+
+
     [Test]
     public void GetPlayerStatuses_ReturnsCorrectStatusesOrderedByScore()
     {
@@ -588,7 +590,7 @@ public class GameplayHubTest
 
         Assert.That(result.Count, Is.EqualTo(3));
         Assert.That(result[0].Name, Is.EqualTo("Bob"));
-        Assert.That(result[0].Score, Is.EqualTo(11)); 
+        Assert.That(result[0].Score, Is.EqualTo(11));
         Assert.That(result[0].IsDrawer, Is.True);
         Assert.That(result[0].HasGuessed, Is.False);
 
@@ -598,11 +600,11 @@ public class GameplayHubTest
         Assert.That(result[1].HasGuessed, Is.True);
 
         Assert.That(result[2].Name, Is.EqualTo("Alice"));
-        Assert.That(result[2].Score, Is.EqualTo(7)); 
+        Assert.That(result[2].Score, Is.EqualTo(7));
         Assert.That(result[2].IsDrawer, Is.False);
         Assert.That(result[2].HasGuessed, Is.True);
     }
-    
+
     // Helper builders and setup methods to reduce duplication across tests
     private GameModel CreateGame(
         int playerCount,
