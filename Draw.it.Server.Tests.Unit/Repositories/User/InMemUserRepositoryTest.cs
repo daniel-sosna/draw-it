@@ -132,8 +132,29 @@ public class InMemUserRepositoryTest
         Assert.That(result, Does.Contain(userInRoom1Second));
         Assert.That(result, Does.Not.Contain(userInAnotherRoom));
     }
+    
+    [Test]
+    public void whenFindAiPlayerByRoom_thenReturnAiPlayer()
+    {
+        var id1 = _repository.GetNextId();
+        var id2 = _repository.GetNextId();
+        var id3 = _repository.GetNextId();
 
-    private static UserModel CreateUser(long id, string name, string? roomId = null)
+        var user1 = CreateUser(id1, Name, RoomId);
+        var user2 = CreateUser(id2, AnotherName, RoomId);
+        var user3 = CreateUser(id3, "AI", RoomId, true);
+
+        _repository.Save(user1);
+        _repository.Save(user2);
+        _repository.Save(user3);
+
+        var aiPlayer = _repository.FindAiPlayerByRoomId(RoomId);
+
+        Assert.That(aiPlayer.IsAi);
+        Assert.That(aiPlayer.RoomId == RoomId);
+    }
+
+    private static UserModel CreateUser(long id, string name, string? roomId = null, bool isAi = false)
     {
         return new UserModel
         {
@@ -141,7 +162,8 @@ public class InMemUserRepositoryTest
             Name = name,
             RoomId = roomId,
             IsConnected = false,
-            IsReady = false
+            IsReady = false,
+            IsAi = isAi
         };
     }
 }

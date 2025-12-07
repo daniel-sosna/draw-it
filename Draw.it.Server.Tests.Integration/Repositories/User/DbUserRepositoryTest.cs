@@ -198,6 +198,24 @@ public class DbUserRepositoryTest
         Assert.That(list.Any(u => u.Name == "A"), Is.True);
         Assert.That(list.Any(u => u.Name == "B"), Is.True);
     }
+    
+    [Test]
+    public async Task whenFindAiPlayerByRoomId_thenReturnAiPlayer()
+    {
+        await InsertRoom(RoomId);
+        var u1 = CreateUser(1, "A", RoomId);
+        var u2 = CreateUser(2, "B", RoomId);
+        var u3 = CreateUser(3, "C", RoomId, true); // different room
+
+        _repository.Save(u1);
+        _repository.Save(u2);
+        _repository.Save(u3);
+
+        var aiPlayer = _repository.FindAiPlayerByRoomId(RoomId);
+
+        Assert.That(aiPlayer.IsAi);
+        Assert.That(aiPlayer.RoomId == RoomId);
+    }
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
@@ -211,7 +229,7 @@ public class DbUserRepositoryTest
         await _context.DisposeAsync();
     }
 
-    private UserModel CreateUser(long id, string name, string? roomId = null)
+    private UserModel CreateUser(long id, string name, string? roomId = null, bool isAi = false)
     {
         return new UserModel
         {
@@ -219,7 +237,8 @@ public class DbUserRepositoryTest
             Name = name,
             RoomId = roomId,
             IsConnected = false,
-            IsReady = false
+            IsReady = false,
+            IsAi = isAi
         };
     }
     
