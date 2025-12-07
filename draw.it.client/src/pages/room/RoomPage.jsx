@@ -100,7 +100,7 @@ export default function RoomPage() {
                     <div className="players-section">
                         <h2 className="section-title">PLAYERS</h2>
                         <div className="player-count">
-                            {players.length} / 4
+                            {players.length}
                         </div>
                         <ul className="players-list">
                             {players.map((p) => (
