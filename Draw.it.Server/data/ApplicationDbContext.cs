@@ -68,7 +68,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             entity.Property(u => u.IsReady)
                 .HasColumnName("is_ready");
-            
+
             entity.Property(u => u.IsAi)
                 .HasColumnName("is_ai");
 

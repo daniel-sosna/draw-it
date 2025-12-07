@@ -7,7 +7,7 @@ namespace Draw.it.Server.Services.User;
 public class UserService : IUserService
 {
     private const string AiPlayerBaseName = "AI_PLAYER";
-    
+
     private readonly ILogger<UserService> _logger;
     private readonly IUserRepository _userRepository;
 
@@ -116,7 +116,7 @@ public class UserService : IUserService
         _userRepository.Save(user);
         _logger.LogInformation("User with id={Id} name changed to {Name}", userId, name);
     }
-    
+
     public void CreateAiUser(string roomId)
     {
         var aiName = GenerateAiPlayerName(roomId);

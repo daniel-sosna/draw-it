@@ -225,7 +225,7 @@ public class RoomService : IRoomService
         {
             _userService.CreateAiUser(roomId);
         }
-        
+
         room.Status = RoomStatus.InGame;
 
         _roomRepository.Save(room);
@@ -254,7 +254,7 @@ public class RoomService : IRoomService
         {
             throw new AppException("Cannot change settings: Game is already in progress or has ended.", HttpStatusCode.Conflict);
         }
-        
+
         room.Settings = settings;
         _roomRepository.Save(room);
         return true;

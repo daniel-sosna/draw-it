@@ -49,8 +49,8 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.Group(roomId).SendAsync("ReceivePlayerStatuses", playerStatuses);
 
         var room = _roomService.GetRoom(roomId);
-        
-        if (game.ConnectedPlayersIds.Count == game.PlayerCount 
+
+        if (game.ConnectedPlayersIds.Count == game.PlayerCount
             || (room.Settings.HasAiPlayer && game.ConnectedPlayersIds.Count == game.PlayerCount - 1))
         {
             // All players are connected - game in progress
@@ -133,7 +133,7 @@ public class GameplayHub : BaseHub<GameplayHub>
 
         await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveClear");
     }
-    
+
     public async Task SendCanvasSnapshot(CanvasSnapshotDto dto)
     {
         var guess = await _geminiClient.GuessImage(dto.ImageBytes, dto.MimeType);
@@ -142,7 +142,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         {
             return;
         }
-        
+
         await SendMessageAi(guess);
     }
 
@@ -283,7 +283,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         var user = await ResolveUserAsync(); // Get game from the user that is the drawer
         var roomId = user.RoomId!;
         var game = _gameService.GetGame(roomId);
-        
+
         var aiUser = _userService.GetAiUserInRoom(game.RoomId);
 
         if (!CheckCorrectGuess(message, game.WordToDraw))
@@ -295,7 +295,7 @@ public class GameplayHub : BaseHub<GameplayHub>
         await Clients.User(game.CurrentDrawerId.ToString()).SendAsync("AiGuessedCorrectly");
         await SendCorrectAnswer(game.RoomId, aiUser, game.WordToDraw);
     }
-    
+
     private bool CheckCorrectGuess(string message, string wordToDraw)
     {
         return string.Equals(message.Trim(), wordToDraw, StringComparison.OrdinalIgnoreCase);

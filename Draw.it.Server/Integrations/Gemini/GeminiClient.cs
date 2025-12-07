@@ -25,7 +25,7 @@ public class GeminiClient : IGeminiClient
                                   
                                   If you are unsure, make your best reasonable guess based on what the drawing most resembles, instead of saying you are unsure.
                                   """;
-    
+
     private readonly string _url;
     private readonly ILogger<GeminiClient> _logger;
     private readonly HttpClient _httpClient;
