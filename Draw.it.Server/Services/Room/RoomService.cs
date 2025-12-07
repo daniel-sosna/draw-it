@@ -221,7 +221,6 @@ public class RoomService : IRoomService
             throw new AppException($"Cannot start game. The following players are not ready: {notReadyNames}.", HttpStatusCode.Conflict);
         }
 
-        _logger.LogInformation("room has AI PLAYER: {}", room.Settings.HasAiPlayer);
         if (room.Settings.HasAiPlayer)
         {
             _userService.CreateAiUser(roomId);

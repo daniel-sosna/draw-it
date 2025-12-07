@@ -299,10 +299,6 @@ const App = ({ isDrawer }) => {
 
     // Effect to send images of canvas to backend for AI to guess
     useEffect(() => {
-        console.log(isDrawer)
-        console.log(gameplayConnection)
-        console.log(aiGuessingEnabled)
-        console.log(canvasRef.current)
         if (!isDrawer || !gameplayConnection || !aiGuessingEnabled || !canvasRef.current) return;
 
         let intervalId;

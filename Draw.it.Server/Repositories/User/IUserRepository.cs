@@ -6,6 +6,5 @@ public interface IUserRepository : IRepository<UserModel, long>
 {
     long GetNextId();
     IEnumerable<UserModel> FindByRoomId(string roomId);
-
     UserModel FindAiPlayerByRoomId(string roomId);
 }
