@@ -50,7 +50,7 @@ public class DbUserRepositoryTest
         _context = new ApplicationDbContext(_dbOptions);
         _repository = new DbUserRepository(_context);
         
-        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE users RESTART IDENTITY CASCADE;");
+        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE users, rooms RESTART IDENTITY CASCADE;");
     }
 
     [Test]
