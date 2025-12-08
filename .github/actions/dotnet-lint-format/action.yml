@@ -8,7 +8,6 @@ inputs:
     description: Dotnet SDK version to use
     required: false
     default: 8.0.x
-
 runs:
   using: composite
   steps:

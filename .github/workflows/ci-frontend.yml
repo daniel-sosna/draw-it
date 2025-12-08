@@ -3,14 +3,14 @@ name: CI for Frontend
 on:
   push:
     branches: [ main ]
-    paths:
-      - draw.it.client/**
-      - '!**.md'
+    paths-ignore:
+      - '**.md'
   pull_request:
     branches: [ main ]
     paths:
       - draw.it.client/**
-      - .github/workflows/**
+      - .github/actions/**
+      - .github/workflows/ci-frontend.yml
       - '!**.md'
 
 jobs:

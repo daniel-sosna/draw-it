@@ -12,7 +12,6 @@ outputs:
   coverage_output:
     description: Path to the output coverage file
     value: ${{ steps.set_coverage_output.outputs.coverage_output }}
-
 runs:
   using: composite
   steps:
