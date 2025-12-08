@@ -15,7 +15,7 @@ on:
 
 jobs:
   lint:
-    name: 🧹 Lint Frontend
+    name: 🧹 Lint | Frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
