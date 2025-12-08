@@ -19,11 +19,11 @@ runs:
         cache-dependency-path: ${{ inputs.project_path }}/package-lock.json
 
     - name: Install dependencies
-      working-directory: ${{ inputs.project_path }}
       run: npm ci # Use instead of `npm install` (faster, reproducible, fails if package-lock.json is out of sync)
+      working-directory: ${{ inputs.project_path }}
       shell: bash
 
     - name: Run ESLint
-      working-directory: ${{ inputs.project_path }}
       run: npm run lint
+      working-directory: ${{ inputs.project_path }}
       shell: bash

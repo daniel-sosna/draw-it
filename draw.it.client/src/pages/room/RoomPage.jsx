@@ -1,7 +1,7 @@
 import "./RoomPage.css";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import Button from "@/components/button/button.jsx";
+import Button from "@/components/button/Button.jsx";
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 
 const initialRoomState = {

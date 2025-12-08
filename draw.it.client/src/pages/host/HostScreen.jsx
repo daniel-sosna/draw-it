@@ -2,7 +2,7 @@ import './HostScreen.css';
 import { useContext, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import * as signalR from '@microsoft/signalr';
-import Button from "@/components/button/button.jsx";
+import Button from "@/components/button/Button.jsx";
 import Input from "@/components/input/Input.jsx"
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 
