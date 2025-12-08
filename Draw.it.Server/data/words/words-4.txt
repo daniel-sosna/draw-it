@@ -1,0 +1,32 @@
+apple
+banana
+orange
+grape
+watermelon
+strawberry
+cherry
+lemon
+peach
+pear
+pineapple
+kiwi
+melon
+carrot
+potato
+tomato
+onion
+broccoli
+pizza
+burger
+hot dog
+ice cream
+cake
+cookie
+chocolate
+bread
+cheese
+egg
+fish
+fries
+
+

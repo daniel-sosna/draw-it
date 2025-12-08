@@ -147,7 +147,7 @@ Integration tests are slower — use them only when needed.
 
 ### 4. Run the tests
 
-From the `draw-it.Server.Tests` directory run the following command:
+From the main project directory (`draw-it`) run the following command:
 ```cmd
 dotnet test
 ```
@@ -157,7 +157,7 @@ To run tests with code coverage you have run this command:
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-This will generate a code coverage xml report file in `draw-it.Server.Tests/TestResults/{SOME_UUID}/coverage.cobertura.xml`.
+This will generate a code coverage xml report file in `Draw.it.Server.Tests.Unit/TestResults/{SOME_UUID}/coverage.cobertura.xml` and `Draw.it.Server.Tests.Integration/TestResults/{SOME_UUID}/coverage.cobertura.xml`.
 Unfortunately this is not really human-readable. For this `reportgenerator` tool can help. Install it with:
 
 ```cmd
@@ -166,7 +166,7 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 
 Generate the report with:
 ```cmd
-reportgenerator -reports:TestResults/**/*.xml -targetdir:coveragereport
+reportgenerator -reports:Draw.it.Server.Tests.Integration/TestResults/**/*.xml,Draw.it.Server.Tests.Unit/TestResults/**/*.xml -targetdir:coveragereport
 ```
 
 This will create a directory `coveragereport/` where `.html` files will be generated with pretty graphs

@@ -5,7 +5,7 @@ import "../../index.css";
 import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
 import WordComponent from "@/components/gameplay/WordComponent.jsx";
 
-const App = () => {
+const App = ({ isDrawer }) => {
     const canvasRef = useRef(null);
     const strokesRef = useRef([]); // [{ points:[{x,y}], color, size, eraser, canvasW, canvasH }]
     const localPathRef = useRef(null);
@@ -106,8 +106,10 @@ const App = () => {
             console.log("Gameplay connection not established yet");
             return;
         }
+        
         gameplayConnection.on("ReceiveDraw", onReceiveDraw);
         gameplayConnection.on("ReceiveClear", onReceiveClear);
+
         return () => {
             gameplayConnection.off("ReceiveDraw", onReceiveDraw);
             gameplayConnection.off("ReceiveClear", onReceiveClear);
@@ -166,7 +168,7 @@ const App = () => {
     };
 
     const startDrawing = (e) => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current || !isDrawer) return;
         const { x, y } = getCoordinates(e);
         const ctx = canvasRef.current.getContext("2d");
         const rect = canvasRef.current.getBoundingClientRect();
@@ -200,7 +202,7 @@ const App = () => {
     };
 
     const draw = (e) => {
-        if (!isDrawing || !canvasRef.current) return;
+        if (!isDrawing || !canvasRef.current || !isDrawer) return;
         const { x, y } = getCoordinates(e);
         const ctx = canvasRef.current.getContext("2d");
         ctx.lineTo(x, y);
@@ -286,68 +288,62 @@ const App = () => {
                 {/* Guess the word prompt */}
                 <WordComponent />
                 
-                {/* Color Palette and Tools */}
-                <div className="flex flex-wrap items-center justify-center space-x-2 mb-4">
-                    <button
-                        onClick={() => { setColor("black"); setIsEraser(false); }}
-                        className={styles.colorButton}
-                        style={{ backgroundColor: "black" }}
-                    />
-                    <button
-                        onClick={() => { setColor("red"); setIsEraser(false); }}
-                        className={styles.colorButton}
-                        style={{ backgroundColor: "red" }}
-                    />
-                    <button
-                        onClick={() => { setColor("blue"); setIsEraser(false); }}
-                        className={styles.colorButton}
-                        style={{ backgroundColor: "blue" }}
-                    />
-                    <button
-                        onClick={() => { setColor("green"); setIsEraser(false); }}
-                        className={styles.colorButton}
-                        style={{ backgroundColor: "green" }}
-                    />
-                    <button
-                        onClick={() => { setColor("yellow"); setIsEraser(false); }}
-                        className={styles.colorButton}
-                        style={{ backgroundColor: "yellow" }}
-                    />
+                {isDrawer && (
+                    <div className="flex flex-col items-center mb-4 space-y-2">
+                        <div className="flex flex-wrap items-center justify-center space-x-2">
+                            <button
+                                onClick={() => { setColor("black"); setIsEraser(false); }}
+                                className={styles.colorButton}
+                                style={{ backgroundColor: "black" }}
+                            />
+                            <button
+                                onClick={() => { setColor("red"); setIsEraser(false); }}
+                                className={styles.colorButton}
+                                style={{ backgroundColor: "red" }}
+                            />
+                            <button
+                                onClick={() => { setColor("blue"); setIsEraser(false); }}
+                                className={styles.colorButton}
+                                style={{ backgroundColor: "blue" }}
+                            />
+                            <button
+                                onClick={() => { setColor("green"); setIsEraser(false); }}
+                                className={styles.colorButton}
+                                style={{ backgroundColor: "green" }}
+                            />
+                            <button
+                                onClick={() => { setColor("yellow"); setIsEraser(false); }}
+                                className={styles.colorButton}
+                                style={{ backgroundColor: "yellow" }}
+                            />
+                            <button
+                                onClick={() => setIsEraser(!isEraser)}
+                                className={isEraser ? styles.toolButtonActive : styles.toolButtonInactive}
+                            >
+                                <FaEraser size={20} color={isEraser ? "white" : "gray"} />
+                            </button>
+                            <button
+                                onClick={() => { gameplayConnection?.invoke("SendClear"); strokesRef.current = []; clearCanvas(); }}
+                                className={styles.clearButton}
+                            >
+                                Clear
+                            </button>
+                        </div>
 
-                    {/* Eraser Button */}
-                    <button
-                        onClick={() => setIsEraser(!isEraser)}
-                        className={isEraser ? styles.toolButtonActive : styles.toolButtonInactive}
-                    >
-                        <FaEraser size={20} color={isEraser ? "white" : "gray"} />
-                    </button>
-
-                    {/* Clear Button */}
-                    <button
-                        onClick={() => {
-                            gameplayConnection?.invoke("SendClear");
-                            strokesRef.current = [];
-                            clearCanvas();
-                        }}
-                        className={styles.clearButton}
-                    >
-                        Clear
-                    </button>
-                </div>
-
-                {/* Brush Size Slider */}
-                <div className="flex items-center justify-center mb-4 space-x-2">
-                    <span className={styles.brushLabel}>Brush Size:</span>
-                    <input
-                        type="range"
-                        min="1"
-                        max="50"
-                        value={brushSize}
-                        onChange={(e) => setBrushSize(e.target.valueAsNumber)}
-                        className={styles.brushSlider}
-                    />
-                    <span className={styles.brushValueDisplay}>{brushSize}</span>
-                </div>
+                        <div className="flex items-center justify-center space-x-2">
+                            <span className={styles.brushLabel}>Brush Size:</span>
+                            <input
+                                type="range"
+                                min="1"
+                                max="50"
+                                value={brushSize}
+                                onChange={(e) => setBrushSize(e.target.valueAsNumber)}
+                                className={styles.brushSlider}
+                            />
+                            <span className={styles.brushValueDisplay}>{brushSize}</span>
+                        </div>
+                    </div>
+                )}
 
                 {/* Canvas */}
                 <canvas
@@ -359,16 +355,17 @@ const App = () => {
                     onMouseLeave={stopDrawing}
                 />
 
-                {/* Display current color/tool */}
-                <div className="mt-4 text-center text-gray-600">
-                    Current Tool: <span className="font-semibold">{isEraser ? "Eraser" : "Pen"}</span>
-                    {!isEraser && (
-                        <span
-                            className="ml-2 w-4 h-4 rounded-full inline-block align-middle"
-                            style={{ backgroundColor: color }}
-                        />
-                    )}
-                </div>
+                {isDrawer && (
+                    <div className="mt-4 text-center text-gray-600">
+                        Current Tool: <span className="font-semibold">{isEraser ? "Eraser" : "Pen"}</span>
+                        {!isEraser && (
+                            <span
+                                className="ml-2 w-4 h-4 rounded-full inline-block align-middle"
+                                style={{ backgroundColor: color }}
+                            />
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
