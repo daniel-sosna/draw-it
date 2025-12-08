@@ -37,7 +37,14 @@ jobs:
         id: test_coverage
         uses: ./.github/actions/dotnet-test-coverage
         with:
-          test_project_path: Draw.it.Server.Tests.Unit
-      
-      - name: Placeholder for uploading
-        run: echo "Coverage report located at ${{ steps.test_coverage.outputs.coverage_output }}"
+          test_project_path: Draw.it.Server.Tests.Unit  
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          disable_search: true
+          files: ${{ steps.test_coverage.outputs.coverage_output }}
+          fail_ci_if_error: true
+          flags: backend-unit
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
