@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import api from "@/utils/api.js";
 import colors from "@/constants/colors.js";
 import Input from "@/components/input/Input.jsx"
-import Button from "@/components/button/button.jsx";
+import Button from "@/components/button/Button.jsx";
 import Modal from "@/components/modal/Modal.jsx";
 
 function Index() {
