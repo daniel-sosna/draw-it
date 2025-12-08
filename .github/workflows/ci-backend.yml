@@ -46,5 +46,3 @@ jobs:
           files: ${{ steps.test_coverage.outputs.coverage_output }}
           fail_ci_if_error: true
           flags: backend-unit
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -25,3 +25,24 @@ jobs:
         uses: ./.github/actions/node-lint
         with:
           project_path: draw.it.client
+
+  test_coverage:
+    name: 🧪 Test Frontend with Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test with coverage
+        id: test_coverage
+        uses: ./.github/actions/node-test-coverage
+        with:
+          test_project_path: draw.it.client
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          disable_search: true
+          files: ${{ steps.test_coverage.outputs.coverage_output }}
+          fail_ci_if_error: true
+          flags: frontend-unit
