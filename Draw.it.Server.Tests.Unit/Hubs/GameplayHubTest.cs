@@ -292,7 +292,7 @@ public class GameplayHubTest
     public async Task whenOnConnected_andGameStarted_andReconnected_andUserIsDrawer_thenSendWordToCaller()
     {
         var game = CreateGame(3, new HashSet<long> { UserId, 2, 3 }, UserId, "APPLE");
-        
+
         _gameService
             .Setup(s => s.AddConnectedPlayer(RoomId, UserId))
             .Returns(false);
@@ -433,6 +433,8 @@ public class GameplayHubTest
     [Test]
     public async Task whenSendDraw_thenBroadcastToGroupExceptCaller()
     {
+        CreateGame(2, new HashSet<long>(), UserId, "APPLE");
+
         await _hub.SendDraw(null!);
 
         _groupExceptClient.Verify(
@@ -446,6 +448,8 @@ public class GameplayHubTest
     [Test]
     public async Task whenSendClear_thenBroadcastClearToGroupExceptCaller()
     {
+        CreateGame(2, new HashSet<long>(), UserId, "APPLE");
+
         await _hub.SendClear();
 
         _groupExceptClient.Verify(
@@ -455,7 +459,7 @@ public class GameplayHubTest
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
-    
+
     [Test]
     public void GetPlayerStatuses_ReturnsCorrectStatusesOrderedByScore()
     {
@@ -486,7 +490,7 @@ public class GameplayHubTest
 
         Assert.That(result.Count, Is.EqualTo(3));
         Assert.That(result[0].Name, Is.EqualTo("Bob"));
-        Assert.That(result[0].Score, Is.EqualTo(11)); 
+        Assert.That(result[0].Score, Is.EqualTo(11));
         Assert.That(result[0].IsDrawer, Is.True);
         Assert.That(result[0].HasGuessed, Is.False);
 
@@ -496,11 +500,11 @@ public class GameplayHubTest
         Assert.That(result[1].HasGuessed, Is.True);
 
         Assert.That(result[2].Name, Is.EqualTo("Alice"));
-        Assert.That(result[2].Score, Is.EqualTo(7)); 
+        Assert.That(result[2].Score, Is.EqualTo(7));
         Assert.That(result[2].IsDrawer, Is.False);
         Assert.That(result[2].HasGuessed, Is.True);
     }
-    
+
     // Helper builders and setup methods to reduce duplication across tests
     private GameModel CreateGame(
         int playerCount,

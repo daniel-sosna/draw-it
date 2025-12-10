@@ -92,7 +92,7 @@ public class InMemGameRepositoryTest
         var allGames = _repository.GetAll().ToList();
         Assert.That(allGames, Is.Empty);
     }
-    
+
     private GameModel CreateGame(string roomId = RoomId)
     {
         return new GameModel

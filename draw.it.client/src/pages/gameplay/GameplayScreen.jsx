@@ -5,6 +5,7 @@ import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
 import ScoreModal from "@/components/modal/ScoreModal.jsx";
 import PlayerStatusList from "@/components/gameplay/PlayerStatusList";
+import api from "@/utils/api.js";
 
 export default function GameplayScreen() {
     
@@ -15,6 +16,26 @@ export default function GameplayScreen() {
     const [scoreModalTitle, setScoreModalTitle] = useState("");
     const [scoreModalScores, setScoreModalScores] = useState([]);
     const [playerStatuses, setPlayerStatuses] = useState([]);
+    const [myName, setMyName] = useState("");
+
+    useEffect(() => {
+        const fetchMyName = async () => {
+            try {
+                const response = await api.get('/auth/me');
+
+                if (response.status === 200) {
+                    const username = response.data.name;
+                    setMyName(username);
+                } else {
+                    console.error("Failed to fetch user data. Status:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchMyName();
+    }, []);
     
     useEffect(() => {
         if(!gameplayConnection) return;
@@ -66,6 +87,10 @@ export default function GameplayScreen() {
             alert("Error sending message. Please try again.");
         }        
     };
+
+    const isDrawer = playerStatuses.some(
+        (player) => player.isDrawer && player.name === myName 
+    );
     
     return (
         // FIX 1: Use w-screen h-screen and overflow-hidden to contain the layout.
@@ -73,7 +98,7 @@ export default function GameplayScreen() {
 
             {/* Canvas Wrapper: w-3/4 and h-full remains correct */}
             <div className="w-3/4 h-full bg-gray-100 p-6 rounded-xl shadow-lg flex flex-col mr-4">
-                <DrawingCanvas />
+                <DrawingCanvas isDrawer={isDrawer} />
             </div>
 
             {/* FIX 2: Explicitly wrap ChatComponent to control its w-1/4 and h-full layout */}

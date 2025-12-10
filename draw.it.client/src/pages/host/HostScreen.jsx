@@ -2,10 +2,8 @@ import './HostScreen.css';
 import { useContext, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import * as signalR from '@microsoft/signalr';
-import Button from "@/components/button/button.jsx";
-import TextInput from "@/components/input/TextInput.jsx";
-import NumberInput from "@/components/input/NumberInput.jsx";
-import RadioGroup from "@/components/input/RadioGroup.jsx";
+import Button from "@/components/button/Button.jsx";
+import Input from "@/components/input/Input.jsx"
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 
 // This debounce utility is for sending real time updates
@@ -27,7 +25,8 @@ const CATEGORIES = [
     { id: 1, name: 'Animals' },
     { id: 2, name: 'Vehicle type' },
     { id: 3, name: 'Games' },
-    { id: 4, name: 'Custom' },
+    { id: 4, name: 'Food' },
+    { id: 5, name: 'Household items' },
 ];
 
 function HostScreen() {

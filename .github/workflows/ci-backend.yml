@@ -1,0 +1,117 @@
+name: CI for Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - Draw.it.Server/**
+      - Draw.it.Server.Tests.Unit/**
+      - Draw.it.Server.Tests.Integration/**
+      - .github/actions/**
+      - .github/workflows/ci-backend.yml
+      - '!**.md'
+
+jobs:
+  detect_changes:
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      server_unit_tests: ${{ steps.filter.outputs.server_unit_tests }}
+      server_integration_tests: ${{ steps.filter.outputs.server_integration_tests }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            server:
+              - 'Draw.it.Server/**'
+            server_unit_tests:
+              - 'Draw.it.Server.Tests.Unit/**'
+            server_integration_tests:
+              - 'Draw.it.Server.Tests.Integration/**'
+            workflows:
+              - '.github/**'
+
+  lint_format_server:
+    needs: detect_changes
+    if: |
+      needs.detect_changes.outputs.server == 'true' ||
+      needs.detect_changes.outputs.workflows == 'true'
+    name: 🧹 Lint and Format | Backend Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint and check formatting
+        uses: ./.github/actions/dotnet-lint-format
+        with:
+          project_path: Draw.it.Server
+
+  lint_format_server_unit_tests:
+    needs: detect_changes
+    if: |
+      needs.detect_changes.outputs.server_unit_tests == 'true' ||
+      needs.detect_changes.outputs.workflows == 'true'
+    name: 🧹 Lint and Format | Backend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint and check formatting
+        uses: ./.github/actions/dotnet-lint-format
+        with:
+          project_path: Draw.it.Server.Tests.Unit
+
+  lint_format_server_integration_tests:
+    needs: detect_changes
+    if: |
+      needs.detect_changes.outputs.server_integration_tests == 'true' ||
+      needs.detect_changes.outputs.workflows == 'true'
+    name: 🧹 Lint and Format | Backend Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint and check formatting
+        uses: ./.github/actions/dotnet-lint-format
+        with:
+          project_path: Draw.it.Server.Tests.Integration
+
+  unit_test_coverage:
+    needs: detect_changes
+    if: |
+      github.event_name == 'push' ||
+      needs.detect_changes.outputs.server == 'true' ||
+      needs.detect_changes.outputs.server_unit_tests == 'true' ||
+      needs.detect_changes.outputs.workflows == 'true'
+    name: 🧪 Test Backend (Unit) with Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests with coverage
+        id: test_coverage
+        uses: ./.github/actions/dotnet-test-coverage
+        with:
+          test_project_path: Draw.it.Server.Tests.Unit  
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          disable_search: true
+          files: ${{ steps.test_coverage.outputs.coverage_output }}
+          fail_ci_if_error: true
+          flags: backend-unit
