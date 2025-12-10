@@ -5,7 +5,6 @@ using Draw.it.Server.Models.Room;
 using Draw.it.Server.Models.User;
 using Draw.it.Server.Repositories.Room;
 using Draw.it.Server.Repositories.User;
-using Draw.it.Server.Services.Game;
 using Draw.it.Server.Services.User;
 
 namespace Draw.it.Server.Services.Room;
@@ -220,6 +219,11 @@ public class RoomService : IRoomService
         {
             var notReadyNames = string.Join(", ", notReadyPlayers.Select(p => p.Name));
             throw new AppException($"Cannot start game. The following players are not ready: {notReadyNames}.", HttpStatusCode.Conflict);
+        }
+
+        if (room.Settings.HasAiPlayer)
+        {
+            _userService.CreateAiUser(roomId);
         }
 
         room.Status = RoomStatus.InGame;

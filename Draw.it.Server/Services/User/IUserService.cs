@@ -12,4 +12,6 @@ public interface IUserService
     void SetReadyStatus(long userId, bool isReady);
     void RemoveRoomFromAllUsers(string roomId);
     void UpdateName(long userId, string newName);
+    void CreateAiUser(string roomId);
+    UserModel GetAiUserInRoom(string roomId);
 }

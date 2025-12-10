@@ -48,4 +48,9 @@ public class InMemUserRepository : IUserRepository
     {
         return _users.Values.Where(u => u.RoomId == roomId);
     }
+
+    public UserModel FindAiPlayerByRoomId(string roomId)
+    {
+        return _users.Values.First(u => u.RoomId == roomId && u.IsAi);
+    }
 }

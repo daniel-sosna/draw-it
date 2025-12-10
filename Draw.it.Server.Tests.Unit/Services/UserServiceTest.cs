@@ -192,4 +192,50 @@ public class UserServiceTest
         _userRepository.Verify(r => r.FindById(It.IsAny<long>()), Times.Never);
         _userRepository.Verify(r => r.Save(It.IsAny<UserModel>()), Times.Never);
     }
+
+    [Test]
+    public void whenCreateAiUser_thenAiUserSavedWithCorrectProperties()
+    {
+        _userRepository
+            .Setup(r => r.GetNextId())
+            .Returns(42);
+
+        UserModel? savedUser = null;
+        _userRepository
+            .Setup(r => r.Save(It.IsAny<UserModel>()))
+            .Callback<UserModel>(u => savedUser = u);
+
+        _userService.CreateAiUser(RoomId);
+
+        _userRepository.Verify(r => r.Save(It.IsAny<UserModel>()), Times.AtLeastOnce);
+
+        Assert.That(savedUser, Is.Not.Null);
+        Assert.That(savedUser!.IsAi, Is.True);
+        Assert.That(savedUser.RoomId, Is.EqualTo(RoomId));
+        Assert.That(savedUser.IsReady, Is.True);
+        Assert.That(savedUser.IsConnected, Is.True);
+
+        Assert.That(savedUser.Name, Does.Contain(RoomId));
+    }
+
+    [Test]
+    public void whenGetAiUserInRoom_thenReturnAiUserFromRepository()
+    {
+        var aiUser = new UserModel
+        {
+            Id = 99,
+            Name = "AI_PLAYER",
+            RoomId = RoomId,
+            IsAi = true
+        };
+
+        _userRepository
+            .Setup(r => r.FindAiPlayerByRoomId(RoomId))
+            .Returns(aiUser);
+
+        var result = _userService.GetAiUserInRoom(RoomId);
+
+        _userRepository.Verify(r => r.FindAiPlayerByRoomId(RoomId), Times.Once);
+        Assert.That(result, Is.EqualTo(aiUser));
+    }
 }

@@ -9,6 +9,7 @@ namespace Draw.it.Server.Models.Room
         private int _rounds = 2;
         public string RoomName { get; set; } = string.Empty;
         public long CategoryId { get; set; } = 1;
+        public bool HasAiPlayer { get; set; } = false;
 
         public int DrawingTime
         {
@@ -39,7 +40,8 @@ namespace Draw.it.Server.Models.Room
             return RoomName == other.RoomName
                    && CategoryId == other.CategoryId
                    && DrawingTime == other.DrawingTime
-                   && NumberOfRounds == other.NumberOfRounds;
+                   && NumberOfRounds == other.NumberOfRounds
+                   && HasAiPlayer == other.HasAiPlayer;
         }
 
         public override bool Equals(object? obj)
