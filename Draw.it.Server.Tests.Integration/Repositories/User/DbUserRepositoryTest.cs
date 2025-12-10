@@ -49,7 +49,7 @@ public class DbUserRepositoryTest
     {
         _context = new ApplicationDbContext(_dbOptions);
         _repository = new DbUserRepository(_context);
-        
+
         await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE users, rooms RESTART IDENTITY CASCADE;");
     }
 
@@ -198,7 +198,7 @@ public class DbUserRepositoryTest
         Assert.That(list.Any(u => u.Name == "A"), Is.True);
         Assert.That(list.Any(u => u.Name == "B"), Is.True);
     }
-    
+
     [Test]
     public async Task whenFindAiPlayerByRoomId_thenReturnAiPlayer()
     {
