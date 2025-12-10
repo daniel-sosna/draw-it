@@ -241,7 +241,7 @@ public class DbUserRepositoryTest
             IsAi = isAi
         };
     }
-    
+
     private async Task InsertRoom(string roomId)
     {
         using var roomCtx = new ApplicationDbContext(_dbOptions);

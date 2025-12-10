@@ -26,7 +26,7 @@ public class RoomServiceTest
     private Mock<IUserService> _userService = new();
     private Mock<IUserRepository> _userRepository = new();
     private Mock<ILogger<RoomService>> _logger = new();
-    
+
     [SetUp]
     public void Setup()
     {
@@ -284,7 +284,7 @@ public class RoomServiceTest
         _userService.Verify(s => s.SetRoom(UserId, RoomId), Times.Once);
         _userService.Verify(s => s.SetReadyStatus(UserId, false), Times.Once);
     }
-    
+
     [Test]
     public void whenLeaveRoom_andUserNotInRoom_thenThrowAppException()
     {
@@ -337,7 +337,7 @@ public class RoomServiceTest
 
         _userService.Verify(s => s.SetRoom(UserId, null), Times.Once);
     }
-    
+
 
     [Test]
     public void whenIsHost_andUserNotInRoom_thenThrowAppException()

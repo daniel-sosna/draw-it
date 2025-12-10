@@ -1,0 +1,44 @@
+name: Node test with coverage
+description: Runs Node.js tests with coverage collection on a given test containing project
+inputs:
+  test_project_path:
+    description: Path to the test project directory to run
+    required: true
+  node_version:
+    description: Node.js version to use
+    required: false
+    default: 20.x
+outputs:
+  coverage_output:
+    description: Path to the output coverage file
+    value: ${{ steps.set_coverage_output.outputs.coverage_output }}
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: 'npm'
+        cache-dependency-path: ${{ inputs.test_project_path }}/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ${{ inputs.test_project_path }}
+      shell: bash
+
+    - name: Run tests with coverage
+      run: npm test -- --coverage
+      working-directory: ${{ inputs.test_project_path }}
+      shell: bash
+
+    - name: Set coverage output path
+      id: set_coverage_output
+      run: |
+        coverage_file=${{ inputs.test_project_path }}/coverage/lcov.info
+        if [ ! -f "$coverage_file" ]; then
+          echo "Coverage file not found!"
+          exit 1
+        fi
+        echo "coverage_output=$coverage_file" >> $GITHUB_OUTPUT
+      shell: bash

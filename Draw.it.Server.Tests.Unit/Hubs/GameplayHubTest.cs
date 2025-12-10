@@ -772,17 +772,17 @@ public class GameplayHubTest
         Assert.That(result.Count, Is.EqualTo(3));
 
         Assert.That(result[0].Name, Is.EqualTo("Bob"));
-        Assert.That(result[0].Score, Is.EqualTo(11)); // 10 + 1
+        Assert.That(result[0].Score, Is.EqualTo(11));
         Assert.That(result[0].IsDrawer, Is.True);
         Assert.That(result[0].HasGuessed, Is.False);
 
         Assert.That(result[1].Name, Is.EqualTo("Charlie"));
-        Assert.That(result[1].Score, Is.EqualTo(10)); // 7 + 3
+        Assert.That(result[1].Score, Is.EqualTo(10));
         Assert.That(result[1].IsDrawer, Is.False);
         Assert.That(result[1].HasGuessed, Is.True);
 
         Assert.That(result[2].Name, Is.EqualTo("Alice"));
-        Assert.That(result[2].Score, Is.EqualTo(7)); // 5 + 2
+        Assert.That(result[2].Score, Is.EqualTo(7));
         Assert.That(result[2].IsDrawer, Is.False);
         Assert.That(result[2].HasGuessed, Is.True);
     }

@@ -1,0 +1,33 @@
+name: Dotnet lint & format
+description: Runs .NET analyzers and formatting checks on a given project
+inputs:
+  project_path:
+    description: Path to the project directory to lint & format
+    required: true
+  dotnet_version:
+    description: Dotnet SDK version to use
+    required: false
+    default: 8.0.x
+runs:
+  using: composite
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        cache: true
+        cache-dependency-path: |
+          ${{ inputs.project_path }}/**/*.csproj
+          ${{ inputs.project_path }}/**/*.sln
+
+    - name: Restore dependencies
+      run: dotnet restore "${{ inputs.project_path }}" --locked-mode
+      shell: bash
+
+    - name: Run static analysis (lint)
+      run: dotnet build "${{ inputs.project_path }}" --no-restore -warnaserror
+      shell: bash
+
+    - name: Run dotnet format (check only)
+      run: dotnet format "${{ inputs.project_path }}" --verify-no-changes
+      shell: bash

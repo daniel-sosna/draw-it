@@ -1,7 +1,7 @@
 import "./RoomPage.css";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import Button from "@/components/button/button.jsx";
+import Button from "@/components/button/Button.jsx";
 import { LobbyHubContext } from "@/utils/LobbyHubProvider.jsx";
 
 const initialRoomState = {
@@ -101,7 +101,7 @@ export default function RoomPage() {
                     <div className="players-section">
                         <h2 className="section-title">PLAYERS</h2>
                         <div className="player-count">
-                            {players.length} / 4
+                            {players.length}
                         </div>
                         <ul className="players-list">
                             {players.map((p) => (
