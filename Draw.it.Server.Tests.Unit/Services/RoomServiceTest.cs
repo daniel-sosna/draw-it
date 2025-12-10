@@ -521,7 +521,7 @@ public class RoomServiceTest
         _roomRepository.Verify(r => r.Save(room), Times.Once);
         _userService.Verify(r => r.CreateAiUser(room.Id), Times.Once);
     }
-    
+
     [Test]
     public void whenUpdateSettings_andSettingsSame_thenReturnFalseAndDoNotSave()
     {

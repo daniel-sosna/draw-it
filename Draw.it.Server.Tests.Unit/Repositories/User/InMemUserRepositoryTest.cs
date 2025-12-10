@@ -132,7 +132,7 @@ public class InMemUserRepositoryTest
         Assert.That(result, Does.Contain(userInRoom1Second));
         Assert.That(result, Does.Not.Contain(userInAnotherRoom));
     }
-    
+
     [Test]
     public void whenFindAiPlayerByRoom_thenReturnAiPlayer()
     {
