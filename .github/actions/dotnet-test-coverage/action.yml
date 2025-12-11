@@ -1,0 +1,43 @@
+name: Dotnet test with coverage
+description: Runs dotnet tests with coverage collection on a given test containing project
+inputs:
+  test_project_path:
+    description: Path to the test project directory to run
+    required: true
+  dotnet_version:
+    description: Dotnet SDK version to use
+    required: false
+    default: 8.0.x
+outputs:
+  coverage_output:
+    description: Path to the output coverage file
+    value: ${{ steps.set_coverage_output.outputs.coverage_output }}
+runs:
+  using: composite
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        cache: true
+        cache-dependency-path: |
+          ${{ inputs.test_project_path }}/**/*.csproj
+          ${{ inputs.test_project_path }}/**/*.sln
+
+    - name: Restore dependencies
+      run: dotnet restore "${{ inputs.test_project_path }}" --locked-mode
+      shell: bash
+
+    - name: Run tests with coverage
+      run: |
+        dotnet test "${{ inputs.test_project_path }}" \
+          --no-restore --collect:"XPlat Code Coverage"
+      shell: bash
+
+    - name: Set coverage output path
+      id: set_coverage_output
+      run: |
+        coverage_file=$(find "${{ inputs.test_project_path }}/TestResults" \
+          -name "coverage.cobertura.xml" | head -n 1)
+        echo "coverage_output=$coverage_file" >> $GITHUB_OUTPUT
+      shell: bash
