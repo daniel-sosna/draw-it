@@ -64,9 +64,10 @@ public class GameplayHub : BaseHub<GameplayHub>
         {
             await Clients.Caller.SendAsync("ReceiveCanvasState", strokes);
         }
-        var word2 = game.WordToDraw;
-        var isDrawerOrGuessed2 = game.CurrentDrawerId == user.Id || game.GuessedPlayersIds.Contains(user.Id);
-        await Clients.Caller.SendAsync("ReceiveWordToDraw", isDrawerOrGuessed2 ? word2 : _gameService.GetMaskedWord(word2));
+        
+        var word = game.WordToDraw;
+        var isDrawerOrGuessed = game.CurrentDrawerId == user.Id || game.GuessedPlayersIds.Contains(user.Id);
+        await Clients.Caller.SendAsync("ReceiveWordToDraw", isDrawerOrGuessed ? word : _gameService.GetMaskedWord(word));
 
         await base.OnConnectedAsync();
         _logger.LogInformation("Connected: User with id={UserId} to gameplay room with roomId={RoomId}", user.Id, roomId);
