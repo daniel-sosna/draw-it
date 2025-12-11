@@ -4,11 +4,12 @@ import DrawingCanvas from "@/components/gameplay/DrawingCanvas";
 import ChatComponent from "@/components/gameplay/ChatComponent.jsx";
 import { GameplayHubContext } from "@/utils/GameplayHubProvider.jsx";
 import ScoreModal from "@/components/modal/ScoreModal.jsx";
+import TimerComponent from "@/components/gameplay/TimerComponent.jsx";
 import PlayerStatusList from "@/components/gameplay/PlayerStatusList";
 import api from "@/utils/api.js";
 
 export default function GameplayScreen() {
-    
+
     const gameplayConnection = useContext(GameplayHubContext);
     const { roomId } = useParams();
     const [messages, setMessages] = useState([]);
@@ -19,7 +20,8 @@ export default function GameplayScreen() {
     const [myName, setMyName] = useState("");
     const [isDrawer, setIsDrawer] = useState(false);
     const [currentWord, setCurrentWord] = useState("");
-    
+    const [timer, setTimer] = useState(0);
+
     useEffect(() => {
         const fetchMyName = async () => {
             try {
@@ -74,6 +76,7 @@ export default function GameplayScreen() {
             setScoreModalOpen(true);
         });
 
+        
         return () => {
             gameplayConnection.off("ReceiveMessage");
             gameplayConnection.off("ReceiveTurnStarted");
@@ -106,7 +109,7 @@ export default function GameplayScreen() {
         <div className="flex w-screen h-[90vh] bg-secondary p-4 overflow-hidden">
 
             {/* Canvas Wrapper: w-3/4 and h-full remains correct */}
-            <div className="w-3/4 h-full bg-gray-100 p-6 rounded-xl shadow-lg flex flex-col mr-4">
+            <div className="relative w-3/4 h-full bg-gray-100 p-6 rounded-xl shadow-lg flex flex-col mr-4">
                 <DrawingCanvas isDrawer={isDrawer} word={currentWord}/>
             </div>
 

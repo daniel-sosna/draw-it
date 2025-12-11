@@ -16,4 +16,6 @@ public interface IGameService
     void AddCanvasEvent(string roomId, DrawDto drawDto);
     void ClearCanvasStrokes(string roomId);
     IReadOnlyList<StrokeDto> GetCanvasStrokes(string roomId);
+    void HandleTimerEnd(string roomId, out String wordToDraw, out bool roundEnded, out bool gameEnded,
+        out bool alreadyCalled);
 }
