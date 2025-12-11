@@ -18,6 +18,8 @@ export default function GameplayScreen() {
     const [scoreModalScores, setScoreModalScores] = useState([]);
     const [playerStatuses, setPlayerStatuses] = useState([]);
     const [myName, setMyName] = useState("");
+    const [isDrawer, setIsDrawer] = useState(false);
+    const [currentWord, setCurrentWord] = useState("");
     const [timer, setTimer] = useState(0);
 
     useEffect(() => {
@@ -45,6 +47,10 @@ export default function GameplayScreen() {
         gameplayConnection.on("ReceiveMessage", (userName, message, isCorrectGuess) => {
             setMessages((prevMessages) => [...prevMessages, { user: userName, message: message, isCorrect: isCorrectGuess ?? false }]);
         })
+
+        gameplayConnection.on("ReceiveWordToDraw", (word) => {
+            setCurrentWord(word);
+        });
 
         gameplayConnection.on("ReceiveTurnStarted", () => {
             setScoreModalOpen(false);
@@ -74,13 +80,19 @@ export default function GameplayScreen() {
         return () => {
             gameplayConnection.off("ReceiveMessage");
             gameplayConnection.off("ReceiveTurnStarted");
+            gameplayConnection.off("ReceiveWordToDraw");
             gameplayConnection.off("ReceiveRoundStarted");
             gameplayConnection.off("ReceiveRoundEnded");
             gameplayConnection.off("ReceiveGameEnded");
             gameplayConnection.off("ReceivePlayerStatuses");
         };
     }, [gameplayConnection, roomId]);
-    
+
+    useEffect(() => {
+        if (!myName || playerStatuses.length === 0) return;
+        const drawer = playerStatuses.some(p => p.name === myName && p.isDrawer);
+        setIsDrawer(drawer);
+    }, [myName, playerStatuses]);
     
     const handleSendMessage = async (message) => {
         try {
@@ -90,10 +102,7 @@ export default function GameplayScreen() {
             alert("Error sending message. Please try again.");
         }        
     };
-
-    const isDrawer = playerStatuses.some(
-        (player) => player.isDrawer && player.name === myName 
-    );
+    
     
     return (
         // FIX 1: Use w-screen h-screen and overflow-hidden to contain the layout.
@@ -102,7 +111,7 @@ export default function GameplayScreen() {
             {/* Canvas Wrapper: w-3/4 and h-full remains correct */}
             <div className="relative w-3/4 h-full bg-gray-100 p-6 rounded-xl shadow-lg flex flex-col mr-4">
                 <TimerComponent />
-                <DrawingCanvas isDrawer={isDrawer} />
+                <DrawingCanvas isDrawer={isDrawer} word={currentWord}/>
             </div>
 
             {/* FIX 2: Explicitly wrap ChatComponent to control its w-1/4 and h-full layout */}

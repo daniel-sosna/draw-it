@@ -5,7 +5,7 @@ import "../../index.css";
 import {GameplayHubContext} from "@/utils/GameplayHubProvider.jsx";
 import WordComponent from "@/components/gameplay/WordComponent.jsx";
 
-const App = ({ isDrawer }) => {
+const App = ({ isDrawer, word }) => {
     const canvasRef = useRef(null);
     const strokesRef = useRef([]); // [{ points:[{x,y}], color, size, eraser, canvasW, canvasH }]
     const localPathRef = useRef(null);
@@ -100,19 +100,45 @@ const App = ({ isDrawer }) => {
         strokesRef.current = [];
         clearCanvas();
     };
-
+    
     useEffect(() => {
         if(!gameplayConnection) {
             console.log("Gameplay connection not established yet");
             return;
         }
-        
+
         gameplayConnection.on("ReceiveDraw", onReceiveDraw);
         gameplayConnection.on("ReceiveClear", onReceiveClear);
+
+        const onReceiveCanvasState = (serverStrokes) => {
+            if (!serverStrokes) return;
+            const normalized = serverStrokes.map(s => {
+                const points = (s.points ?? s.Points ?? []).map(p => ({
+                    x: p.x ?? p.X,
+                    y: p.y ?? p.Y
+                }));
+                return {
+                    points,
+                    color: s.color ?? s.Color,
+                    size: s.size ?? s.Size,
+                    eraser: s.eraser ?? s.Eraser,
+                    canvasW: s.canvasW ?? s.CanvasW ?? (canvasRef.current?.getBoundingClientRect().width ?? 0),
+                    canvasH: s.canvasH ?? s.CanvasH ?? (canvasRef.current?.getBoundingClientRect().height ?? 0)
+                };
+            });
+
+            strokesRef.current = normalized;
+            requestAnimationFrame(() => {
+                redrawAll();
+            });
+        };
+
+        gameplayConnection.on("ReceiveCanvasState", onReceiveCanvasState);
 
         return () => {
             gameplayConnection.off("ReceiveDraw", onReceiveDraw);
             gameplayConnection.off("ReceiveClear", onReceiveClear);
+            gameplayConnection.off("ReceiveCanvasState");
         };
     }, [gameplayConnection]);
 
@@ -148,6 +174,9 @@ const App = ({ isDrawer }) => {
 
             clearCanvas();
             setIsInitialized(true);
+
+            // If strokes already received from server before canvas init, redraw now
+            requestAnimationFrame(() => redrawAll());
         }
     }, [isInitialized, color]);
 
@@ -286,7 +315,7 @@ const App = ({ isDrawer }) => {
             <div className="w-screen h-[80vh] p-4 bg-gray-100 font-sans flex flex-col mr-4">
 
                 {/* Guess the word prompt */}
-                <WordComponent />
+                <WordComponent word={word}/>
                 
                 {isDrawer && (
                     <div className="flex flex-col items-center mb-4 space-y-2">
